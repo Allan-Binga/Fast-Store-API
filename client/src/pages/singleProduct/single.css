@@ -1,0 +1,224 @@
+.single-product-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+    color: #333;
+  }
+  
+  .single-product-title {
+    text-align: center;
+    font-size: 2rem;
+    margin-bottom: 20px;
+    color: #444;
+  }
+  
+  .single-product-details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    background-color: #f9f9f9;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Loading Details */
+.loading-details {
+  font-size: 1.5rem;
+  color: #3498db; /* Soft blue color */
+  text-align: center;
+  margin: 20px 0;
+  animation: fadeIn 1.5s infinite;
+}
+
+/* Fade-in animation for loading text */
+@keyframes fadeIn {
+  0%, 100% {
+    opacity: 0.2;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+  
+  .single-product-image {
+    flex: 1 1 300px;
+    text-align: center;
+  }
+  
+  .single-product-image img {
+    max-width: 100%;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+  }
+  
+  .single-product-info {
+    flex: 1 1 400px;
+    padding: 10px;
+  }
+  
+  .single-product-info p {
+    margin: 10px 0;
+    font-size: 1rem;
+  }
+  
+  .single-product-info p strong {
+    color: #555;
+    font-weight: bold;
+  }
+  
+  .single-product-info p:last-of-type {
+    margin-top: 20px;
+  }
+  
+  @media screen and (max-width: 768px) {
+    .single-product-details {
+      flex-direction: column;
+      align-items: center;
+    }
+  
+    .single-product-image,
+    .single-product-info {
+      flex: 1 1 100%;
+      text-align: center;
+    }
+  }
+  
+  .product-actions {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+  }
+  
+  .delete-button,
+  .update-button {
+    padding: 10px 15px;
+    font-size: 1rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .delete-button {
+    background-color: red;
+    color: white;
+  }
+  
+  .delete-button:hover {
+    background-color: darkred;
+  }
+  
+  .update-button {
+    background-color: green;
+    color: white;
+  }
+  
+  .update-button:hover {
+    background-color: darkgreen;
+  }
+  
+  /* Modal Overlay */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+/* Modal Content */
+.modal-content {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  max-width: 400px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  animation: slide-down 0.3s ease-out;
+}
+
+/* Modal Heading */
+.modal-content h2 {
+  margin: 0 0 10px;
+  font-size: 1.5rem;
+  color: #333;
+}
+
+/* Modal Text */
+.modal-content p {
+  margin: 10px 0 20px;
+  font-size: 1rem;
+  color: #555;
+}
+
+/* Modal Buttons */
+.modal-buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.modal-buttons button {
+  flex: 1;
+  padding: 10px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.modal-buttons .cancel-button {
+  background-color: #ccc;
+  color: #333;
+}
+
+.modal-buttons .cancel-button:hover {
+  background-color: #bbb;
+}
+
+.modal-buttons .confirm-button {
+  background-color: red;
+  color: white;
+}
+
+.modal-buttons .confirm-button:hover {
+  background-color: darkred;
+}
+
+/* Animation */
+@keyframes slide-down {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.back-button {
+  display: inline-block;
+  margin-bottom: 20px;
+  padding: 10px 15px;
+  background-color: #007bff;
+  color: white;
+  font-size: 1rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  text-align: center;
+}
+
+.back-button:hover {
+  background-color: #0056b3;
+}

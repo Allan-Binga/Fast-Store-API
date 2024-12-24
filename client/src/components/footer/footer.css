@@ -1,0 +1,92 @@
+body,
+html {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden; /* Prevent horizontal scrolling */
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; /* Ensure the body is always at least the height of the viewport */
+}
+
+.content {
+  flex: 1; /* Allows the content to take up available space, pushing the footer down */
+}
+
+.footer {
+  background-color: #2c76b3; /* Same as navbar for consistency */
+  color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  text-align: center;
+  padding: 20px 30px;
+  box-sizing: border-box;
+  flex-shrink: 0; /* Prevent footer from shrinking */
+}
+
+.footer .footer-content {
+  max-width: 1200px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 15px; /* Add consistent spacing between elements */
+  align-items: center;
+}
+
+.footer .social-media {
+  margin-bottom: 15px;
+  display: flex;
+  gap: 20px;
+}
+
+.footer .social-media a {
+  margin: 0 10px;
+  color: #fff;
+  font-size: 1.5rem;
+  transition: color 0.3s ease;
+}
+
+.footer .social-media a:hover {
+  color: #d1e7ff; /* Slightly lighter for hover effect */
+  transform: scale(1.1);
+}
+
+.footer .contact p {
+  margin: 5px 0;
+  font-size: 1rem;
+  color: #d1e7ff;
+}
+
+/* Bottom spacing for copyright text */
+.footer .contact p:last-child {
+  margin-bottom: 0;
+  font-size: 0.9rem;
+  color: #ccc; /* Subtle gray for the copyright */
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .footer .social-media a {
+    font-size: 1.5rem; /* Adjust icon size for smaller screens */
+    margin: 0 8px;
+  }
+
+  .footer .contact p {
+    font-size: 0.85rem; /* Adjust font size for better readability */
+  }
+}
+
+@media (max-width: 480px) {
+  .footer .footer-content {
+    padding: 15px;
+  }
+
+  .footer .social-media {
+    gap: 15px;
+  }
+
+  .footer .social-media a {
+    font-size: 1.3rem;
+  }
+}

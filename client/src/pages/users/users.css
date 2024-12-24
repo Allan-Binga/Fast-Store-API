@@ -1,0 +1,115 @@
+body,html{
+    height: 100%;
+    margin: 0;
+}
+/* Container for the users page */
+.users-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px;
+    text-align: center;
+}
+
+/* Page title */
+.users-id {
+    font-size: 2.5rem;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+/* Add Product button */
+.add-user-button {
+    padding: 10px 20px;
+    background-color: #4caf50;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    margin-bottom: 20px;
+    transition: background-color 0.3s;
+  }
+  
+  .add-user-button:hover {
+    background-color: #45a049;
+  }
+
+/* users grid */
+.users-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 16px;
+}
+
+/* Individual user card */
+.user-card {
+    border: 1px solid #e0e0e0;
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+    background-color: #ffffff;
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+}
+
+.user-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* user ID */
+.user-id {
+    font-size: 1.6rem;
+    color: #4a4a4a;
+    margin-bottom: 12px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+/* Total items */
+.total-items {
+    font-size: 1.2rem;
+    color: #000;
+    font-weight: 500;
+    margin-top: 10px;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .users-container {
+        padding: 15px;
+    }
+
+    .users-id {
+        font-size: 2rem;
+    }
+
+    .user-card {
+        padding: 16px;
+    }
+
+    .user-id {
+        font-size: 1.4rem;
+    }
+
+    .total-items {
+        font-size: 1rem;
+    }
+}
+
+/* Accessibility improvement */
+.user-card:focus {
+    outline: 2px solid #007bff;
+    outline-offset: 4px;
+}
+
+.page-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; /* Ensures it takes the full height of the viewport */
+}
+
+.content-wrapper {
+    flex: 1;
+}
