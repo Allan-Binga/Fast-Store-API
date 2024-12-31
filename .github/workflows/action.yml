@@ -12,10 +12,13 @@ jobs:
       - name: Checkout code.
         uses: actions/checkout@v3
 
-      - name: Build Docker images.
+      - name: Build backend image.
         run: |
-          cd backend
+          cd client
           docker build -t allanbinga/backendstoreapi:v1.0.0 .
+
+      - name: Build client image.
+        run: |     
           cd client
           docker build -t allanbinga/clientstoreapi:v1.0.0 .
 
