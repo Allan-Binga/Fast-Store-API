@@ -1,0 +1,45 @@
+version: "3.9"
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: backendstoreapi:v1.0.0
+    container_name: storeapi-backend
+    ports:
+      - "5500:5500"
+    networks:
+      - app-network
+    # depends_on:
+    #   - mongo
+
+  frontend:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    image: clientstoreapi:v1.0.0
+    container_name: storeapi-client
+    ports:
+      - "3000:3000"
+    networks:
+      - app-network
+    depends_on:
+      - backend
+
+  # mongo:
+  #   image: mongo:latest
+  #   container_name: mongo
+  #   ports:
+  #     - "27017:27017"
+  #   volumes:
+  #     - mongo_data:/data/db
+  #   networks:
+  #     - app-network
+
+volumes:
+  mongo_data:
+
+networks:
+  app-network:
+    driver: bridge
