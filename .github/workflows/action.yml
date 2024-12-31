@@ -1,0 +1,57 @@
+name: store-api
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+
+jobs:
+   build_images:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout code.
+        uses: actions/checkout@v3
+
+      - name: Build Docker images.
+        run: |
+          cd backend
+          docker build -t allanbinga/backendstoreapi:v1.0.0 .
+          cd client
+          docker build -t allanbinga/clientstoreapi:v1.0.0 .
+
+   docker_push:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout code.
+        uses: actions/checkout@v3
+
+      - name: push Docker images to Docker Hub.
+        run: |
+          echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+          docker push allanbinga/backendstoreapi:v1.0.0
+          docker push allanbinga/clientstoreapi:v1.0.0
+
+#    notify_slack:
+#       needs: [build_images, docker_push]
+#       runs-on: ubuntu-24.04
+#       steps:
+#         - name: Notify Slack if job succeeds.
+#           if: success()
+#           uses: slackapi/slack-github-action@v1.25.0
+#           with:
+#             channel-id: ${{ secrets.CHANNEL_ID }}
+#             slack-message: |
+#               :white_check_mark: Job Succeeded!
+#           env:
+#             SLACK_BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+
+#         - name: Notify Slack if job fails.
+#           if: failure()
+#           uses: slackapi/slack-github-action@v1.25.0
+#           with:
+#             channel-id: ${{ secrets.CHANNEL_ID }}
+#             slack-message: |
+#               :x: Deployment Workflow Failed!
+#           env:
+#             SLACK_BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
