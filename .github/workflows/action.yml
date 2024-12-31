@@ -3,11 +3,10 @@ name: store-api
 on:
   push:
     branches:
-      - main
-      - dev
+      - master
 
 jobs:
-   build_images:
+  build_images:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout code.
@@ -20,7 +19,7 @@ jobs:
           cd client
           docker build -t allanbinga/clientstoreapi:v1.0.0 .
 
-   docker_push:
+  docker_push:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout code.
