@@ -22,6 +22,11 @@ const Home = () => {
             </Link>{" "}
             to get started.
           </p>
+           {/* Google Login Button */}
+           <button className="google-login-btn">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" alt="Google Logo" className="google-logo" />
+            Login with Google
+          </button>
         </div>
       </div>
       <Footer />

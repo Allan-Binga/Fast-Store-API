@@ -41,3 +41,33 @@ body,  html{
   flex-direction: column;
   min-height: 100vh; /* Ensures it takes the full height of the viewport */
 }
+
+/* Google Login Button Styling */
+.google-login-btn {
+  background-color: #4285F4; /* Google Blue */
+  color: white;
+  font-size: 1rem;
+  padding: 12px 20px;
+  border-radius: 5px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 20px;
+  transition: all 0.3s ease;
+}
+
+.google-login-btn:hover {
+  background-color: #357ae8; /* Darker Blue on hover */
+}
+
+.google-logo {
+  width: 24px;
+  height: 24px;
+  margin-right: 10px;
+}
+
+.google-login-btn:focus {
+  outline: none;
+}
