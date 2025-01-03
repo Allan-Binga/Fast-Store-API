@@ -6,25 +6,8 @@ on:
       - master
 
 jobs:
-  build_images:
+  build_and_push_images:
     runs-on: ubuntu-24.04
-    steps:
-      - name: Checkout code.
-        uses: actions/checkout@v3
-
-      - name: Build backend image.
-        run: |
-          cd backend
-          docker build -t allanbinga/backendstoreapi:v1.0.0 .
-
-      - name: Build client image.
-        run: |
-          cd client
-          docker build -t allanbinga/clientstoreapi:v1.0.0 .
-
-  docker_push:
-    runs-on: ubuntu-24.04
-    needs: build_images
     steps:
       - name: Checkout code.
         uses: actions/checkout@v3
@@ -32,15 +15,17 @@ jobs:
       - name: Login to DockerHub
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
-      - name: Push frontend image to DockerHub.
-        run: |
-          cd client
-          docker push allanbinga/clientstoreapi:v1.0.0
-
-      - name: Push backend image to DockerHub.
+      - name: Build backend image.
         run: |
           cd backend
+          docker build -t allanbinga/backendstoreapi:v1.0.0 .
           docker push allanbinga/backendstoreapi:v1.0.0
+
+      - name: Build client image.
+        run: |
+          cd client
+          docker build -t allanbinga/clientstoreapi:v1.0.0 .
+          docker push allanbinga/clientstoreapi:v1.0.0
 
 #    notify_slack:
 #       needs: [build_images, docker_push]
