@@ -35,12 +35,6 @@ const Products = () => {
       <div className="content-wrapper">
         <div className="content">
           <h1 className="products-title">Products</h1>
-          <button
-            className="add-product-button"
-            onClick={() => navigate("/products/add")}
-          >
-            Add Product
-          </button>
           {products.length > 0 ? (
             <div className="products-grid">
               {products.map((product) => (

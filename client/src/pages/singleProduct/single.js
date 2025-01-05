@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 import "./single.css";
 import Navbar from "../../components/navbar/Navbar";
 import Footer from "../../components/footer/Footer";
+import Bar from "../../components/categoriesBar/bar";
 
 const SingleProduct = () => {
   const { id } = useParams();
@@ -25,12 +26,23 @@ const SingleProduct = () => {
     fetchProduct();
   }, [id]);
 
-  const handleUpdateProductClick = (id) => {
-    navigate(`/products/update/${id}`);
-  };
-
   const handleBackClick = () => {
     navigate(-1); //Previous page
+  };
+
+  const handleAddToCart = () => {
+    const cart = JSON.parse(localStorage.getItem("cart")) || [];
+    const existingProduct = cart.find((product) => product._id === id);
+
+    if (existingProduct) {
+      existingProduct.quantity += 1;
+    } else {
+      cart.push({ ...product, quantity: 1 });
+    }
+
+    localStorage.setItem("cart", JSON.stringify(cart));
+    toast.success("Product added to cart");
+    navigate("/faststore/cart");
   };
 
   if (product === null) return null;
@@ -39,6 +51,7 @@ const SingleProduct = () => {
   return (
     <div>
       <Navbar />
+      <Bar />
       <div className="single-product-container">
         <button className="back-button" onClick={handleBackClick}>
           &larr; Back
@@ -64,9 +77,9 @@ const SingleProduct = () => {
             </p>
             <div className="product-actions">
               <button
-                className="update-button"
+                className="add-to-cart-button"
                 key={product._id}
-                onClick={() => handleUpdateProductClick(product._id)}
+                onClick={handleAddToCart}
                 style={{ cursor: "pointer" }}
               >
                 Add to cart

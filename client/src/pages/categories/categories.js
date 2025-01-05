@@ -3,6 +3,7 @@ import { getAllCategories } from "../../api/categories";
 import "./categories.css";
 import Navbar from "../../components/navbar/Navbar";
 import Footer from "../../components/footer/Footer";
+import Bar from "../../components/categoriesBar/bar";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 
@@ -31,6 +32,7 @@ const Categories = () => {
   return (
     <div className="page-container">
       <Navbar />
+      <Bar />
       <div className="content-wrapper">
         <div className="content">
           <div className="categories-container">

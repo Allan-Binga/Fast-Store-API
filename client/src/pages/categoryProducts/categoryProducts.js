@@ -5,6 +5,7 @@ import Navbar from "../../components/navbar/Navbar";
 import Footer from "../../components/footer/Footer";
 import toast from "react-hot-toast";
 import { useParams } from "react-router-dom";
+import Bar from "../../components/categoriesBar/bar";
 
 const CategoryProduct = () => {
   const { category } = useParams();
@@ -27,6 +28,7 @@ const CategoryProduct = () => {
     <div className="page-container-cat">
       <div className="content-wrapper-cat">
         <Navbar />
+        <Bar/>
         <div className="content-cat">
           <h1 className="products-title-cat">{category}</h1>
           {products.length > 0 ? (

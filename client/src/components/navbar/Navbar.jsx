@@ -4,6 +4,7 @@ import logo from "../navbar/logo.jpg";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { logoutUser } from "../../api/auth";
 import toast from "react-hot-toast";
+import { FaCartShopping } from "react-icons/fa6";
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -33,17 +34,14 @@ const Navbar = () => {
       </div>
       {!isAuthPage && (
         <div className="nav-links">
-          <Link to="/faststore/users" className="nav-link">
-            Users
+          <Link to="/products/allcategories" className="nav-link">
+            Categories
           </Link>
           <Link to="/products" className="nav-link">
             Products
           </Link>
-          <Link to="/carts" className="nav-link">
-            Carts
-          </Link>
           <Link to="/faststore/cart" className="nav-link">
-            Shopping Cart
+            <FaCartShopping />
           </Link>
           <button className="logout-button" onClick={handleLogout}>
             LOGOUT
