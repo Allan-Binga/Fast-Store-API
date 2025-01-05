@@ -14,16 +14,16 @@ const Navbar = () => {
     location.pathname === "/" ||
     location.pathname === "/logout";
 
-    //LOGOUT HANDLING
-    const handleLogout = async () => {
-      try {
-        await logoutUser();
-        toast.success("Successfully logged out.")
-        navigate("/")
-      } catch (error) {
-        toast("Error logging out.")
-      }
+  //LOGOUT HANDLING
+  const handleLogout = async () => {
+    try {
+      await logoutUser();
+      toast.success("Successfully logged out.");
+      navigate("/");
+    } catch (error) {
+      toast("Error logging out.");
     }
+  };
 
   return (
     <nav className="navbar">
@@ -36,14 +36,14 @@ const Navbar = () => {
           <Link to="/faststore/users" className="nav-link">
             Users
           </Link>
-          <Link to="/products/allCategories" className="nav-link">
-            Categories
-          </Link>
           <Link to="/products" className="nav-link">
             Products
           </Link>
           <Link to="/carts" className="nav-link">
             Carts
+          </Link>
+          <Link to="/faststore/cart" className="nav-link">
+            Shopping Cart
           </Link>
           <button className="logout-button" onClick={handleLogout}>
             LOGOUT

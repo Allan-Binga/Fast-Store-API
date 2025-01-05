@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import "./products.css";
 import Navbar from "../../components/navbar/Navbar.jsx";
 import Footer from "../../components/footer/Footer.jsx";
+import Bar from "../../components/categoriesBar/bar.jsx";
 
 const Products = () => {
   const [products, setProducts] = useState([]);
@@ -30,6 +31,7 @@ const Products = () => {
   return (
     <div className="page-container">
       <Navbar />
+      <Bar />
       <div className="content-wrapper">
         <div className="content">
           <h1 className="products-title">Products</h1>

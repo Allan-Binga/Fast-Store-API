@@ -3,11 +3,13 @@ import { Link } from "react-router-dom";
 import "./home.css";
 import Navbar from "../../components/navbar/Navbar";
 import Footer from "../../components/footer/Footer";
+import Bar from "../../components/categoriesBar/bar";
 
 const Home = () => {
   return (
     <div className="page-container">
       <Navbar />
+      <Bar/>
       <div className="content-wrapper">
         <div className="home-container">
           <h1 className="home-title">Welcome to Fast StoreAPI</h1>
@@ -22,11 +24,6 @@ const Home = () => {
             </Link>{" "}
             to get started.
           </p>
-           {/* Google Login Button */}
-           <button className="google-login-btn">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" alt="Google Logo" className="google-logo" />
-            Login with Google
-          </button>
         </div>
       </div>
       <Footer />

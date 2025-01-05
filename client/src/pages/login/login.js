@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import "./login.css";
 import Navbar from "../../components/navbar/Navbar.jsx";
 import Footer from "../../components/footer/Footer.jsx";
+import Bar from "../../components/categoriesBar/bar.jsx";
 
 const Login = () => {
   const [formData, setFormData] = useState({ username: "", password: "" });
@@ -29,6 +30,7 @@ const Login = () => {
   return (
     <div className="layout">
       <Navbar />
+      <Bar />
       <div className="content">
         <div className="login-container">
           <h2 className="login-heading">Login</h2>

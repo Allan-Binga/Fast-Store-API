@@ -18,6 +18,7 @@ import "./global.css";
 import Carts from "./pages/carts/carts";
 import SingleUser from "./pages/singleUser/singleUser";
 import UpdateUser from "./pages/updateUser/updateUser";
+import ShoppingCart from "./pages/shoppingCart/shoppingCart";
 
 const App = () => {
   return (
@@ -40,6 +41,7 @@ const App = () => {
           path="/products/category/:category"
           element={<CategoryProduct />}
         />
+        <Route path="/faststore/cart" element={<ShoppingCart />} />
         <Route path="/faststore/users" element={<Users />} />
         <Route path="/faststore/users/:id" element={<SingleUser />} />
         <Route path="/faststore/users/update/:id" element={<UpdateUser />} />

@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import "./register.css";
 import Navbar from "../../components/navbar/Navbar.jsx";
 import Footer from "../../components/footer/Footer.jsx";
+import Bar from "../../components/categoriesBar/bar.jsx";
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -36,6 +37,7 @@ const Register = () => {
   return (
     <div className="layout">
       <Navbar />
+      <Bar />
       <div className="content">
         <div className="register-container">
           <h2 className="register-heading">Register</h2>
