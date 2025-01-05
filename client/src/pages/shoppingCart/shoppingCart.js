@@ -59,7 +59,7 @@ const ShoppingCart = () => {
             <p>Subtotal: ${total.toFixed(2)}</p>
           </div>
           <div className="checkout-button">
-            <button>Proceed to checkout</button>
+            <button>Proceed to checkout.</button>
           </div>
         </div>
       </div>
