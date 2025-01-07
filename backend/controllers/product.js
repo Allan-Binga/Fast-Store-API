@@ -1,4 +1,5 @@
 import { Product } from "../models/product.js";
+import {Cart} from "../models/cart.js"
 
 // Getting all products
 export const getAllProducts = async (req, res) => {
@@ -91,38 +92,37 @@ export const deleteProduct = async (req, res) => {
   }
 };
 
-// export const getLimitedProducts = async (req, res) => {
-//   try {
-//     const limit = req.query.limit;
-//     if (!limit) {
-//       return res
-//         .status(400)
-//         .json({ error: "Please provide a limit query parameter." });
-//     }
+//Add a product to cart
+export const addProductToCart = async (req, res) => {
+  try {
+      const { userId, productId, quantity, price } = req.body;
 
-//     const response = await fetch(
-//       `https://fakestoreapi.com/products?limit=${limit}`
-//     );
-//     const product = await response.json();
-//     res.status(200).json(product);
-//   } catch (error) {
-//     res.status(500).json({ error: "Error occured while fetching products." });
-//   }
-// };
-// Sort results
-// export const sortProducts = async (req, res) => {
-//   try {
-//     const sort = req.query.sort || 'asc'; // Get sorting order from query parameter (default is 'asc')
-//     const sortField = req.query.field || 'title'; // Get the field to sort by (default is 'title')
+      if (!userId || !productId || !quantity || !price) {
+          return res.status(400).json({ error: "All fields are required." });
+      }
 
-//     // Validate sort order
-//     const sortOrder = sort === 'desc' ? -1 : 1;
+      // Find the user's cart or create a new one
+      let cart = await Cart.findOne({ userId });
 
-//     // Fetch sorted products from MongoDB
-//     const products = await Product.find().sort({ [sortField]: sortOrder });
+      if (!cart) {
+          cart = new Cart({ userId, products: [] });
+      }
 
-//     res.status(200).json(products);
-//   } catch (error) {
-//     res.status(500).json({ error: "Error while sorting products." });
-//   }
-// };
+      // Add product to the cart
+      const productIndex = cart.products.findIndex(p => p.productId.toString() === productId);
+
+      if (productIndex > -1) {
+          // If product already exists in cart, update quantity
+          cart.products[productIndex].quantity += quantity;
+      } else {
+          // Add new product to the cart
+          cart.products.push({ productId, quantity, price });
+      }
+
+      await cart.save();
+      res.status(200).json({ message: "Product added to cart.", cart });
+  } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "An error occurred while adding the product to the cart." });
+  }
+};

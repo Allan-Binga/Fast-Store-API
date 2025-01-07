@@ -31,26 +31,31 @@ export const createUser = async (req, res) => {
 };
 
 //GOOGLE OAUTH IMPLEMENTATION
-passport.use(new GoogleStrategy({
-  clientID: process.env.GOOGLE_CLIENT_ID,
-  clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-  callbackURL: "http://localhost:5500/api/auth/google/callback"
-}, async (accessToken, refreshToken, profile, done) => {
-  // Check if user already exists in the database
-  const user = await OAuthUser.findOne({ googleId: profile.id });
-  if (!user) { //If there's no uses it creates one.
-    // Create a new user in the database
-    const newUser = new OAuthUser({
-      googleId: profile.id,
-      username: profile.displayName,
-      email: profile.emails[0].value
-    });
-    await newUser.save();
-    return done(null, newUser);
-  }
-  return done(null, user);
-}));
-
+passport.use(
+  new GoogleStrategy(
+    {
+      clientID: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      callbackURL: "http://localhost:5500/api/auth/google/callback",
+    },
+    async (accessToken, refreshToken, profile, done) => {
+      // Check if user already exists in the database
+      const user = await OAuthUser.findOne({ googleId: profile.id });
+      if (!user) {
+        //If there's no uses it creates one.
+        // Create a new user in the database
+        const newUser = new OAuthUser({
+          googleId: profile.id,
+          username: profile.displayName,
+          email: profile.emails[0].value,
+        });
+        await newUser.save();
+        return done(null, newUser);
+      }
+      return done(null, user);
+    }
+  )
+);
 
 //LOGIN REGISTERED USER
 export const loginUser = async (req, res) => {
@@ -69,6 +74,8 @@ export const loginUser = async (req, res) => {
     res.cookie("storeSession", user._id, {
       httpOnly: true,
       maxAge: 1000 * 60 * 60 * 24,
+      sameSite: "None",
+      secure: true
     });
     res.status(200).json("Login successful.");
   } catch (error) {
@@ -79,9 +86,14 @@ export const loginUser = async (req, res) => {
 //LOGOUT USER
 export const logoutUser = async (req, res) => {
   try {
+    //CHECK IF COOKIE SESSION EXISTS
+    if (!req.cookies || !req.cookies.storeSession) {
+      return res.status(400).json({ message: "No user is logged in." });
+    }
+    //CLEAR SESSION COOKIE
     res.clearCookie("storeSession");
-    res.status(200).json({message: "Logout successful."})
+    res.status(200).json({ message: "Logout successful." });
   } catch (error) {
-    res.status(500).json({error: "Error logging out."})
+    res.status(500).json({ error: "Error logging out." });
   }
 };

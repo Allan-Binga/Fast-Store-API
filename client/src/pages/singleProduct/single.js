@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getProductById } from "../../api/products";
+import { addProductToCart } from "../../api/cart";
 import toast from "react-hot-toast";
 import "./single.css";
 import Navbar from "../../components/navbar/Navbar";
@@ -27,22 +28,7 @@ const SingleProduct = () => {
   }, [id]);
 
   const handleBackClick = () => {
-    navigate(-1); //Previous page
-  };
-
-  const handleAddToCart = () => {
-    const cart = JSON.parse(localStorage.getItem("cart")) || [];
-    const existingProduct = cart.find((product) => product._id === id);
-
-    if (existingProduct) {
-      existingProduct.quantity += 1;
-    } else {
-      cart.push({ ...product, quantity: 1 });
-    }
-
-    localStorage.setItem("cart", JSON.stringify(cart));
-    toast.success("Product added to cart");
-    navigate("/faststore/cart");
+    navigate(-1); // Previous page
   };
 
   if (product === null) return null;
@@ -79,7 +65,6 @@ const SingleProduct = () => {
               <button
                 className="add-to-cart-button"
                 key={product._id}
-                onClick={handleAddToCart}
                 style={{ cursor: "pointer" }}
               >
                 Add to cart

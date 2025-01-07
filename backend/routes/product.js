@@ -4,7 +4,8 @@ import {
   deleteProduct,
   getAllProducts,
   getSingleProduct,
-  updateProduct, getLimitedProducts
+  updateProduct, getLimitedProducts,
+  addProductToCart
 } from "../controllers/product.js";
 import { getAllCategories, getSpecificCategory } from "../controllers/category.js";
 
@@ -21,6 +22,7 @@ router.get("/limit", getLimitedProducts);
 router.get("/", getAllProducts);
 router.get("/:id", getSingleProduct);
 router.post("/", addNewProduct);
+router.post("/add/:id", addProductToCart)
 router.put("/:id", updateProduct);
 router.delete("/:id", deleteProduct);
 

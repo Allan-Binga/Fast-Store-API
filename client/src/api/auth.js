@@ -15,7 +15,9 @@ export const registerUser = async (userData) => {
 //LOGIN REGISTERED USER
 export const loginUser = async (userData) => {
   try {
-    const response = await axios.post(`${API_URL}/login`, userData);
+    const response = await axios.post(`${API_URL}/login`, userData, {
+      withCredentials: true,
+    });
     return response.data;
   } catch (error) {
     throw error.response.data.message;
@@ -25,9 +27,8 @@ export const loginUser = async (userData) => {
 //LOGOUT USER
 export const logoutUser = async () => {
   try {
-    const response = await axios.post(`${API_URL}/logout`)
-    return response.data
+    await axios.post(`${API_URL}/logout`, {}, { withCredentials: true });
   } catch (error) {
-    throw error.response.data.mesage;
+    throw error.response.data.message;
   }
-}
+};
