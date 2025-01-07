@@ -6,14 +6,17 @@ import Footer from "../../components/footer/Footer";
 import Bar from "../../components/categoriesBar/bar";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import Spinner from "../../components/spinner/spinner";
 
 const Categories = () => {
   const [categories, setCategories] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchCategories = async () => {
       try {
+        setIsLoading(true); //show spinner
         const categoriesData = await getAllCategories();
         const uniqueCategories = Array.from(
           new Set(categoriesData.map((cat) => cat.toLowerCase()))
@@ -23,6 +26,8 @@ const Categories = () => {
         setCategories(uniqueCategories);
       } catch (error) {
         toast.error("Error fetching categories.");
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -37,17 +42,21 @@ const Categories = () => {
         <div className="content">
           <div className="categories-container">
             <h1 className="categories-title">Categories</h1>
-            <div className="categories-grid">
-              {categories.map((category, index) => (
-                <div
-                  key={index}
-                  className="category-card"
-                  onClick={() => navigate(`/products/category/${category}`)}
-                >
-                  <h2 className="category-name">{category}</h2>
-                </div>
-              ))}
-            </div>
+            {isLoading ? (
+              <Spinner /> // Use the reusable spinner
+            ) : (
+              <div className="categories-grid">
+                {categories.map((category, index) => (
+                  <div
+                    key={index}
+                    className="category-card"
+                    onClick={() => navigate(`/products/category/${category}`)}
+                  >
+                    <h2 className="category-name">{category}</h2>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>

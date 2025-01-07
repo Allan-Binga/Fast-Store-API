@@ -1,0 +1,36 @@
+/* Container Styling */
+.payments {
+    display: flex;
+    justify-content: center; /* Center horizontally */
+    align-items: center; /* Center vertically */
+    gap: 20px; /* Space between the icons */
+    background-color: #f9f9f9; /* Light background for contrast */
+    padding: 20px; /* Padding around the icons */
+    border-radius: 8px; /* Rounded corners */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+    max-width: 300px; /* Optional: limit width */
+    margin: 20px auto; /* Center on the page */
+  }
+  
+  /* Icon Styling */
+  .payment-icon {
+    font-size: 48px; /* Size of the icons */
+    transition: transform 0.3s ease, color 0.3s ease; /* Smooth hover effect */
+  }
+  
+  /* Stripe Icon */
+  .stripe-icon {
+    color: #6772e5; /* Stripe brand color */
+  }
+  
+  /* Visa Icon */
+  .visa-icon {
+    color: #1a1f71; /* Visa brand color */
+  }
+  
+  /* Hover Effects */
+  .payment-icon:hover {
+    transform: scale(1.1); /* Slightly enlarge icon on hover */
+    cursor: pointer; /* Pointer cursor */
+  }
+  

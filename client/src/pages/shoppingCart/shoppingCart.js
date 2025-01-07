@@ -3,6 +3,8 @@ import "./shoppingcart.css";
 import Navbar from "../../components/navbar/Navbar";
 import Footer from "../../components/footer/Footer";
 import Bar from "../../components/categoriesBar/bar";
+import { useNavigate } from "react-router-dom";
+import { RiDeleteBin5Line } from "react-icons/ri";
 
 // Helper function to truncate text
 const truncateText = (text, maxLength) => {
@@ -11,6 +13,7 @@ const truncateText = (text, maxLength) => {
 
 const ShoppingCart = () => {
   const [cartProducts, setCartProducts] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const savedCart = JSON.parse(localStorage.getItem("cart")) || [];
@@ -44,6 +47,10 @@ const ShoppingCart = () => {
     );
   };
 
+  const handleCheckout = () => {
+    navigate("/faststore/checkout");
+  };
+
   return (
     <div className="shopping-cart">
       <Navbar />
@@ -68,7 +75,8 @@ const ShoppingCart = () => {
                     <p className="item-title">{item.title}</p>
                     {/* Truncate description if it's too long */}
                     <p className="item-description">
-                      {truncateText(item.description, 100)} {/* Set your max length here */}
+                      {truncateText(item.description, 100)}{" "}
+                      {/* Set your max length here */}
                     </p>
                     <div className="item-quantity">
                       <button
@@ -95,7 +103,7 @@ const ShoppingCart = () => {
                       className="remove-button"
                       onClick={() => removeProduct(item._id)}
                     >
-                      Remove
+                      <RiDeleteBin5Line />
                     </button>
                   </div>
                 </div>
@@ -106,7 +114,9 @@ const ShoppingCart = () => {
                 Items ({cartProducts.length}):{" "}
                 <strong>${calculateTotal().toFixed(2)}</strong>
               </p>
-              <button className="checkout-button">Proceed to Checkout</button>
+              <button className="checkout-button" onClick={handleCheckout}>
+                Proceed to Checkout
+              </button>
             </div>
           </div>
         )}

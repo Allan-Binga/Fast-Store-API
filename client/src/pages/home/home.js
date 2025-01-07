@@ -9,7 +9,7 @@ const Home = () => {
   return (
     <div className="page-container">
       <Navbar />
-      <Bar/>
+      <Bar />
       <div className="content-wrapper">
         <div className="home-container">
           <h1 className="home-title">Welcome to Fast StoreAPI</h1>
@@ -26,6 +26,7 @@ const Home = () => {
           </p>
         </div>
       </div>
+
       <Footer />
     </div>
   );

@@ -9,15 +9,19 @@ import Bar from "../../components/categoriesBar/bar.jsx";
 
 const Products = () => {
   const [products, setProducts] = useState([]);
+  const [isLoading, setIsLoading] = useState(true); // Loading state
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
+        setIsLoading(true); // Show the spinner
         const productsData = await getProducts();
         setProducts(productsData);
       } catch (error) {
         toast.error(`Error fetching products: ${error.message}`);
+      } finally {
+        setIsLoading(false); // Hide the spinner
       }
     };
 
@@ -35,7 +39,11 @@ const Products = () => {
       <div className="content-wrapper">
         <div className="content">
           <h1 className="products-title">Products</h1>
-          {products.length > 0 ? (
+          {isLoading ? ( // Show spinner if loading
+            <div className="spinner-container">
+              <div className="spinner"></div>
+            </div>
+          ) : products.length > 0 ? (
             <div className="products-grid">
               {products.map((product) => (
                 <div
