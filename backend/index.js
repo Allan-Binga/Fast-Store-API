@@ -1,6 +1,5 @@
 import express from "express";
 import productRoute from "./routes/product.js";
-import cartRoute from "./routes/cart.js";
 import usersRoute from "./routes/users.js";
 import authRoute from "./routes/auth.js"
 import checkoutRoute from "./routes/checkout.js"
@@ -33,7 +32,6 @@ app.use("/api/auth", authRoute)
 app.use("/api/products", productRoute);
 
 //Cart Route
-app.use("/api/carts", cartRoute);
 
 //Users Route
 app.use("/api/users", usersRoute);
