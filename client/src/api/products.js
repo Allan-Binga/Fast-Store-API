@@ -15,7 +15,7 @@ export const getProducts = async () => {
 //ADD NEW PRODUCT
 export const addProduct = async (productsData) => {
   try {
-    const response = await axios.post(`${API_URL}/`, productsData);
+    await axios.post(`${API_URL}/`, productsData);
   } catch (error) {
     throw (
       error.response?.data?.message || "An error occured while adding product."

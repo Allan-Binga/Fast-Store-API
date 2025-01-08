@@ -92,37 +92,42 @@ export const deleteProduct = async (req, res) => {
   }
 };
 
-//Add a product to cart
+// Add a product to the cart
 export const addProductToCart = async (req, res) => {
   try {
-      const { userId, productId, quantity, price } = req.body;
+    const {userId} = req.params
+    const { name, category, quantity, price, description } = req.body;
 
-      if (!userId || !productId || !quantity || !price) {
-          return res.status(400).json({ error: "All fields are required." });
-      }
+    // Validate required fields
+    if (!name || !category || !quantity || !price || !description) {
+      return res.status(400).json({ error: "All fields (name, category, quantity, price, description) are required." });
+    }
 
-      // Find the user's cart or create a new one
-      let cart = await Cart.findOne({ userId });
+    // Find the cart for the current user (assumed based on the URL or other middleware)
+    let cart = await Cart.findOne(); // Adjust if you have a specific method to identify the user's cart
 
-      if (!cart) {
-          cart = new Cart({ userId, products: [] });
-      }
+    if (!cart) {
+      // Create a new cart if none exists
+      cart = new Cart({ products: [] });
+    }
 
-      // Add product to the cart
-      const productIndex = cart.products.findIndex(p => p.productId.toString() === productId);
+    // Check if the product is already in the cart
+    const productIndex = cart.products.findIndex(p => p.name === name && p.category === category);
 
-      if (productIndex > -1) {
-          // If product already exists in cart, update quantity
-          cart.products[productIndex].quantity += quantity;
-      } else {
-          // Add new product to the cart
-          cart.products.push({ productId, quantity, price });
-      }
+    if (productIndex > -1) {
+      // If the product exists, update the quantity
+      cart.products[productIndex].quantity += quantity;
+    } else {
+      // Add a new product to the cart
+      cart.products.push({ name, category, quantity, price, description });
+    }
 
-      await cart.save();
-      res.status(200).json({ message: "Product added to cart.", cart });
+    // Save the updated cart
+    await cart.save();
+
+    res.status(200).json({ message: "Product added to cart successfully.", cart });
   } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: "An error occurred while adding the product to the cart." });
+    console.error(error);
+    res.status(500).json({ error: "An error occurred while adding the product to the cart." });
   }
 };

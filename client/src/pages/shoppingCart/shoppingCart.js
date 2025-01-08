@@ -3,8 +3,8 @@ import "./shoppingcart.css";
 import Navbar from "../../components/navbar/Navbar";
 import Footer from "../../components/footer/Footer";
 import Bar from "../../components/categoriesBar/bar";
-import { useNavigate } from "react-router-dom";
-import { RiDeleteBin5Line } from "react-icons/ri";
+import { loadStripe } from "@stripe/stripe-js";
+import { MdDelete } from "react-icons/md";
 
 // Helper function to truncate text
 const truncateText = (text, maxLength) => {
@@ -13,7 +13,6 @@ const truncateText = (text, maxLength) => {
 
 const ShoppingCart = () => {
   const [cartProducts, setCartProducts] = useState([]);
-  const navigate = useNavigate();
 
   useEffect(() => {
     const savedCart = JSON.parse(localStorage.getItem("cart")) || [];
@@ -47,8 +46,45 @@ const ShoppingCart = () => {
     );
   };
 
-  const handleCheckout = () => {
-    navigate("/faststore/checkout");
+  const handleCheckout = async () => {
+    const stripe = await loadStripe(
+      process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY
+    );
+
+    // Send cart data to your backend for session creation
+    const response = await fetch(
+      "http://localhost:5500/api/checkout/create-checkout-session",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          items: cartProducts.map((product) => ({
+            title: product.title,
+            description: product.description,
+            price: product.price,
+            quantity: product.quantity,
+            image: product.image,
+          })),
+        }),
+      }
+    );
+
+    const session = await response.json();
+
+    // Redirect to Stripe Checkout
+    const { error } = await stripe.redirectToCheckout({
+      sessionId: session.id,
+    });
+
+    if (error) {
+      console.error("Error redirecting to checkout:", error);
+    } else {
+      // Clear the cart after successful checkout
+      setCartProducts([]);
+      localStorage.removeItem("cart");
+    }
   };
 
   return (
@@ -103,7 +139,7 @@ const ShoppingCart = () => {
                       className="remove-button"
                       onClick={() => removeProduct(item._id)}
                     >
-                      <RiDeleteBin5Line />
+                      <MdDelete />
                     </button>
                   </div>
                 </div>

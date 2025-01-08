@@ -16,6 +16,7 @@ import SingleUser from "./pages/singleUser/singleUser";
 import UpdateUser from "./pages/updateUser/updateUser";
 import ShoppingCart from "./pages/shoppingCart/shoppingCart";
 import Checkout from "./pages/checkout/checkout";
+import Success from "./pages/success/success";
 
 const App = () => {
   return (
@@ -39,6 +40,7 @@ const App = () => {
         <Route path="/faststore/users/:id" element={<SingleUser />} />
         <Route path="/faststore/users/update/:id" element={<UpdateUser />} />
         <Route path="/faststore/checkout" element={<Checkout />} />
+        <Route path="/success" element={<Success />} />
       </Routes>
     </Router>
   );

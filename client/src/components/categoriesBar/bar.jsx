@@ -16,6 +16,7 @@ const Bar = () => {
     "Sports",
     "Outdoor",
     "Home",
+    "Cologne"
   ];
   return (
     <div className="categories-bar">

@@ -6,13 +6,43 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 export const createCheckoutSession = async (req, res) => {
   try {
-    const session = stripe.checkout.sessions.create({
-      line_items: [{ price: req.body.price, quantity: req.body.quantity || 1 }],
+    const { items } = req.body; // Expecting an array of items (from frontend)
+
+    // Create line items dynamically
+    const lineItems = await Promise.all(
+      items.map(async (item) => {
+        // Dynamically create a product for each item
+        const stripeProduct = await stripe.products.create({
+          name: item.title, // Use 'title' from the frontend
+          description: item.description, // Use 'description' from the frontend
+          images: item.image ? [item.image] : [], // Add 'image' from the frontend
+        });
+
+        // Create a price object for each product
+        const priceObject = await stripe.prices.create({
+          unit_amount: item.price * 100, // Convert to cents
+          currency: "usd", // Replace with your desired currency
+          product: stripeProduct.id,
+        });
+
+        // Return the line item for this product
+        return {
+          price: priceObject.id,
+          quantity: item.quantity || 1,
+        };
+      })
+    );
+
+    // Create the checkout session
+    const session = await stripe.checkout.sessions.create({
+      line_items: lineItems,
       mode: "payment",
       success_url: `${process.env.CLIENT_URL}/success`,
-      cancel_url: `${process.env.CLIENT_URL}/cancel`,
+      cancel_url: `${process.env.CLIENT_URL}/faststore/cart`,
     });
-    res.status(200).json({ url: session.url });
+
+    // Send the session URL and session ID to the frontend
+    res.status(200).json({ id: session.id, url: session.url });
   } catch (error) {
     console.error("Error creating checkout session:", error.message || error);
     res
