@@ -1,4 +1,4 @@
-const User = require("../models/users.js");
+const User = require("../models/users");
 const OAuthUser = require("../models/oauth.js");
 const bcrypt = require("bcrypt");
 const passport = require("passport");
