@@ -1,10 +1,10 @@
-import dotenv from "dotenv";
-import Stripe from "stripe";
+const dotenv = require("dotenv");
+const Stripe = require("stripe");
 
 dotenv.config();
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-export const createCheckoutSession = async (req, res) => {
+const createCheckoutSession = async (req, res) => {
   try {
     const { items } = req.body; // Expecting an array of items (from frontend)
 
@@ -50,3 +50,5 @@ export const createCheckoutSession = async (req, res) => {
       .json({ error: error.message || "Failed to create checkout session." });
   }
 };
+
+module.exports = {createCheckoutSession}

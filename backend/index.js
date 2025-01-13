@@ -1,13 +1,13 @@
-import express from "express";
-import productRoute from "./routes/product.js";
-import usersRoute from "./routes/users.js";
-import authRoute from "./routes/auth.js";
-import checkoutRoute from "./routes/checkout.js";
-import cartRoute from "./routes/cart.js";
-import mongoose from "mongoose";
-import dotenv from "dotenv";
-import cors from "cors";
-import cookieParser from "cookie-parser";
+const express = require("express");
+const productRoute = require("./routes/product.js");
+const usersRoute = require("./routes/users.js");
+const authRoute = require("./routes/auth.js");
+const checkoutRoute = require("./routes/checkout.js");
+const cartRoute = require("./routes/cart.js");
+const mongoose = require("mongoose");
+const dotenv = require("dotenv");
+const cors = require("cors");
+const cookieParser = require("cookie-parser");
 
 dotenv.config();
 const app = express();
@@ -19,17 +19,17 @@ app.use(cookieParser());
 //CORS IMPLEMENTATION
 app.use(
   cors({
-    origin: "http://localhost:3000", //Frontend Port
+    origin: "https://e401-102-0-13-198.ngrok-free.app", //Frontend Port
     credentials: true,
   })
 );
 
-main().catch((err) => console.log(err));
-//DB CONNECTION
 async function main() {
   await mongoose.connect(process.env.MONGO_URI);
   console.log("Database connected successfully.");
 }
+
+main().catch((err) => console.log(err));
 
 //Auth Route
 app.use("/api/auth", authRoute);

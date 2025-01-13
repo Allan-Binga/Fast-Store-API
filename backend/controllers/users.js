@@ -1,7 +1,7 @@
-import User from "../models/users.js";
+const User = "../models/users.js"
 
 //GET ALL USERS
-export const getUsers = async (req, res) => {
+const getUsers = async (req, res) => {
   try {
     const users = await User.find();
     if (!users || users.length === 0) {
@@ -14,7 +14,7 @@ export const getUsers = async (req, res) => {
 };
 
 //GET SINGLE USER
-export const getSingleUser = async (req, res) => {
+const getSingleUser = async (req, res) => {
   try {
     const userId = req.params.id;
     const user = await User.findById(userId);
@@ -29,7 +29,7 @@ export const getSingleUser = async (req, res) => {
 };
 
 //UPDATE USER
-export const updatedUser = async (req, res) => {
+const updatedUser = async (req, res) => {
   if (req.body.userId === req.params.id) {
     if (req.body.password) {
       const salt = await bcrypt.genSalt(10);
@@ -54,7 +54,7 @@ export const updatedUser = async (req, res) => {
 
 //DELETE USER
 
-export const deleteUser = async (req, res) => {
+const deleteUser = async (req, res) => {
   if (req.body.userId === req.params.id) {
     try {
       const user = await User.findById(req.params.id);
@@ -71,3 +71,5 @@ export const deleteUser = async (req, res) => {
     res.status(401).json("You can only delete your account.");
   }
 };
+
+module.exports = {getUsers, getSingleUser, updatedUser, deleteUser}

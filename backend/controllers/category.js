@@ -1,6 +1,6 @@
-import { Product } from "../models/product.js";
+const Product = require("../models/product")
 
-export const getAllCategories = async (req, res) => {
+const getAllCategories = async (req, res) => {
   try {
     const categories = await Product.distinct("category");
     res.status(200).json(categories);
@@ -9,7 +9,7 @@ export const getAllCategories = async (req, res) => {
   }
 };
 
-export const getSpecificCategory = async (req, res) => {
+const getSpecificCategory = async (req, res) => {
   try {
     const category = req.params.category;
 
@@ -26,3 +26,5 @@ export const getSpecificCategory = async (req, res) => {
     res.status(500).json({ error: "An error occurred while fetching products." });
   }
 };
+
+module.exports = {getAllCategories, getSpecificCategory}

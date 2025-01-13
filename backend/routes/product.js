@@ -1,13 +1,18 @@
-import express from "express";
-import {
+const express = require("express");
+const {
   addNewProduct,
   deleteProduct,
   getAllProducts,
   getSingleProduct,
-  updateProduct, getLimitedProducts,
-  addProductToCart
-} from "../controllers/product.js";
-import { getAllCategories, getSpecificCategory } from "../controllers/category.js";
+  updateProduct,
+  getLimitedProducts,
+  addProductToCart,
+} = require("../controllers/product.js");
+
+const {
+  getAllCategories,
+  getSpecificCategory,
+} = require("../controllers/category.js");
 
 const router = express.Router();
 
@@ -22,8 +27,8 @@ router.get("/limit", getLimitedProducts);
 router.get("/", getAllProducts);
 router.get("/:id", getSingleProduct);
 router.post("/", addNewProduct);
-router.post("/add/:id", addProductToCart)
+router.post("/add/:id", addProductToCart);
 router.put("/:id", updateProduct);
 router.delete("/:id", deleteProduct);
 
-export default router;
+module.exports = router;

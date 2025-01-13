@@ -1,14 +1,13 @@
-import User from "../models/users.js";
-import OAuthUser from "../models/oauth.js";
-import bcrypt from "bcrypt";
-import passport from "passport";
-import GoogleStrategy from "passport-google-oauth20";
-import dotenv from "dotenv";
-
+const User = require("../models/users.js");
+const OAuthUser = require("../models/oauth.js");
+const bcrypt = require("bcrypt");
+const passport = require("passport");
+const GoogleStrategy = require("passport-google-oauth20").Strategy;
+const dotenv = require("dotenv");
 dotenv.config();
 
 //REGISTER NEW USER
-export const createUser = async (req, res) => {
+const createUser = async (req, res) => {
   try {
     const existingUser = await User.findOne({
       $or: [{ username: req.body.username }, { email: req.body.email }],
@@ -58,7 +57,7 @@ passport.use(
 );
 
 //LOGIN REGISTERED USER
-export const loginUser = async (req, res) => {
+const loginUser = async (req, res) => {
   try {
     const user = await User.findOne({ username: req.body.username });
     if (!user) {
@@ -75,7 +74,7 @@ export const loginUser = async (req, res) => {
       httpOnly: true,
       maxAge: 1000 * 60 * 60 * 24,
       sameSite: "None",
-      secure: true
+      secure: true,
     });
     res.status(200).json("Login successful.");
   } catch (error) {
@@ -84,7 +83,7 @@ export const loginUser = async (req, res) => {
 };
 
 //LOGOUT USER
-export const logoutUser = async (req, res) => {
+const logoutUser = async (req, res) => {
   try {
     //CHECK IF COOKIE SESSION EXISTS
     if (!req.cookies || !req.cookies.storeSession) {
@@ -97,3 +96,5 @@ export const logoutUser = async (req, res) => {
     res.status(500).json({ error: "Error logging out." });
   }
 };
+
+module.exports = { createUser, loginUser, logoutUser };

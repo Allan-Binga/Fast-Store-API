@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+const mongoose = require("mongoose");
 
 const CheckoutSchema = new mongoose.Schema(
   {
@@ -17,18 +17,18 @@ const CheckoutSchema = new mongoose.Schema(
     },
     currency: {
       type: String, // Currency code
-      default: 'usd',
+      default: "usd",
     },
     paymentStatus: {
       type: String, // Stripe status (e.g., 'succeeded', 'canceled')
-      enum: ['succeeded', 'processing', 'requires_payment_method', 'canceled'],
-      default: 'processing',
+      enum: ["succeeded", "processing", "requires_payment_method", "canceled"],
+      default: "processing",
     },
 
     // Optional: Links to your app's user if needed
     userId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
+      ref: "User",
     },
 
     // Timestamps
@@ -40,4 +40,5 @@ const CheckoutSchema = new mongoose.Schema(
   { timestamps: true } // Automatically manages createdAt and updatedAt
 );
 
-export const Checkout = mongoose.model('Checkout', CheckoutSchema);
+const Checkout = mongoose.model("Checkout", CheckoutSchema);
+module.exports = Checkout;

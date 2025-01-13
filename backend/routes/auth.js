@@ -1,14 +1,13 @@
-import express from "express";
-import { createUser, loginUser, logoutUser } from "../controllers/auth.js";
-import passport from "passport";
+const express = require("express");
+const passport = require("passport");
+const { loginUser, logoutUser } = require("../controllers/auth");
 
 const router = express.Router();
 
-router.post("/register", createUser);
 router.post("/login", loginUser);
 router.post("/logout", logoutUser);
 
-//GOOGLE OAUTH ROUTES
+// GOOGLE OAUTH ROUTES
 // Route to start Google OAuth login
 router.get(
   "/google",
@@ -27,4 +26,4 @@ router.get(
   }
 );
 
-export default router;
+module.exports = router;

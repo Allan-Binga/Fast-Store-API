@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+const mongoose = require("mongoose");
 
 const oauthSchema = new mongoose.Schema({
   googleId: { type: String, required: true, unique: true },
@@ -6,12 +6,12 @@ const oauthSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  email: { 
-    type: String, 
+  email: {
+    type: String,
     required: true,
-    unique: true 
+    unique: true,
   },
 });
 
 const OAuthUser = mongoose.model("OauthUser", oauthSchema);
-export default OAuthUser;
+module.exports = OAuthUser;

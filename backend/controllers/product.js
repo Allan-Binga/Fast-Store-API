@@ -1,8 +1,8 @@
-import { Product } from "../models/product.js";
-import {Cart} from "../models/cart.js"
+const Product = require("../models/product.js")
+const Cart = require("../models/cart")
 
 // Getting all products
-export const getAllProducts = async (req, res) => {
+const getAllProducts = async (req, res) => {
   try {
     const products = await Product.find();
     res.status(200).json(products);
@@ -12,7 +12,7 @@ export const getAllProducts = async (req, res) => {
 };
 
 // Getting limited products
-export const getLimitedProducts = async (req, res) => {
+const getLimitedProducts = async (req, res) => {
   try {
     const limit = parseInt(req.query.limit) || 10; // Default to 10 if limit is not provided
     const products = await Product.find().limit(limit);
@@ -23,7 +23,7 @@ export const getLimitedProducts = async (req, res) => {
 };
 
 //Adding a new product.
-export const addNewProduct = async (req, res) => {
+ const addNewProduct = async (req, res) => {
   try {
     const { title, price, category, description, image, rating } = req.body;
 
@@ -42,7 +42,7 @@ export const addNewProduct = async (req, res) => {
 };
 
 // Getting a single product
-export const getSingleProduct = async (req, res) => {
+const getSingleProduct = async (req, res) => {
   try {
     const productId = req.params.id;
     const product = await Product.findById(productId);
@@ -56,7 +56,7 @@ export const getSingleProduct = async (req, res) => {
 };
 
 //Update a product.
-export const updateProduct = async (req, res) => {
+const updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
     const { title, price, description, image, category } = req.body;
@@ -82,7 +82,7 @@ export const updateProduct = async (req, res) => {
 };
 
 //Delete a product
-export const deleteProduct = async (req, res) => {
+const deleteProduct = async (req, res) => {
   try {
      const { id } = req.params;
     const product = await Product.findByIdAndDelete(req.params.id);
@@ -93,7 +93,7 @@ export const deleteProduct = async (req, res) => {
 };
 
 // Add a product to the cart
-export const addProductToCart = async (req, res) => {
+const addProductToCart = async (req, res) => {
   try {
     const {userId} = req.params
     const { name, category, quantity, price, description } = req.body;
@@ -131,3 +131,5 @@ export const addProductToCart = async (req, res) => {
     res.status(500).json({ error: "An error occurred while adding the product to the cart." });
   }
 };
+
+module.exports = {addProductToCart, deleteProduct, updateProduct, getSingleProduct, addNewProduct, getLimitedProducts, getAllProducts}

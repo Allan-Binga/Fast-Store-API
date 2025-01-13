@@ -1,7 +1,6 @@
-import { Cart } from "../models/cart.js";
-
+const Cart = require("../models/cart");
 //GET CART PRODUCTS FOR ALL USERS
-export const getCart = async (req, res) => {
+const getCart = async (req, res) => {
   try {
     const cartItems = await Cart.find();
     res.status(200).json(cartItems);
@@ -11,8 +10,8 @@ export const getCart = async (req, res) => {
 };
 
 //GET CART PRODUCTS FOR A SINGLE USER
-export const getCartsUser = async (req, res) => {
-    const {id: userId} = req.params
+const getCartsUser = async (req, res) => {
+  const { id: userId } = req.params;
   try {
     const cartItemsUser = await Cart.find({ userId });
     res.status(200).json(cartItemsUser);
@@ -20,3 +19,5 @@ export const getCartsUser = async (req, res) => {
     res.status(500).json("Error fetching products.");
   }
 };
+
+module.exports = { getCart, getCartsUser };
