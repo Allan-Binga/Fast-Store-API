@@ -65,7 +65,7 @@ const loginUser = async (req, res) => {
     }
 
     const validate = await bcrypt.compare(req.body.password, user.password);
-    if (!validate) {
+    if (!validate) {  
       return res.status(400).json("Wrong password.");
     }
 

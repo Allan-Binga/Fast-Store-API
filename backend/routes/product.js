@@ -27,7 +27,7 @@ router.get("/limit", getLimitedProducts);
 router.get("/", getAllProducts);
 router.get("/:id", getSingleProduct);
 router.post("/", addNewProduct);
-router.post("/add/:id", addProductToCart);
+router.post("/add", addProductToCart);
 router.put("/:id", updateProduct);
 router.delete("/:id", deleteProduct);
 

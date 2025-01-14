@@ -95,14 +95,39 @@ const deleteProduct = async (req, res) => {
 // Add a product to the cart
 const addProductToCart = async (req, res) => {
   try {
-    const { userId } = req.params;
-    const { title, category, price, quantity, description, image } = req.body;
+    //EXTRACT
+    const userId = req.cookies.storeSession;
+    //IF THERE'S NO COOKIE RETURN ERROR WITH STATUS 401.
+    if (!userId) {
+      return res.status(401).json({ error: "Please log in first." });
+    }
 
-    // Validate required fields
-    if (!title || !category || !price || !quantity || !description || !image) {
+    const { products } = req.body; // Expect an array of products in the request body
+
+    // Validate the request body
+    if (!Array.isArray(products) || products.length === 0) {
       return res.status(400).json({
-        error: "All fields are required.",
+        error: "Products must be an array with at least one product.",
       });
+    }
+
+    // Validate each product in the array
+    for (const product of products) {
+      const { title, category, price, quantity, description, image } = product;
+      //VALIDATE FIELDS
+      if (
+        !title ||
+        !category ||
+        !price ||
+        !quantity ||
+        !description ||
+        !image
+      ) {
+        return res.status(400).json({
+          error:
+            "Each product must include title, category, price, quantity, description, and image.",
+        });
+      }
     }
 
     // Find the cart for the current user (assumed based on the URL or other middleware)
@@ -113,28 +138,30 @@ const addProductToCart = async (req, res) => {
       cart = new Cart({ userId, products: [] });
     }
 
-    // Check if the product is already in the cart
-    const productIndex = cart.products.findIndex(
-      (p) => p.title === title && p.category === category
-    );
+     // Iterate over the products array and add/update each product in the cart
+     for (const product of products) {
+      const { title, category, price, quantity, description, image } = product;
 
-    if (productIndex > -1) {
-      // If the product exists, update the quantity
-      cart.products[productIndex].quantity += quantity;
-    } else {
-      // Add a new product to the cart
-      cart.products.push({
-        title,
-        category,
-        quantity,
-        price,
-        description,
-        image,
-      });
+      // Check if the product is already in the cart
+      const productIndex = cart.products.findIndex(
+        (p) => p.title === title && p.category === category
+      );
+
+      if (productIndex > -1) {
+        // If the product exists, update the quantity
+        cart.products[productIndex].quantity += quantity;
+      } else {
+        // Add a new product to the cart
+        cart.products.push({
+          title,
+          category,
+          quantity,
+          price,
+          description,
+          image,
+        });
+      }
     }
-
-    // Ensure userId is set
-    cart.userId = userId;
 
     // Save the updated cart
     await cart.save();
