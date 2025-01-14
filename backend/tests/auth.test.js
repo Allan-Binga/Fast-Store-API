@@ -35,7 +35,7 @@ describe("Auth Controller", () => {
     expect(res._getJSONData()).toEqual({ message: "User already exists!" });
   });
 
-  it("should create a new user if user does not exist", async () => {
+  it("should create a new user", async () => {
     User.findOne.mockResolvedValue(false);
     bcrypt.genSalt.mockResolvedValue("salt");
     bcrypt.hash.mockResolvedValue("hashedPassword");

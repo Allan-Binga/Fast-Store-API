@@ -53,22 +53,24 @@ const updatedUser = async (req, res) => {
 };
 
 //DELETE USER
-
 const deleteUser = async (req, res) => {
-  if (req.body.userId === req.params.id) {
-    try {
-      const user = await User.findById(req.params.id);
-      try {
-        await User.findByIdAndDelete(req.params.id);
-        res.status(200).json("User has been deleted");
-      } catch (error) {
-        res.status(500).json(error);
-      }
-    } catch (error) {
-      res.status(404).json("User not found.");
+  const { userId } = req.body;
+  const { id } = req.params;
+
+  if (userId !== id) {
+    return res.status(401).json("You can only delete your account.");
+  }
+
+  try {
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json("User not found.");
     }
-  } else {
-    res.status(401).json("You can only delete your account.");
+
+    await User.findByIdAndDelete(id);
+    res.status(200).json("User has been deleted.");
+  } catch (error) {
+    res.status(500).json("Error occured while deleting user.");
   }
 };
 
