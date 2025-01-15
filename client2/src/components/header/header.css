@@ -1,0 +1,120 @@
+/* General Header Styling */
+.header-container {
+  background-color: #fff;
+  border-bottom: 1px solid #e3e3e3;
+  padding: 10px 20px;
+  font-family: Arial, sans-serif;
+}
+
+.header-link {
+  cursor: pointer;
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Logo Styling */
+.logo {
+  font-size: 24px;
+  font-weight: bold;
+  color: #000;
+}
+
+/* Navigation Links */
+.header-links {
+  display: flex;
+  gap: 30px;
+}
+
+.header-link {
+  font-size: 16px;
+  color: #000;
+  text-decoration: none;
+  position: relative;
+  padding-bottom: 5px;
+}
+
+.header-link.active,
+.header-link:hover {
+  color: #000;
+  font-weight: bold;
+}
+
+.header-link.active::after,
+.header-link:hover::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background-color: #000;
+}
+
+/* Actions: Search, Wishlist, and Cart */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+/* Search Bar */
+.search-bar {
+  display: flex;
+  align-items: center;
+  border: 1px solid #e3e3e3;
+  border-radius: 5px;
+  overflow: hidden;
+  background-color: #f9f9f9;
+  padding-left: 10px;
+}
+
+.search-bar input {
+  border: none;
+  outline: none;
+  padding: 8px;
+  font-size: 14px;
+  background-color: transparent;
+  width: 250px;
+}
+
+.search-button {
+  background-color: transparent;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  color: #1d1c1c;
+}
+
+.search-button:hover {
+  color: #000;
+}
+
+/* Icons */
+.icon {
+  font-size: 20px;
+  cursor: pointer;
+  color: #000;
+  transition: color 0.2s;
+}
+
+.icon:hover {
+  color: #0c0c0c;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .header-content {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .search-bar input {
+    width: 150px;
+  }
+}

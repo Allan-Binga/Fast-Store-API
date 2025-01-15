@@ -1,0 +1,53 @@
+.categories {
+  align-items: flex-start;
+  display: inline-flex;
+  flex-direction: column;
+  gap: 16px;
+  position: relative;
+}
+.categories .categories-section {
+  align-items: flex-start;
+  display: inline-flex;
+  flex: 0 0 auto;
+  gap: 51px;
+  position: relative;
+}
+.categories .text-wrapper {
+  color: var(--text-2);
+  font-family: var(--title-16px-regular-font-family);
+  font-size: var(--title-16px-regular-font-size);
+  font-style: var(--title-16px-regular-font-style);
+  font-weight: var(--title-16px-regular-font-weight);
+  letter-spacing: var(--title-16px-regular-letter-spacing);
+  line-height: var(--title-16px-regular-line-height);
+  margin-top: -1px;
+  position: relative;
+  text-align: center;
+  white-space: nowrap;
+  width: fit-content;
+}
+.categories .drop-down {
+  height: 24px !important;
+  position: relative !important;
+  width: 24px !important;
+}
+.categories .categories-section-2 {
+  align-items: flex-start;
+  display: inline-flex;
+  flex: 0 0 auto;
+  gap: 81px;
+  position: relative;
+}
+.categories .text-wrapper-2 {
+  color: var(--text-2);
+  font-family: var(--title-16px-regular-font-family);
+  font-size: var(--title-16px-regular-font-size);
+  font-style: var(--title-16px-regular-font-style);
+  font-weight: var(--title-16px-regular-font-weight);
+  letter-spacing: var(--title-16px-regular-letter-spacing);
+  line-height: var(--title-16px-regular-line-height);
+  position: relative;
+  text-align: center;
+  white-space: nowrap;
+  width: fit-content;
+}
