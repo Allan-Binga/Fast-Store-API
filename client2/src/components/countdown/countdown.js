@@ -6,21 +6,21 @@ function Countdown() {
       <div className="flex flex-col min-h-[50px]">
         <div className="text-xs font-medium">Days</div>
         <div className="mt-1 text-3xl font-bold tracking-widest leading-none">
-          03
+          03 :
         </div>
       </div>
       <div className="flex self-end mt-7 min-h-[16px]" />
       <div className="flex flex-col h-[50px]">
         <div className="text-xs font-medium">Hours</div>
         <div className="mt-1 text-3xl font-bold tracking-widest leading-none">
-          23
+          23 :
         </div>
       </div>
       <div className="flex self-end mt-7 min-h-[16px]" />
       <div className="flex flex-col min-h-[50px]">
         <div className="text-xs font-medium">Minutes</div>
         <div className="mt-1 text-3xl font-bold tracking-widest leading-none">
-          19
+          19 :
         </div>
       </div>
       <div className="flex self-end mt-7 min-h-[16px]" />

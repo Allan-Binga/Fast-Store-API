@@ -33,11 +33,27 @@ const products = [
     originalPrice: "480",
     rating: "65",
   },
+  {
+    image:
+      "https://cdn.builder.io/api/v1/image/assets/TEMP/d83b5e5b5d2a6a5e9340a92d503c0f5bc6d34ad05dfc687d3b2f10f75786c627?placeholderIfAbsent=true&apiKey=8cd4e88793e947cca676caa403f196cb",
+    name: "Small BookSelf",
+    currentPrice: "360",
+    originalPrice: "480",
+    rating: "65",
+  },
+  {
+    image:
+      "https://cdn.builder.io/api/v1/image/assets/TEMP/b44781562b635c634f0c89175de0b9aee38f59fca8f6567f106597316ccd7878?placeholderIfAbsent=true&apiKey=8cd4e88793e947cca676caa403f196cb",
+    name: "RGB liquid CPU Cooler",
+    currentPrice: "160",
+    originalPrice: "170",
+    rating: "65",
+  }
 ];
 
 const ProductCards = ({ image, name, currentPrice, originalPrice, rating }) => {
   return (
-    <div className="flex flex-col min-w-[240px] w-[270px]">
+    <div className="flex flex-col min-w-[240px] w-[270px] ">
       <img
         loading="lazy"
         src={image}
@@ -68,7 +84,7 @@ const ProductCards = ({ image, name, currentPrice, originalPrice, rating }) => {
 
 const BestSellers = () => {
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col ml-[300px] mt-20">
       <div className="flex flex-wrap gap-10 items-end max-md:max-w-full">
         <div className="flex flex-col min-w-[240px]">
           <div className="flex gap-4 items-center self-start">
@@ -79,11 +95,11 @@ const BestSellers = () => {
               This Month
             </div>
           </div>
-          <div className="mt-5 text-4xl font-semibold tracking-widest leading-none text-black">
+          <div className="mt-5 text-4xl font-semibold  leading-none text-black">
             Best Selling Products
           </div>
         </div>
-        <button className="gap-2.5 self-stretch px-12 py-4 text-base font-medium bg-red-500 rounded text-neutral-50 max-md:px-5">
+        <button className="gap-2.5 px-12 py-4 text-base font-medium bg-red-500 rounded text-neutral-50  ml-[1100px]">
           View All
         </button>
       </div>

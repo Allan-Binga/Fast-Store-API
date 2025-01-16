@@ -1,6 +1,6 @@
 import * as React from "react";
 
-function ProductCard({ discount, name, price, originalPrice, rating, image, stars }) {
+function ProductCard({ discount, name, price, originalPrice, rating, image }) {
   return (
     <div className="flex flex-col min-w-[240px] w-[270px]">
       <div className="flex overflow-hidden gap-1 items-start px-3 pt-3 pb-12 max-w-full rounded bg-neutral-100 w-[270px]">

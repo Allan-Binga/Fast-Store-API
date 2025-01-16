@@ -73,19 +73,18 @@ const products = [
     ratingCount: "95",
     hasAddToCart: true,
   },
-  // ... rest of products data
 ];
 
 const OurProducts = () => {
   return (
-    <div className="flex flex-col items-center">
+    <div className="flex flex-col ml-[300px] mt-20">
       <div className="flex flex-wrap gap-10 items-end max-md:max-w-full">
         <div className="flex flex-col min-w-[240px]">
           <div className="flex gap-4 items-center self-start">
             <div className="flex flex-col self-stretch my-auto w-5">
               <div className="flex shrink-0 h-10 bg-red-500 rounded" />
             </div>
-            <div className="self-stretch my-auto text-base font-semibold leading-none text-red-500">
+            <div className=" my-auto text-base font-semibold leading-none text-red-500">
               Our Products
             </div>
           </div>
