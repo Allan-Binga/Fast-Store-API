@@ -8,7 +8,7 @@ const TopHeader = () => {
       <div className="top-header-container">
         <div className="announcement-bar">
           <p className="announcement-text">
-            Summer Sale For All Swim Suits And Free Express Delivery - OFF 50%!
+            Exclusive Summer Sale for Swim Suits. Get up to 50% off!
           </p>
 
           <div className="shop-now-button">Shop Now</div>

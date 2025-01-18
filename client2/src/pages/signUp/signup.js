@@ -19,7 +19,7 @@ const Signup = () => {
             />
           </div>
 
-          {/* Right Section: Form */}
+          {/* Right Section: Signup Form */}
           <div className="flex-1 flex flex-col p-8 md:p-12">
             <h1 className="text-3xl font-bold text-gray-800">
               Create an account
@@ -27,27 +27,65 @@ const Signup = () => {
             <p className="text-gray-600 mt-2">Enter your details below</p>
 
             <form className="flex flex-col gap-6 mt-8">
-              <InputField label="Name" id="name" />
-              <InputField
-                label="Email or Phone Number"
-                id="email"
-                type="email"
-              />
-              <InputField label="Password" id="password" type="password" />
+              {/* Name Input */}
+              <div>
+                <label
+                  htmlFor="name"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Name
+                </label>
+                <input
+                  id="name"
+                  type="text"
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter your name"
+                />
+              </div>
 
+              {/* Email or Phone Number Input */}
+              <div>
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Email or Phone Number
+                </label>
+                <input
+                  id="email"
+                  type="email"
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter your email or phone number"
+                />
+              </div>
+
+              {/* Password Input */}
+              <div>
+                <label
+                  htmlFor="password"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Password
+                </label>
+                <input
+                  id="password"
+                  type="password"
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter your password"
+                />
+              </div>
+
+              {/* Signup Button */}
               <button
                 type="submit"
-                className="w-full bg-red-500 text-white font-semibold py-3 rounded-lg hover:bg-red-600 transition duration-200"
+                className="w-full bg-blue-500 text-white font-semibold py-3 rounded-lg hover:bg-blue-700 transition duration-200"
               >
                 Create Account
               </button>
             </form>
 
+            {/* Already Have an Account */}
             <div className="flex flex-col items-center mt-6">
-              <SocialButton
-                icon="https://cdn.builder.io/api/v1/image/assets/TEMP/070310f8e34f3c88f8561a7fb1303e166e6b39fba813cb5a880b02578cf1c002?placeholderIfAbsent=true&apiKey=8cd4e88793e947cca676caa403f196cb"
-                text="Sign up with Google"
-              />
               <p className="mt-4 text-gray-600">
                 Already have an account?{" "}
                 <a href="/login" className="text-blue-500 hover:underline">
@@ -64,25 +102,3 @@ const Signup = () => {
 };
 
 export default Signup;
-
-// InputField Component
-const InputField = ({ label, type = "text", id }) => (
-  <div className="flex flex-col">
-    <label htmlFor={id} className="text-gray-600 font-medium">
-      {label}
-    </label>
-    <input
-      type={type}
-      id={id}
-      className="mt-2 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-    />
-  </div>
-);
-
-// SocialButton Component
-const SocialButton = ({ icon, text }) => (
-  <button className="flex items-center justify-center w-full py-3 mt-4 border border-gray-300 rounded-lg hover:bg-gray-100 transition duration-200">
-    <img src={icon} alt="Google Icon" className="w-5 h-5 mr-2" />
-    <span className="text-gray-700">{text}</span>
-  </button>
-);

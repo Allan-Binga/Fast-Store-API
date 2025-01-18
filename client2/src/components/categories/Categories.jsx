@@ -2,57 +2,98 @@ import React from "react";
 import { CiCamera, CiHeadphones } from "react-icons/ci";
 import { GiSmartphone } from "react-icons/gi";
 import { HiOutlineComputerDesktop } from "react-icons/hi2";
-import { GiLargeDress } from "react-icons/gi";
+import { GiLargeDress, GiBookshelf, GiConverseShoe } from "react-icons/gi";
+import { FaArrowRight, FaArrowLeft } from "react-icons/fa";
+import { PiShirtFolded } from "react-icons/pi";
+import { IoFastFoodOutline, IoGameControllerOutline } from "react-icons/io5";
+import { GiNecklaceDisplay } from "react-icons/gi";
+
+const CATEGORIES_ALLOWED = 4; // Number of categories visible at a time
+const categories = [
+  { id: 1, icon: <HiOutlineComputerDesktop size={64} />, name: "Computers" },
+  { id: 2, icon: <GiSmartphone size={64} />, name: "Smartphones" },
+  { id: 3, icon: <CiHeadphones size={64} />, name: "Headphones" },
+  { id: 4, icon: <CiCamera size={64} />, name: "Cameras" },
+  { id: 5, icon: <GiLargeDress size={64} />, name: "Women's Fashion" },
+  { id: 6, icon: <PiShirtFolded size={64} />, name: "Men's Fashion" },
+  { id: 7, icon: <IoFastFoodOutline size={64} />, name: "Food" },
+  { id: 8, icon: <GiNecklaceDisplay size={64} />, name: "Jewelery" },
+  {
+    id: 9,
+    icon: <IoGameControllerOutline size={64} />,
+    name: "Gaming Consoles",
+  },
+  { id: 10, icon: <GiBookshelf size={64} />, name: "Books" },
+  { id: 11, icon: <GiConverseShoe size={64} />, name: "Footwear" },
+];
 
 const Categories = () => {
+  const [startIndex, setStartIndex] = React.useState(0);
+
+  // Calculate visible categories
+  const visibleCategories = categories.slice(
+    startIndex,
+    startIndex + CATEGORIES_ALLOWED
+  );
+
+  // Handle the "Next" button click
+  const handleNext = () => {
+    if (startIndex + CATEGORIES_ALLOWED < categories.length) {
+      setStartIndex((prevIndex) => prevIndex + CATEGORIES_ALLOWED);
+    }
+  };
+
+  // Handle the "Previous" button click
+  const handlePrev = () => {
+    if (startIndex > 0) {
+      setStartIndex((prevIndex) => prevIndex - CATEGORIES_ALLOWED);
+    }
+  };
+
   return (
-    <div className="inline-flex flex-col items-start gap-4 relative ml-[300px] mt-[35px]">
-      <div className="inline-flex items-center gap-4 relative flex-[0_0_auto]">
-        <div className="flex flex-col self-stretch my-auto w-5">
-          <div className="flex shrink-0 h-10 bg-red-500 " />
+    <div className="flex flex-col items-start gap-4 relative ml-[300px] mt-[35px]">
+      <div className="flex gap-4">
+        <div className="w-5">
+          <div className="h-10 bg-red-500" />
         </div>
-        <div className="relative w-fit font-semibold text-secondary-2 text-[16px] tracking-[0.02em] leading-[1.5] whitespace-nowrap">
+        <div className="font-semibold text-secondary-2 text-[16px] tracking-[0.02em] leading-[1.5]">
           Categories
         </div>
       </div>
-      <div className="relative w-full mb-[-8.00px] font-semibold text-text-2 text-[36px] tracking-[0.02em] leading-[1.2] whitespace-nowrap flex justify-between items-center">
-        <div>Browse by category</div>
-      </div>
-      <div className="mt-4">
-        <div className="font-semibold text-black text-[18px]">
-          <div className="grid grid-cols-4 gap-4">
-            <div
-              className="w-[400px] h-[200px] bg-white text-black text-center flex items-center justify-center border border-gray-500 hover:bg-red-500 hover:text-white transition-all duration-300 cursor-pointer
-"
-            >
-              <HiOutlineComputerDesktop className="text-black w-[40%] h-[40%]" />
-            </div>
-            <div
-              className="w-[400px] h-[200px] bg-white text-black text-center flex items-center justify-center border border-gray-500 hover:bg-red-500 hover:text-white transition-all duration-300 cursor-pointer
-"
-            >
-              <GiSmartphone className="text-black w-[40%] h-[40%]" />
-            </div>
-            <div
-              className="w-[400px] h-[200px] bg-white text-black text-center flex items-center justify-center border border-gray-500 hover:bg-red-500 hover:text-white transition-all duration-300 cursor-pointer
-"
-            >
-              <CiHeadphones className="text-black w-[40%] h-[40%]" />
-            </div>
-            <div
-              className="w-[400px] h-[200px] bg-white text-black text-center flex items-center justify-center border border-gray-500 hover:bg-red-500 hover:text-white transition-all duration-300 cursor-pointer
-"
-            >
-              <CiCamera className="text-black w-[40%] h-[40%]" />
-            </div>
-            <div
-              className="w-[400px] h-[200px] bg-white text-black text-center flex items-center justify-center border border-gray-500 hover:bg-red-500 hover:text-white transition-all duration-300 cursor-pointer
-"
-            >
-              <GiLargeDress className="text-black w-[40%] h-[40%]" />
-            </div>
-          </div>
+      <div className="flex justify-between items-center w-full">
+        <div className="text-text-2 font-semibold text-[36px] tracking-[0.02em] leading-[1.2]">
+          Browse by category
         </div>
+        <div className="flex items-center gap-4 mr-[320px]">
+          <FaArrowLeft
+            className={`w-8 h-8 text-black cursor-pointer ${
+              startIndex === 0 ? "opacity-50 cursor-not-allowed" : ""
+            }`}
+            onClick={handlePrev}
+          />
+          <FaArrowRight
+            className={`w-8 h-8 text-black cursor-pointer ${
+              startIndex + CATEGORIES_ALLOWED >= categories.length
+                ? "opacity-50 cursor-not-allowed"
+                : ""
+            }`}
+            onClick={handleNext}
+          />
+        </div>
+      </div>
+
+      <div
+        className="flex gap-4 transition-transform duration-500 ease-in-out"
+      >
+        {visibleCategories.map((category) => (
+          <div
+            key={category.id}
+            className="w-[400px] h-[300px] bg-white text-black flex flex-col items-center justify-center border border-gray-500 hover:bg-red-500 hover:text-white transition-all duration-300 cursor-pointer"
+          >
+            {category.icon}
+            <p className="mt-2 font-medium">{category.name}</p>
+          </div>
+        ))}
       </div>
     </div>
   );

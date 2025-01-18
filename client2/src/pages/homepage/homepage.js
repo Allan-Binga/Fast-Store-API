@@ -8,6 +8,7 @@ import ViewAllProducts from "../../components/viewAllProducts/viewAll";
 import CategorySection from "../../components/categories/Categories";
 import BestSellers from "../../components/bestSelling/BestSelling";
 import OurProducts from "../../components/ourProducts/OurProducts";
+import Deal from "../../components/superDeal/deal";
 
 const Homepage = () => {
   return (
@@ -19,6 +20,7 @@ const Homepage = () => {
       <ViewAllProducts />
       <CategorySection />
       <BestSellers />
+      <Deal />
       <OurProducts />
       <Footer />
     </div>
