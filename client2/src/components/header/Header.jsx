@@ -54,9 +54,18 @@ const Header = () => {
               <CiSearch />
             </button>
           </div>
-          <CiHeart className="text-2xl cursor-pointer text-black transition-colors hover:text-gray-800" />
-          <PiShoppingCartThin className="text-2xl cursor-pointer text-black transition-colors hover:text-gray-800" />
-          <VscAccount className="text-2xl cursor-pointer text-black transition-colors hover:text-gray-800" />
+          <CiHeart
+            className="text-2xl cursor-pointer text-black transition-colors hover:text-gray-800"
+            onClick={() => navigate("/wishlist")}
+          />
+          <PiShoppingCartThin
+            className="text-2xl cursor-pointer text-black transition-colors hover:text-gray-800"
+            onClick={() => navigate("/cart")}
+          />
+          <VscAccount
+            className="text-2xl cursor-pointer text-black transition-colors hover:text-gray-800"
+            onClick={() => navigate("/account")}
+          />
         </div>
       </div>
     </header>
