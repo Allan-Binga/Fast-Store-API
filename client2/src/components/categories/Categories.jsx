@@ -66,13 +66,13 @@ const Categories = () => {
         </div>
         <div className="flex items-center gap-4 mr-[320px]">
           <FaArrowLeft
-            className={`w-8 h-8 text-black cursor-pointer ${
+            className={`w-9 h-9 p-2 bg-gray-200 text-black rounded-full cursor-pointer ${
               startIndex === 0 ? "opacity-50 cursor-not-allowed" : ""
             }`}
             onClick={handlePrev}
           />
           <FaArrowRight
-            className={`w-8 h-8 text-black cursor-pointer ${
+            className={`w-9 h-9 p-2 bg-gray-200 text-black rounded-full cursor-pointer  ${
               startIndex + CATEGORIES_ALLOWED >= categories.length
                 ? "opacity-50 cursor-not-allowed"
                 : ""
@@ -82,9 +82,7 @@ const Categories = () => {
         </div>
       </div>
 
-      <div
-        className="flex gap-4 transition-transform duration-500 ease-in-out"
-      >
+      <div className="flex gap-4 transition-transform duration-500 ease-in-out">
         {visibleCategories.map((category) => (
           <div
             key={category.id}

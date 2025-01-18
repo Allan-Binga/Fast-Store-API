@@ -1,6 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
+import { FaArrowRight, FaArrowLeft } from "react-icons/fa";
 import { CiHeart, CiShoppingCart } from "react-icons/ci";
 import { useNavigate } from "react-router-dom";
+
+const PRODUCTS_ALLOWED = 4;
 
 const products = [
   {
@@ -62,7 +65,25 @@ const products = [
 ];
 
 const BestSellers = () => {
-  const navigate = useNavigate();
+  const navigate = useNavigate(); // Initialize useNavigate
+  const [startIndex, setStartIndex] = useState(0);
+
+  const visibleProducts = products.slice(
+    startIndex,
+    startIndex + PRODUCTS_ALLOWED
+  );
+
+  const handleNext = () => {
+    if (startIndex + PRODUCTS_ALLOWED < products.length) {
+      setStartIndex((prevIndex) => prevIndex + PRODUCTS_ALLOWED);
+    }
+  };
+
+  const handlePrev = () => {
+    if (startIndex > 0) {
+      setStartIndex((prevIndex) => prevIndex - PRODUCTS_ALLOWED);
+    }
+  };
 
   return (
     <div className="flex flex-col items-start gap-4 relative ml-[300px] mt-[35px]">
@@ -72,19 +93,35 @@ const BestSellers = () => {
           <div className="h-10 bg-red-500" />
         </div>
         <div className="font-semibold text-secondary-2 text-[16px] tracking-[0.02em] leading-[1.5]">
-          Our Products
+          This Month
         </div>
       </div>
 
       <div className="flex justify-between items-center w-full">
         <div className="text-text-2 font-semibold text-[36px] tracking-[0.02em] leading-[1.2]">
-          Products
+          Best Selling Products
+        </div>
+        <div className="flex items-center gap-4 mr-[320px]">
+          <FaArrowLeft
+            className={`w-9 h-9 p-2 bg-gray-200 text-black rounded-full cursor-pointer ${
+              startIndex === 0 ? "opacity-50 cursor-not-allowed" : ""
+            }`}
+            onClick={handlePrev}
+          />
+          <FaArrowRight
+            className={`w-9 h-9 p-2 bg-gray-200 text-black rounded-full cursor-pointer ${
+              startIndex + PRODUCTS_ALLOWED >= products.length
+                ? "opacity-50 cursor-not-allowed"
+                : ""
+            }`}
+            onClick={handleNext}
+          />
         </div>
       </div>
 
       {/* Product Cards */}
       <div className="grid grid-cols-4 gap-6 mt-6 mr-5">
-        {products.slice(0, 8).map((product) => (
+        {visibleProducts.map((product) => (
           <div
             key={product.id}
             className="relative flex flex-col bg-white rounded-lg shadow-md hover:shadow-lg transition-all overflow-hidden group"

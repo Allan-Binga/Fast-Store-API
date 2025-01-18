@@ -6,7 +6,7 @@ import FlashSales from "../../components/flashSales/FlashSales";
 import TopHeader from "../../components/topHeader/TopHeader";
 import ViewAllProducts from "../../components/viewAllProducts/viewAll";
 import CategorySection from "../../components/categories/Categories";
-import BestSellers from "../../components/bestSelling/BestSelling";
+import BestSellers from "../../components/bestSelling/Bestsellers";
 import OurProducts from "../../components/ourProducts/OurProducts";
 import Deal from "../../components/superDeal/deal";
 
@@ -17,11 +17,11 @@ const Homepage = () => {
       <Header />
       <SideBarAndPromo />
       <FlashSales />
-      <ViewAllProducts />
       <CategorySection />
       <BestSellers />
       <Deal />
       <OurProducts />
+      <ViewAllProducts />
       <Footer />
     </div>
   );
