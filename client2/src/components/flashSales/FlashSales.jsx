@@ -162,7 +162,7 @@ const FlashSales = () => {
       </div>
 
       {/* Product Cards */}
-      <div className="grid grid-cols-4 gap-6 mt-6 mr-5">
+      <div className="grid grid-cols-4 gap-6 mt-6 mr-20">
         {visibleProducts.map((product) => (
           <div
             key={product.id}

@@ -1,11 +1,17 @@
 import React from 'react'
+import TopHeader from '../../components/topHeader/TopHeader'
+import Header from '../../components/header/Header'
+import Footer from '../../components/footer/Footer'
 
-const Products = () => {
+
+const AllProducts = () => {
   return (
     <div>
-      
+      <TopHeader/>
+      <Header/>
+      <Footer/>
     </div>
   )
 }
 
-export default Products
+export default AllProducts

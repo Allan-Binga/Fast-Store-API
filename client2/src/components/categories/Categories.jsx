@@ -60,7 +60,7 @@ const Categories = () => {
           Categories
         </div>
       </div>
-      <div className="flex justify-between items-center w-full">
+      <div className="flex justify-between items-center w-full mr-20">
         <div className="text-text-2 font-semibold text-[36px] tracking-[0.02em] leading-[1.2]">
           Browse by category
         </div>
@@ -86,7 +86,7 @@ const Categories = () => {
         {visibleCategories.map((category) => (
           <div
             key={category.id}
-            className="w-[400px] h-[300px] bg-white text-black flex flex-col items-center justify-center border border-gray-500 hover:bg-red-500 hover:text-white transition-all duration-300 cursor-pointer"
+            className="w-[400px] h-[300px] bg-white text-black flex flex-col items-center justify-center border border-gray-500 hover:bg-red-500 hover:text-white transition-all duration-300 cursor-pointer "
           >
             {category.icon}
             <p className="mt-2 font-medium">{category.name}</p>

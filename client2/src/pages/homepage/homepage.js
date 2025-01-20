@@ -9,6 +9,7 @@ import CategorySection from "../../components/categories/Categories";
 import BestSellers from "../../components/bestSelling/Bestsellers";
 import OurProducts from "../../components/ourProducts/OurProducts";
 import Deal from "../../components/superDeal/deal";
+import Customer from "../../components/customer/customer"
 
 const Homepage = () => {
   return (
@@ -22,6 +23,7 @@ const Homepage = () => {
       <Deal />
       <OurProducts />
       <ViewAllProducts />
+      <Customer/>
       <Footer />
     </div>
   );
