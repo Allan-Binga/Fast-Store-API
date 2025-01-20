@@ -124,7 +124,7 @@ const FlashSales = () => {
   };
 
   return (
-    <div className="flex flex-col items-start gap-4 relative ml-[300px] mt-[35px]">
+    <div className="flex flex-col items-start gap-4 relative ml-[150px] mt-[35px]">
       {/* Flash Sales Header */}
       <div className="flex items-center gap-4">
         <div className="w-5">
@@ -143,7 +143,7 @@ const FlashSales = () => {
           {timeLeft.days} : {timeLeft.hours} : {timeLeft.minutes} :{" "}
           {timeLeft.seconds}
         </div>
-        <div className="flex items-center gap-4 mr-[320px]">
+        <div className="flex items-center gap-4 mr-[120px]">
           <FaArrowLeft
             className={`w-9 h-9 p-2 bg-gray-200 text-black rounded-full cursor-pointer ${
               startIndex === 0 ? "opacity-50 cursor-not-allowed" : ""
@@ -172,17 +172,22 @@ const FlashSales = () => {
             <div className="absolute top-4 left-4 bg-red-500 text-white text-sm font-bold py-1 px-2 rounded">
               {product.discount}
             </div>
+            
             {/* Heart Icon */}
-            <div className="absolute top-4 right-4 text-3xl text-black hover:text-red cursor-pointer">
-              <CiHeart />
+            <div className="absolute top-4 right-4 flex items-center justify-center w-10 h-10 rounded-full text-black hover:bg-red-500 cursor-pointer">
+              <CiHeart className="text-3xl" />
             </div>
+
             {/* Shopping Cart Icon */}
-            <div className="absolute top-16 right-4 text-3xl text-black hover:text-red cursor-pointer">
-              <CiShoppingCart onClick={() => navigate("/cart")} />
+            <div className="absolute top-16 right-4 flex items-center justify-center w-10 h-10 rounded-full text-black hover:bg-red-500 cursor-pointer">
+              <CiShoppingCart
+                onClick={() => navigate("/cart")}
+                className="text-3xl"
+              />
             </div>
 
             {/* Product Image */}
-            <div className="w-[400px] h-[300px] bg-gray-100 flex items-center justify-center overflow-hidden">
+            <div className="w-[400px] h-[300px] bg-white flex items-center justify-center overflow-hidden">
               <img
                 src={product.image}
                 alt={product.name}
@@ -191,19 +196,19 @@ const FlashSales = () => {
             </div>
             {/* Product Details */}
             <div className="p-4 flex flex-col gap-2 mt-auto">
-              <h3 className="text-lg font-bold text-gray-800">
+              <h3 className="text-xl font-bold text-gray-800">
                 {product.name}
               </h3>
-              <div className="text-sm text-red-600 font-bold">
-                {product.price}{" "}
-                <span className="text-gray-500 line-through">
+              <div className="text-base text-red-600 font-bold">
+                {product.price}
+                <span className="text-sm text-gray-500 line-through">
                   {product.originalPrice}
                 </span>
               </div>
-              <div className="flex items-center text-sm text-yellow-500">
+              <div className="flex items-center text-base text-yellow-500">
                 {"★".repeat(Math.floor(product.rating))}
                 {"☆".repeat(5 - Math.floor(product.rating))}{" "}
-                <span className="ml-2 text-gray-500">
+                <span className="ml-2 text-gray-500 text-sm">
                   ({product.reviews} reviews)
                 </span>
               </div>

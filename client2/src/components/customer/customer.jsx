@@ -5,10 +5,10 @@ import { RiCustomerServiceFill } from "react-icons/ri";
 
 const Customer = () => {
   return (
-    <div className="flex items-center bg-white py-10 ml-[500px]">
+    <div className="flex items-center bg-white py-10 ml-[500px] space-x-8">
       <div className="flex flex-col items-center text-center max-w-xs bg-white p-6">
-        <div className="flex justify-center items-center w-16 h-16 rounded-full bg-gray-200 mb-4">
-          <TbTruckDelivery className="text-3xl text-gray-700" />
+        <div className="flex justify-center items-center w-20 h-20 rounded-full bg-gray-200 mb-4">
+          <TbTruckDelivery className="text-4xl text-gray-700" />
         </div>
         <h3 className="text-lg font-bold text-black mb-2">
           FREE AND FAST DELIVERY
@@ -19,8 +19,8 @@ const Customer = () => {
       </div>
 
       <div className="flex flex-col items-center text-center max-w-xs bg-white p-6">
-        <div className="flex justify-center items-center w-16 h-16 rounded-full bg-gray-200 mb-4">
-          <RiCustomerServiceFill className="text-3xl text-gray-700" />
+        <div className="flex justify-center items-center w-20 h-20 rounded-full bg-gray-200 mb-4">
+          <RiCustomerServiceFill className="text-4xl text-gray-700" />
         </div>
         <h3 className="text-lg font-bold text-black mb-2">
           24/7 CUSTOMER SERVICE
@@ -29,8 +29,8 @@ const Customer = () => {
       </div>
 
       <div className="flex flex-col items-center text-center max-w-xs bg-white p-6">
-        <div className="flex justify-center items-center w-16 h-16 rounded-full bg-gray-200 mb-4">
-          <IoShieldCheckmark className="text-3xl text-gray-700" />
+        <div className="flex justify-center items-center w-20 h-20 rounded-full bg-gray-200 mb-4">
+          <IoShieldCheckmark className="text-4xl text-gray-700" />
         </div>
         <h3 className="text-lg font-bold text-black mb-2">
           MONEY BACK GUARANTEE

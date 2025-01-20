@@ -51,12 +51,12 @@ const Categories = () => {
   };
 
   return (
-    <div className="flex flex-col items-start gap-4 relative ml-[300px] mt-[35px]">
+    <div className="flex flex-col items-start gap-4 relative ml-[150px] mt-[35px]">
       <div className="flex gap-4">
         <div className="w-5">
           <div className="h-10 bg-red-500" />
         </div>
-        <div className="font-semibold text-secondary-2 text-[16px] tracking-[0.02em] leading-[1.5]">
+        <div className="font-semibold text-secondary-2 text-[16px] tracking-[0.02em] leading-[1.5] mt-2">
           Categories
         </div>
       </div>
@@ -64,7 +64,7 @@ const Categories = () => {
         <div className="text-text-2 font-semibold text-[36px] tracking-[0.02em] leading-[1.2]">
           Browse by category
         </div>
-        <div className="flex items-center gap-4 mr-[320px]">
+        <div className="flex items-center gap-4 mr-[120px]">
           <FaArrowLeft
             className={`w-9 h-9 p-2 bg-gray-200 text-black rounded-full cursor-pointer ${
               startIndex === 0 ? "opacity-50 cursor-not-allowed" : ""
@@ -82,11 +82,11 @@ const Categories = () => {
         </div>
       </div>
 
-      <div className="flex gap-4 transition-transform duration-500 ease-in-out">
+      <div className="grid grid-cols-4 gap-6 mt-6 mr-20">
         {visibleCategories.map((category) => (
           <div
             key={category.id}
-            className="w-[400px] h-[300px] bg-white text-black flex flex-col items-center justify-center border border-gray-500 hover:bg-red-500 hover:text-white transition-all duration-300 cursor-pointer "
+            className="w-[400px] h-[360px] bg-white text-black flex flex-col items-center justify-center border border-gray-500 hover:bg-red-500 hover:text-white transition-all duration-300 cursor-pointer "
           >
             {category.icon}
             <p className="mt-2 font-medium">{category.name}</p>

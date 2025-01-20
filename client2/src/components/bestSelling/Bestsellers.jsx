@@ -86,7 +86,7 @@ const BestSellers = () => {
   };
 
   return (
-    <div className="flex flex-col items-start gap-4 relative ml-[300px] mt-[35px]">
+    <div className="flex flex-col items-start gap-4 relative ml-[150px] mt-[35px]">
       {/* Flash Sales Header */}
       <div className="flex items-center gap-4">
         <div className="w-5">
@@ -101,7 +101,7 @@ const BestSellers = () => {
         <div className="text-text-2 font-semibold text-[36px] tracking-[0.02em] leading-[1.2]">
           Best Selling Products
         </div>
-        <div className="flex items-center gap-4 mr-[320px]">
+        <div className="flex items-center gap-4 mr-[120px]">
           <FaArrowLeft
             className={`w-9 h-9 p-2 bg-gray-200 text-black rounded-full cursor-pointer ${
               startIndex === 0 ? "opacity-50 cursor-not-allowed" : ""
@@ -120,7 +120,7 @@ const BestSellers = () => {
       </div>
 
       {/* Product Cards */}
-      <div className="grid grid-cols-4 gap-6 mt-6 mr-5">
+      <div className="grid grid-cols-4 gap-6 mt-6 mr-20">
         {visibleProducts.map((product) => (
           <div
             key={product.id}
@@ -131,16 +131,17 @@ const BestSellers = () => {
               {product.discount}
             </div>
             {/* Heart Icon */}
-            <div className="absolute top-4 right-4 text-3xl text-black hover:text-red cursor-pointer">
-              <CiHeart />
+            <div className="absolute top-4 right-4 flex items-center justify-center w-10 h-10 rounded-full text-black hover:bg-red-500 cursor-pointer">
+              <CiHeart className="text-3xl" />
             </div>
+
             {/* Shopping Cart Icon */}
-            <div className="absolute top-16 right-4 text-3xl text-black hover:text-red cursor-pointer">
-              <CiShoppingCart onClick={() => navigate("/cart")} />
+            <div className="absolute top-16 right-4 flex items-center justify-center w-10 h-10 rounded-full text-black hover:bg-red-500 cursor-pointer">
+              <CiShoppingCart onClick={() => navigate("/cart")} className="text-3xl"/>
             </div>
 
             {/* Product Image */}
-            <div className="w-[400px] h-[300px] bg-gray-100 flex items-center justify-center overflow-hidden">
+            <div className="w-[400px] h-[300px]  flex items-center justify-center overflow-hidden">
               <img
                 src={product.image}
                 alt={product.name}

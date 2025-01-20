@@ -45,7 +45,7 @@ const SideBarAndPromo = () => {
 
   return (
     <div className="flex mt-[25px]">
-      <div className="inline-flex flex-col items-start gap-4 relative ml-[300px]">
+      <div className="inline-flex flex-col items-start gap-4 relative ml-[150px]">
         <div className="gap-[51px] inline-flex items-start relative flex-[0_0_auto]">
           <div className="relative w-fit mt-[-1.00px] font-normal text-black text-[16px] text-center tracking-[0.02em] leading-[1.5] whitespace-nowrap">
             Woman’s Fashion
@@ -83,7 +83,7 @@ const SideBarAndPromo = () => {
       <div className="w-px h-96 bg-black mx-8">
         <img alt="line2" className="fixed w-px h-96 top-0 left-0" src={Line2} />
       </div>
-      <div className="w-[892px] h-[344px] bg-black p-4 flex flex-col items-center justify-center ml-auto mr-[500px]">
+      <div className="w-[1000px] h-[400px] bg-black p-4 flex flex-col items-center justify-center ml-auto mr-[500px]">
         <div className="relative w-full h-[344px] bg-black rounded-lg overflow-hidden">
           <div className="absolute inset-0">
             <img
