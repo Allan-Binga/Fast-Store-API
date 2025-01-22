@@ -3,14 +3,58 @@ import { useNavigate } from "react-router-dom";
 import { PiShoppingCartThin } from "react-icons/pi";
 import { CiSearch, CiHeart } from "react-icons/ci";
 import { VscAccount } from "react-icons/vsc";
+import { backendAPI } from "../../endpoint";
+import toast from "react-hot-toast";
+import axios from "axios";
 
 const Header = () => {
   const [isCardVisible, setIsCardVisible] = useState(false);
   const cardRef = useRef(null);
   const navigate = useNavigate();
 
+  //LOGGING OUT USER FUNCTION.
+  const logoutUser = async () => {
+    try {
+      await axios.post(
+        `${backendAPI}/api/auth/logout`,
+        {},
+        { withCredentials: true }
+      );
+    } catch (error) {}
+  };
+
   const toggleCard = () => {
     setIsCardVisible((prev) => !prev);
+  };
+
+  //LOGOUT HANDLING
+  const handleLogout = async () => {
+    //CHECK IF COOKIE EXISTS
+
+    const cookies = document.cookie.split(";");
+    const loginCookie = cookies.find((cookie) =>
+      cookie.trim().startsWith("storeSession=")
+    );
+
+    // LOGOUT LOGIC
+    if (loginCookie) {
+      try {
+        // Call logout logic
+        await logoutUser();
+
+        // Clear the cookie 
+        document.cookie = "storeSession=; Max-Age=0; path=/;";
+
+        // Notify the user
+        toast.success("Successfully logged out.");
+      } catch (error) {
+        console.error("Logout error:", error); // For debugging
+        toast.error("Error during logout. Please try again.");
+      }
+    } else {
+      // If no login cookie is found
+      toast.error("No user is logged in."); // Use info to avoid confusion
+    }
   };
 
   // Close the dropdown when clicking outside of it
@@ -115,7 +159,7 @@ const Header = () => {
                 </button>
                 <button
                   className="w-full text-left text-sm text-red-500 hover:bg-red-100 p-2 rounded"
-                  onClick={() => setIsCardVisible(false)}
+                  onClick={handleLogout}
                 >
                   Sign Out
                 </button>

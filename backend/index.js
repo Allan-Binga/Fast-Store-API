@@ -19,7 +19,7 @@ app.use(cookieParser());
 //CORS IMPLEMENTATION
 app.use(
   cors({
-    origin: "https://e401-102-0-13-198.ngrok-free.app", //Frontend Port
+    origin: "http://localhost:3100", //Frontend Port
     credentials: true,
   })
 );

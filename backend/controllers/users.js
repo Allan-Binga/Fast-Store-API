@@ -52,26 +52,5 @@ const updatedUser = async (req, res) => {
   }
 };
 
-//DELETE USER
-const deleteUser = async (req, res) => {
-  const { userId } = req.body;
-  const { id } = req.params;
 
-  if (userId !== id) {
-    return res.status(401).json("You can only delete your account.");
-  }
-
-  try {
-    const user = await User.findById(id);
-    if (!user) {
-      return res.status(404).json("User not found.");
-    }
-
-    await User.findByIdAndDelete(id);
-    res.status(200).json("User has been deleted.");
-  } catch (error) {
-    res.status(500).json("Error occured while deleting user.");
-  }
-};
-
-module.exports = {getUsers, getSingleUser, updatedUser, deleteUser}
+module.exports = {getUsers, getSingleUser, updatedUser}

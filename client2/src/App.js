@@ -12,7 +12,7 @@ import AllProducts from "./pages/allProducts/Products";
 const App = () => {
   return (
     <Router>
-      <Toaster position="top-centre" toastOption={{ duration: 2000 }} />
+      <Toaster position="top-center" toastOptions={{ duration: 1800 }} />
       <Routes>
         <Route path="/" element={<Homepage />} />
         <Route path="/signup" element={<Signup />} />

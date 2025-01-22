@@ -93,7 +93,7 @@ const BestSellers = () => {
           <div className="h-10 bg-red-500" />
         </div>
         <div className="font-semibold text-secondary-2 text-[16px] tracking-[0.02em] leading-[1.5]">
-          This Month
+          Past Month
         </div>
       </div>
 

@@ -1,0 +1,3 @@
+//BACKEND API TO AVOID REPETITION
+ //BACKEND ENDPOINT
+export const backendAPI = process.env.REACT_APP_BACKEND_API;

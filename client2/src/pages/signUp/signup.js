@@ -1,15 +1,75 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import TopHeader from "../../components/topHeader/TopHeader";
 import Header from "../../components/header/Header";
 import Footer from "../../components/footer/Footer";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { toast } from "react-hot-toast";
 
 const Signup = () => {
+  const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    password: "",
+  });
+
+  //BACKEND ENDPOINT
+  const backendAPI = process.env.REACT_APP_BACKEND_API;
+  // console.log(backendAPI);
+
+  //CREATE ACCOUNT IMPLEMENTATION
+  const registerUser = async (userData) => {
+    try {
+      await axios.post(`${backendAPI}/api/auth/register`, userData);
+    } catch (error) {
+      throw error.response.data.message;
+    }
+  };
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      await registerUser(formData);
+      toast.success("Registration successful!");
+      navigate("/login");
+    } catch (err) {
+      toast.error("An error occurred during registration.");
+    }
+  };
+
+  useEffect(() => {
+    // Simulate a loading state that ends after 2 seconds (you can adjust this)
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 2000);
+
+    return () => clearTimeout(timer); // Cleanup timer on component unmount
+  }, []);
   return (
-    <div>
+    <div className="relative min-h-screen">
       <TopHeader />
       <Header />
-      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-        <div className="flex flex-wrap max-w-4xl bg-white shadow-lg rounded-lg overflow-hidden">
+      {/* Progress Bar */}
+      {isLoading && (
+        <div className="absolute top-0 left-0 w-full h-1 bg-blue-800">
+          <div
+            className="h-full bg-blue-500 transition-all duration-300"
+            style={{ width: `${isLoading}%` }}
+          ></div>
+        </div>
+      )}
+
+      <div className="flex flex-col items-center justify-center min-h-[110vh] bg-gray-100">
+        <div className="flex flex-wrap max-w-5xl bg-white shadow-lg rounded-lg overflow-hidden">
           {/* Left Section: Image */}
           <div className="hidden md:flex flex-1 items-center justify-center bg-blue-50">
             <img
@@ -26,36 +86,81 @@ const Signup = () => {
             </h1>
             <p className="text-gray-600 mt-2">Enter your details below</p>
 
-            <form className="flex flex-col gap-6 mt-8">
+            <form className="flex flex-col gap-6 mt-8" onSubmit={handleSubmit}>
               {/* Name Input */}
-              <div>
-                <label
-                  htmlFor="name"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Name
-                </label>
-                <input
-                  id="name"
-                  type="text"
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Enter your name"
-                />
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                {/* First Name Input */}
+                <div>
+                  <label
+                    htmlFor="firstName"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    First Name
+                  </label>
+                  <input
+                    name="firstName"
+                    type="text"
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Enter your first name"
+                    value={formData.firstName}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+                {/* Last Name Input */}
+                <div>
+                  <label
+                    htmlFor="lastName"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Last Name
+                  </label>
+                  <input
+                    name="lastName"
+                    type="text"
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Enter your last name"
+                    value={formData.lastName}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
               </div>
 
-              {/* Email or Phone Number Input */}
+              {/* Email Input */}
               <div>
                 <label
                   htmlFor="email"
                   className="block text-sm font-medium text-gray-700"
                 >
-                  Email or Phone Number
+                  Email
                 </label>
                 <input
-                  id="email"
+                  name="email"
                   type="email"
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Enter your email or phone number"
+                  placeholder="Enter your email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+
+              {/* Phone Input */}
+              <div>
+                <label
+                  htmlFor="phone"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Phone Number
+                </label>
+                <input
+                  name="phone"
+                  type="tel"
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter your phone number"
+                  value={formData.phone}
+                  onChange={handleChange}
                 />
               </div>
 
@@ -68,10 +173,13 @@ const Signup = () => {
                   Password
                 </label>
                 <input
-                  id="password"
+                  name="password"
                   type="password"
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Enter your password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  required
                 />
               </div>
 
@@ -88,9 +196,13 @@ const Signup = () => {
             <div className="flex flex-col items-center mt-6">
               <p className="mt-4 text-gray-600">
                 Already have an account?{" "}
-                <a href="/login" className="text-blue-500 hover:underline">
+                <button
+                  a
+                  className="text-blue-500 hover:underline"
+                  onClick={() => navigate("/login")}
+                >
                   Log in
-                </a>
+                </button>
               </p>
             </div>
           </div>

@@ -1,11 +1,62 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import TopHeader from "../../components/topHeader/TopHeader";
 import Header from "../../components/header/Header";
 import Footer from "../../components/footer/Footer";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { toast } from "react-hot-toast";
+import { backendAPI } from "../../endpoint";
 
 const Login = () => {
+  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(true);
+  const [formData, setFormData] = useState({ email: "", password: "" });
+
+  //LOGIN USER IMPLEMENTATION
+  const loginUser = async (userData) => {
+    try {
+      await axios.post(`${backendAPI}/api/auth/login`, userData, {
+        withCredentials: true,
+      });
+    } catch (error) {
+      throw error.data.message;
+    }
+  };
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await loginUser(formData);
+      toast.success("Login successful!");
+      navigate("/");
+    } catch (err) {
+      toast.error("Wrong username or password.");
+    }
+  };
+
+  useEffect(() => {
+    // Simulate a loading state that ends after 2 seconds (you can adjust this)
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 2000);
+
+    return () => clearTimeout(timer); // Cleanup timer on component unmount
+  }, []);
   return (
     <div>
+      {/* Progress Bar */}
+      {isLoading && (
+        <div className="absolute top-0 left-0 w-full h-1 bg-blue-800">
+          <div
+            className="h-full bg-blue-500 transition-all duration-300"
+            style={{ width: `${isLoading}%` }}
+          ></div>
+        </div>
+      )}
       <TopHeader />
       <Header />
       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
@@ -24,20 +75,23 @@ const Login = () => {
             <h1 className="text-3xl font-bold text-gray-800">Log in</h1>
             <p className="text-gray-600 mt-2">Enter your credentials below</p>
 
-            <form className="flex flex-col gap-6 mt-8">
+            <form className="flex flex-col gap-6 mt-8" onSubmit={handleSubmit}>
               {/* Email/Username Input */}
               <div>
                 <label
                   htmlFor="email"
                   className="block text-sm font-medium text-gray-700"
                 >
-                  Email or Username
+                  Email
                 </label>
                 <input
-                  id="email"
-                  type="text"
+                  name="email"
+                  type="email"
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Enter your email or username"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
                 />
               </div>
 
@@ -50,10 +104,12 @@ const Login = () => {
                   Password
                 </label>
                 <input
-                  id="password"
+                  name="password"
                   type="password"
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Enter your password"
+                  value={formData.password}
+                  onChange={handleChange}
                 />
               </div>
 
@@ -76,9 +132,12 @@ const Login = () => {
               </a>
               <p className="mt-4 text-gray-600">
                 Don’t have an account?{" "}
-                <a href="/signup" className="text-blue-500 hover:underline">
+                <button
+                  onClick={() => navigate("/signup")}
+                  className="text-blue-500 hover:underline"
+                >
                   Sign up
-                </a>
+                </button>
               </p>
             </div>
           </div>
