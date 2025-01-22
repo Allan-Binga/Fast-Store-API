@@ -12,48 +12,31 @@ const Header = () => {
   const cardRef = useRef(null);
   const navigate = useNavigate();
 
-  //LOGGING OUT USER FUNCTION.
-  const logoutUser = async () => {
-    try {
-      await axios.post(
-        `${backendAPI}/api/auth/logout`,
-        {},
-        { withCredentials: true }
-      );
-    } catch (error) {}
-  };
-
   const toggleCard = () => {
     setIsCardVisible((prev) => !prev);
   };
 
   //LOGOUT HANDLING
   const handleLogout = async () => {
-    //CHECK IF COOKIE EXISTS
+    try {
+      const response = await axios.post(
+        `${backendAPI}/api/auth/logout`,
+        {},
+        { withCredentials: true } // This ensures cookies are sent with the request
+      );
 
-    const cookies = document.cookie.split(";");
-    const loginCookie = cookies.find((cookie) =>
-      cookie.trim().startsWith("storeSession=")
-    );
-
-    // LOGOUT LOGIC
-    if (loginCookie) {
-      try {
-        // Call logout logic
-        await logoutUser();
-
-        // Clear the cookie 
+      if (response.status === 200) {
+        // Server confirms logout, we can now safely clear the cookie
         document.cookie = "storeSession=; Max-Age=0; path=/;";
-
-        // Notify the user
         toast.success("Successfully logged out.");
-      } catch (error) {
-        console.error("Logout error:", error); // For debugging
-        toast.error("Error during logout. Please try again.");
+        // Optionally, redirect or update UI state here
+      } else {
+        // If the server tells us no user is logged in or another error
+        toast.error("You are not logged in.");
       }
-    } else {
-      // If no login cookie is found
-      toast.error("No user is logged in."); // Use info to avoid confusion
+    } catch (error) {
+      console.error("Logout error:", error);
+      toast.error("You are not logged in.");
     }
   };
 

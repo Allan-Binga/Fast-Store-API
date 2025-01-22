@@ -1,62 +1,50 @@
-import React, { useState, useEffect } from "react";
-import TopHeader from "../../components/topHeader/TopHeader";
-import Header from "../../components/header/Header";
-import Footer from "../../components/footer/Footer";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-hot-toast";
-import { backendAPI } from "../../endpoint";
+import TopHeader from "../../components/topHeader/TopHeader";
+import Header from "../../components/header/Header";
+import Footer from "../../components/footer/Footer";
 
 const Login = () => {
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(true);
   const [formData, setFormData] = useState({ email: "", password: "" });
+  const [isLoading, setIsLoading] = useState(false);
 
-  //LOGIN USER IMPLEMENTATION
-  const loginUser = async (userData) => {
-    try {
-      await axios.post(`${backendAPI}/api/auth/login`, userData, {
-        withCredentials: true,
-      });
-    } catch (error) {
-      throw error.data.message;
-    }
-  };
-
+  // Handle input changes
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
+
     try {
-      await loginUser(formData);
-      toast.success("Login successful!");
-      navigate("/");
-    } catch (err) {
-      toast.error("Wrong username or password.");
+      const response = await axios.post(
+        `${process.env.REACT_APP_BACKEND_API}/api/auth/login`,
+        formData,
+        { withCredentials: true }
+      );
+
+      if (response.status === 200) {
+        toast.success("Login successful.");
+        navigate("/");
+      }
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.message ||
+        "Wrong credentials. Please try again.";
+      toast.error(errorMessage);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  useEffect(() => {
-    // Simulate a loading state that ends after 2 seconds (you can adjust this)
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 2000);
-
-    return () => clearTimeout(timer); // Cleanup timer on component unmount
-  }, []);
   return (
     <div>
-      {/* Progress Bar */}
-      {isLoading && (
-        <div className="absolute top-0 left-0 w-full h-1 bg-blue-800">
-          <div
-            className="h-full bg-blue-500 transition-all duration-300"
-            style={{ width: `${isLoading}%` }}
-          ></div>
-        </div>
-      )}
       <TopHeader />
       <Header />
       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
@@ -67,6 +55,7 @@ const Login = () => {
               src="https://cdn.builder.io/api/v1/image/assets/TEMP/69e0f745a386da13ccf8560b79d75248221409e03e50215b2e917c121088ed4b?placeholderIfAbsent=true&apiKey=8cd4e88793e947cca676caa403f196cb"
               alt="E-commerce visual"
               className="w-full h-full object-cover"
+              loading="lazy"
             />
           </div>
 
@@ -75,8 +64,12 @@ const Login = () => {
             <h1 className="text-3xl font-bold text-gray-800">Log in</h1>
             <p className="text-gray-600 mt-2">Enter your credentials below</p>
 
-            <form className="flex flex-col gap-6 mt-8" onSubmit={handleSubmit}>
-              {/* Email/Username Input */}
+            <form
+              className="flex flex-col gap-6 mt-8"
+              onSubmit={handleSubmit}
+              aria-busy={isLoading}
+            >
+              {/* Email Input */}
               <div>
                 <label
                   htmlFor="email"
@@ -85,13 +78,15 @@ const Login = () => {
                   Email
                 </label>
                 <input
+                  id="email"
                   name="email"
                   type="email"
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Enter your email or username"
+                  placeholder="Enter your email"
                   value={formData.email}
                   onChange={handleChange}
                   required
+                  autoComplete="email"
                 />
               </div>
 
@@ -104,21 +99,27 @@ const Login = () => {
                   Password
                 </label>
                 <input
+                  id="password"
                   name="password"
                   type="password"
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Enter your password"
                   value={formData.password}
                   onChange={handleChange}
+                  required
+                  autoComplete="current-password"
                 />
               </div>
 
               {/* Submit Button */}
               <button
                 type="submit"
-                className="w-full bg-blue-500 text-white font-semibold py-3 rounded-lg hover:bg-blue-800 transition duration-200"
+                disabled={isLoading}
+                className={`w-full bg-blue-500 text-white font-semibold py-3 rounded-lg hover:bg-blue-800 transition duration-200 ${
+                  isLoading ? "opacity-50 cursor-not-allowed" : ""
+                }`}
               >
-                Log in
+                {isLoading ? "Logging in..." : "Log in"}
               </button>
             </form>
 
@@ -133,6 +134,7 @@ const Login = () => {
               <p className="mt-4 text-gray-600">
                 Don’t have an account?{" "}
                 <button
+                  type="button"
                   onClick={() => navigate("/signup")}
                   className="text-blue-500 hover:underline"
                 >

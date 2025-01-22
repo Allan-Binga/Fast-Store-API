@@ -2,8 +2,10 @@ const express = require("express");
 const productRoute = require("./routes/product.js");
 const usersRoute = require("./routes/users.js");
 const authRoute = require("./routes/auth.js");
+const brandRoute = require("./routes/brand.js")
 const checkoutRoute = require("./routes/checkout.js");
 const cartRoute = require("./routes/cart.js");
+const flashSaleRoute = require("./routes/flashsales.js")
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const cors = require("cors");
@@ -36,6 +38,12 @@ app.use("/api/auth", authRoute);
 
 //Product Route
 app.use("/api/products", productRoute);
+
+//Flashsale Route
+app.use("/api/flashsale", flashSaleRoute)
+
+//Brand Route
+app.use("/api/brands", brandRoute)
 
 //Cart Route
 app.use("/api/cart", cartRoute);

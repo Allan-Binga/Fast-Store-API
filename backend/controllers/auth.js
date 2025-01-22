@@ -42,6 +42,11 @@ const createUser = async (req, res) => {
 // LOGIN REGISTERED USER
 const loginUser = async (req, res) => {
   try {
+    // Check if the user is already logged in by looking for the session cookie
+    if (req.cookies && req.cookies.storeSession) {
+      return res.status(400).json("You are already logged in.");
+    }
+
     const user = await User.findOne({ email: req.body.email });
     if (!user) {
       return res.status(400).json("Wrong email or password.");
@@ -58,6 +63,7 @@ const loginUser = async (req, res) => {
       maxAge: 1000 * 60 * 60 * 24,
       sameSite: "None",
       secure: true,
+      path: "/",
     });
     res.status(200).json("Login successful.");
   } catch (error) {

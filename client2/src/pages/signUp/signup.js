@@ -5,6 +5,7 @@ import Footer from "../../components/footer/Footer";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-hot-toast";
+import { backendAPI } from "../../endpoint";
 
 const Signup = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -16,10 +17,6 @@ const Signup = () => {
     phone: "",
     password: "",
   });
-
-  //BACKEND ENDPOINT
-  const backendAPI = process.env.REACT_APP_BACKEND_API;
-  // console.log(backendAPI);
 
   //CREATE ACCOUNT IMPLEMENTATION
   const registerUser = async (userData) => {
@@ -44,6 +41,16 @@ const Signup = () => {
     } catch (err) {
       toast.error("An error occurred during registration.");
     }
+  };
+
+  const isFormValid = () => {
+    return (
+      formData.firstName &&
+      formData.lastName &&
+      formData.email &&
+      formData.phone &&
+      formData.password
+    );
   };
 
   useEffect(() => {
@@ -186,7 +193,12 @@ const Signup = () => {
               {/* Signup Button */}
               <button
                 type="submit"
-                className="w-full bg-blue-500 text-white font-semibold py-3 rounded-lg hover:bg-blue-700 transition duration-200"
+                disabled={!isFormValid()}
+                className={`w-full py-3 font-semibold rounded-lg transition duration-200 ${
+                  isFormValid()
+                    ? "bg-blue-500 text-white hover:bg-blue-700"
+                    : "bg-blue-300 text-white hover:bg-blue-400"
+                }`}
               >
                 Create Account
               </button>
