@@ -10,6 +10,7 @@ import BestSellers from "../../components/bestSelling/Bestsellers";
 import OurProducts from "../../components/ourProducts/OurProducts";
 import Deal from "../../components/superDeal/deal";
 import Customer from "../../components/customer/customer";
+import ShopByBrand from "../../components/shopByBrand/shopByBrand";
 
 const Homepage = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -36,6 +37,7 @@ const Homepage = () => {
       )}
       <SideBarAndPromo />
       <FlashSales />
+      <ShopByBrand/>
       <CategorySection />
       <BestSellers />
       <Deal />
