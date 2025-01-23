@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { FaArrowRight } from "react-icons/fa";
-import { IoIosArrowForward } from "react-icons/io";
 import HeroEnd from "./hero-end.png";
-import HeroEnd2 from "./heroend2.png"
+import HeroEnd2 from "./heroend2.png";
 import AppleLogo from "./apple-logo.png";
 import Line5 from "./line5.png";
-import Line2 from "./line2.png";
+// import Line2 from "./line2.png";
+import { backendAPI } from "../../endpoint";
+import axios from "axios";
 
 const products = [
   {
@@ -31,8 +32,18 @@ const products = [
   },
 ];
 
+const getCategories = async () => {
+  try {
+    const response = await axios.get(`${backendAPI}/api/products/categories`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching categories:", error.message);
+  }
+};
+
 const SideBarAndPromo = () => {
   const [currentProductIndex, setCurrentProductIndex] = useState(0);
+  const [categories, setCategories] = useState([]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -41,48 +52,38 @@ const SideBarAndPromo = () => {
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    //FETCH CATEGORIES ON COMPONENT MOUNT
+    const fetchCategories = async () => {
+      const data = await getCategories();
+      setCategories(data);
+    };
+    fetchCategories();
+  }, []);
+
   const currentProduct = products[currentProductIndex];
 
   return (
     <div className="flex mt-[25px]">
-      <div className="inline-flex flex-col items-start gap-4 relative ml-[150px]">
-        <div className="gap-[51px] inline-flex items-start relative flex-[0_0_auto]">
-          <div className="relative w-fit mt-[-1.00px] font-normal text-black text-[16px] text-center tracking-[0.02em] leading-[1.5] whitespace-nowrap">
-            Woman’s Fashion
-          </div>
-          <IoIosArrowForward className="!relative !w-7 !h-7" />
-        </div>
-        <div className="gap-[81px] inline-flex items-start relative flex-[0_0_auto]">
-          <div className="relative w-fit mt-[-1.00px] font-normal text-black text-[16px] text-center tracking-[0.02em] leading-[1.5] whitespace-nowrap">
-            Men’s Fashion
-          </div>
-          <IoIosArrowForward className="!relative !w-7 !h-7" />
-        </div>
-        <div className="relative w-fit font-normal text-black text-[16px] text-center tracking-[0.02em] leading-[1.5] whitespace-nowrap">
-          Electronics
-        </div>
-        <div className="relative w-fit font-normal text-black text-[16px] text-center tracking-[0.02em] leading-[1.5] whitespace-nowrap">
-          Home &amp; Lifestyle
-        </div>
-        <div className="relative w-fit font-normal text-black text-[16px] text-center tracking-[0.02em] leading-[1.5] whitespace-nowrap">
-          Medicine
-        </div>
-        <div className="relative w-fit font-normal text-black text-[16px] text-center tracking-[0.02em] leading-[1.5] whitespace-nowrap">
-          Sports &amp; Outdoor
-        </div>
-        <div className="relative w-fit font-normal text-black text-[16px] text-center tracking-[0.02em] leading-[1.5] whitespace-nowrap">
-          Baby’s &amp; Toys
-        </div>
-        <div className="relative w-fit font-normal text-black text-[16px] text-center tracking-[0.02em] leading-[1.5] whitespace-nowrap">
-          Groceries &amp; Pets
-        </div>
-        <div className="relative w-fit font-normal text-black text-[16px] text-center tracking-[0.02em] leading-[1.5] whitespace-nowrap">
-          Health &amp; Beauty
+      <div className="inline-flex flex-col items-start relative ml-[150px]">
+        <div className="overflow-y-auto max-h-[390px] w-[200px] scrollbar-thin scrollbar-thumb-blue-400 scrollbar-track-blue-100 scrollbar-track-rounded">
+          {categories.length > 0 ? (
+            categories.slice(0, categories.length).map((category, index) => (
+              <div
+                key={index}
+                className="relative w-fit font-normal text-black text-[16px] text-center tracking-[0.02em] leading-[1.5] whitespace-nowrap hover:bg-blue-300 hover:text-white cursor-pointer px-2 py-1 rounded-full"
+              >
+                {category.name || category}
+              </div>
+            ))
+          ) : (
+            <div>Loading categories...</div>
+          )}
         </div>
       </div>
-      <div className="w-px h-96 bg-black mx-8">
+      {/* <div className="w-px h-96 bg- mx-8">
         <img alt="line2" className="fixed w-px h-96 top-0 left-0" src={Line2} />
-      </div>
+      </div> */}
       <div className="w-[1000px] h-[400px] bg-black p-4 flex flex-col items-center justify-center ml-auto mr-[500px]">
         <div className="relative w-full h-[344px] bg-black rounded-lg overflow-hidden">
           <div className="absolute inset-0">

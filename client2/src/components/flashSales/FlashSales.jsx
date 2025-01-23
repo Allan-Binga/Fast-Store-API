@@ -133,7 +133,7 @@ const FlashSales = () => {
           >
             {/* Discount Badge */}
             <div className="absolute top-4 left-4 bg-red-500 text-white text-sm font-bold py-1 px-2 rounded">
-              {product.discount}
+              -{product.discount}
             </div>
 
             {/* Heart Icon */}
@@ -150,11 +150,11 @@ const FlashSales = () => {
             </div>
 
             {/* Product Image */}
-            <div className="relative bg-white flex items-center justify-center overflow-hidden">
+            <div className="w-[400px] h-[300px]  flex items-center justify-center overflow-hidden">
               <img
                 src={product.image}
-                alt={product.product}
-                className="w-300 max-h-[300px] object-contain"
+                alt={product.name}
+                className="object-contain max-h-full max-w-full"
               />
             </div>
 
@@ -175,9 +175,7 @@ const FlashSales = () => {
               <div className="text-xs text-gray-400">
                 Sale Ends: {new Date(product.endTime).toLocaleString()}
               </div>
-              <div>
-                Ratings
-              </div>
+              <div>Ratings</div>
             </div>
           </div>
         ))}

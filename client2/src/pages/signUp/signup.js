@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import TopHeader from "../../components/topHeader/TopHeader";
 import Header from "../../components/header/Header";
 import Footer from "../../components/footer/Footer";
+import PhoneInput from "react-phone-input-2";
+import "react-phone-input-2/lib/style.css";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-hot-toast";
@@ -29,6 +31,10 @@ const Signup = () => {
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handlePhoneChange = (value) => {
+    setFormData({ ...formData, phone: value });
   };
 
   const handleSubmit = async (e) => {
@@ -161,13 +167,12 @@ const Signup = () => {
                 >
                   Phone Number
                 </label>
-                <input
-                  name="phone"
-                  type="tel"
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Enter your phone number"
+                <PhoneInput
+                  country={"us"}
                   value={formData.phone}
-                  onChange={handleChange}
+                  onChange={handlePhoneChange}
+                  enableSearch
+                  inputClass="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
 

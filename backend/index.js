@@ -3,6 +3,7 @@ const productRoute = require("./routes/product.js");
 const usersRoute = require("./routes/users.js");
 const authRoute = require("./routes/auth.js");
 const brandRoute = require("./routes/brand.js")
+const wishlistRoute = require("./routes/wishlist.js")
 const checkoutRoute = require("./routes/checkout.js");
 const cartRoute = require("./routes/cart.js");
 const flashSaleRoute = require("./routes/flashsales.js")
@@ -44,6 +45,9 @@ app.use("/api/flashsale", flashSaleRoute)
 
 //Brand Route
 app.use("/api/brands", brandRoute)
+
+//Wishlist Route
+app.use("/api/wishlist", wishlistRoute)
 
 //Cart Route
 app.use("/api/cart", cartRoute);
