@@ -46,6 +46,7 @@ const addProductToWishlist = async (req, res) => {
   if (!userId) {
     return res.status(401).json({ error: "Please log in first." });
   }
+
   try {
     let wishlist = await Wishlist.findOne({ user: userId });
     if (!wishlist) {
@@ -55,17 +56,13 @@ const addProductToWishlist = async (req, res) => {
     if (!wishlist.products.includes(productId)) {
       wishlist.products.push(productId);
       await wishlist.save();
-      return res
-        .status(200)
-        .json({ message: "Product added to wishlist.", wishlist });
+      return res.status(200).json("Product added to wishlist.");
     } else {
-      return res
-        .status(400)
-        .json({ message: "Product already exists in wishlist." });
+      return res.status(400).json("Product already exists in wishlist.");
     }
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json("Invalid product ID.");
   }
 };
 
