@@ -1,4 +1,5 @@
 const Wishlist = require("../models/wishlist");
+const Cart = require("../models/cart");
 
 //GETTING all USERS WISHLIST
 const getWishlists = async (_req, res) => {
@@ -17,7 +18,7 @@ const getUserWishlist = async (req, res) => {
     const userId = req.cookies.storeSession;
 
     if (!userId) {
-      return res.status(401).json({ error: "User not authenticated." });
+      return res.status(401).json({ error: "Please login to proceed." });
     }
 
     // Find the wishlist for the logged-in user
@@ -114,10 +115,63 @@ const removeProductWishlist = async (req, res) => {
   }
 };
 
+//ADD WISHLIST PRODUCTS TO CART
+// ADD WISHLIST PRODUCTS TO CART
+const addWishlistToCart = async (req, res) => {
+  // EXTRACT storeSession SESSION COOKIE
+  const userId = req.cookies.storeSession;
+  // IF THERE'S NO COOKIE RETURN WITH STATUS 401
+  if (!userId) {
+    return res.status(401).json("Please login to perform this action.");
+  }
+
+  try {
+    // RETRIEVE USER'S WISHLIST WITH PRODUCT DETAILS
+    const userWishlist = await Wishlist.findOne({ user: userId }).populate(
+      "products"
+    );
+
+    if (!userWishlist || userWishlist.products.length === 0) {
+      return res.status(404).json("No products in wishlist to add to cart.");
+    }
+
+    // RETRIEVE THE USER'S CART OR CREATE A NEW ONE IF IT DOESN'T EXIST
+    let userCart = await Cart.findOne({ userId });
+
+    if (!userCart) {
+      userCart = new Cart({ userId, products: [] });
+    }
+
+    // ADD PRODUCTS FROM WISHLIST TO CART
+    for (const product of userWishlist.products) {
+      // Check if product already exists in cart
+      if (!userCart.products.some((p) => p._id && p._id.equals(product._id))) {
+        userCart.products.push({
+          _id: product._id,
+          title: product.title,
+          description: product.description,
+          price: product.price,
+          quantity: 1, // Default quantity to 1
+          image: product.image || undefined, // Use undefined for optional fields if not present
+        });
+      }
+    }
+
+    // SAVE UPDATED CART
+    await userCart.save();
+
+    res.status(200).json("Added to cart successfully.");
+  } catch (error) {
+    console.error("Error adding wishlist products to cart:", error);
+    res.status(500).json({ error: "Failed to add products to cart." });
+  }
+};
+
 //EXPORT FUNCTION
 module.exports = {
   getWishlists,
   getUserWishlist,
   addProductToWishlist,
   removeProductWishlist,
+  addWishlistToCart,
 };
