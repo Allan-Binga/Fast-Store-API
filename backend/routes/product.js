@@ -6,8 +6,9 @@ const {
   getSingleProduct,
   updateProduct,
   getLimitedProducts,
-  addProductToCart,
 } = require("../controllers/product.js");
+
+const {addProductToCart} = require("../controllers/cart.js")
 
 const {
   getAllCategories,
@@ -27,8 +28,8 @@ router.get("/limit", getLimitedProducts);
 router.get("/", getAllProducts);
 router.get("/:id", getSingleProduct);
 router.post("/", addNewProduct);
-router.post("/add", addProductToCart);
 router.put("/:id", updateProduct);
 router.delete("/:id", deleteProduct);
+router.post("/add-to-cart", addProductToCart)
 
 module.exports = router;

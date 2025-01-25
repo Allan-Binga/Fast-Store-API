@@ -66,7 +66,7 @@ const BestSellers = () => {
 
   return (
     <div className="flex flex-col items-start gap-4 relative ml-[150px] mt-[35px]">
-      {/* Flash Sales Header */}
+      {/* Our Products Header */}
       <div className="flex items-center gap-4">
         <div className="w-5">
           <div className="h-10 bg-red-500" />

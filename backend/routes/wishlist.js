@@ -12,7 +12,7 @@ const router = express.Router();
 //ROUTES
 router.get("/", getWishlists);
 router.post("/", addProductToWishlist);
-router.get("/:id", getUserWishlist);
+router.get("/user", getUserWishlist);
 router.delete("/", removeProductWishlist);
 router.post("/add-to-cart", addWishlistToCart);
 

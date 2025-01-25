@@ -4,38 +4,43 @@ const Cart = require("../models/cart");
 //GETTING all USERS WISHLIST
 const getWishlists = async (_req, res) => {
   try {
-    const wishList = await Wishlist.find();
+    const wishList = await Wishlist.find().populate("products");
     res.status(200).json(wishList);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch wishlists." });
   }
 };
 
-//GET SINGLE USER'S WISHLIST
+// GET SINGLE USER'S WISHLIST
 const getUserWishlist = async (req, res) => {
   try {
-    // Assuming the user's ID is stored in cookies
-    const userId = req.cookies.storeSession;
+    // Get the authenticated user's ID from cookies
+    const loggedInUserId = req.cookies.storeSession;
 
-    if (!userId) {
-      return res.status(401).json({ error: "Please login to proceed." });
+    // Check if the session cookie exists
+    if (!loggedInUserId) {
+      return res.status(401).json({ error: "Please log in to proceed." });
     }
 
-    // Find the wishlist for the logged-in user
-    const userWishlist = await Wishlist.findOne({ user: userId }).populate(
-      "products"
-    );
+    // Find the wishlist for the authenticated user
+    const userWishlist = await Wishlist.findOne({
+      user: loggedInUserId,
+    }).populate("products");
 
+    // Handle case where no wishlist exists for the user
     if (!userWishlist) {
       return res
         .status(404)
-        .json({ error: "Wishlist not found for this user." });
+        .json({ error: "No wishlist found for the logged-in user." });
     }
 
-    res.status(200).json(userWishlist);
+    // Return the wishlist if it exists
+    return res.status(200).json(userWishlist);
   } catch (error) {
     console.error("Error fetching user wishlist:", error);
-    res.status(500).json({ error: "Failed to fetch user's wishlist." });
+    return res
+      .status(500)
+      .json({ error: "An error occurred while fetching the wishlist." });
   }
 };
 
