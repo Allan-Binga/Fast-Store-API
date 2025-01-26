@@ -11,7 +11,7 @@ const router = express.Router();
 
 //ROUTES
 router.get("/", getWishlists);
-router.post("/", addProductToWishlist);
+router.post("/add-to-wishlist", addProductToWishlist);
 router.get("/user", getUserWishlist);
 router.delete("/", removeProductWishlist);
 router.post("/add-to-cart", addWishlistToCart);

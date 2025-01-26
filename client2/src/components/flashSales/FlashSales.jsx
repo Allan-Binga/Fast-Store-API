@@ -4,18 +4,9 @@ import { CiHeart, CiShoppingCart } from "react-icons/ci";
 import { useNavigate } from "react-router-dom";
 import { backendAPI } from "../../endpoint";
 import axios from "axios";
+import toast from "react-hot-toast";
 
 const PRODUCTS_ALLOWED = 4;
-
-//FETCHING FLASHSALE PRODUCTS FROM THE BACKEND
-const getFlashSaleProducts = async () => {
-  try {
-    const response = await axios.get(`${backendAPI}/api/flashsale`);
-    return response.data;
-  } catch (error) {
-    throw error.response.data.message;
-  }
-};
 
 const FlashSales = () => {
   const navigate = useNavigate(); // Initialize useNavigate
@@ -86,6 +77,41 @@ const FlashSales = () => {
     }
   };
 
+  //FETCHING FLASHSALE PRODUCTS FROM THE BACKEND
+  const getFlashSaleProducts = async () => {
+    try {
+      const response = await axios.get(`${backendAPI}/api/flashsale`);
+      return response.data;
+    } catch (error) {
+      throw error.response.data.message;
+    }
+  };
+
+  //HEART ICON FOR ADDING A PRODUCT TO WISHLIST
+  const addProductToWishlist = async (flashsaleProduct) => {
+    try {
+      console.log("Received Product:", flashsaleProduct);
+
+      if (!flashsaleProduct || !flashsaleProduct.productId) {
+        throw new Error("Invalid product object or missing productId");
+      }
+
+      const productId = flashsaleProduct.productId;
+
+      const response = await axios.post(
+        "/api/wishlist",
+        { productId },
+        { withCredentials: true }
+      );
+
+      console.log("Response from Backend:", response.data);
+      alert("Product added to wishlist!");
+    } catch (error) {
+      console.error("Error adding product to wishlist:", error.message);
+      alert("Failed to add product to wishlist");
+    }
+  };
+
   return (
     <div className="flex flex-col items-start gap-4 relative ml-[150px] mt-[35px]">
       {/* Flash Sales Header */}
@@ -138,15 +164,12 @@ const FlashSales = () => {
 
             {/* Heart Icon */}
             <div className="absolute top-4 right-4 flex items-center justify-center w-10 h-10 rounded-full text-black hover:bg-red-500 cursor-pointer">
-              <CiHeart className="text-3xl" />
+              <CiHeart className="text-3xl" onClick={addProductToWishlist} />
             </div>
 
             {/* Shopping Cart Icon */}
             <div className="absolute top-16 right-4 flex items-center justify-center w-10 h-10 rounded-full text-black hover:bg-red-500 cursor-pointer">
-              <CiShoppingCart
-                onClick={() => navigate("/cart")}
-                className="text-3xl"
-              />
+              <CiShoppingCart className="text-3xl" />
             </div>
 
             {/* Product Image */}

@@ -178,10 +178,10 @@ const getCart = async (req, res) => {
 //GET CART PRODUCTS FOR A SINGLE USER
 const getCartsUser = async (req, res) => {
   const { id: userId } = req.params;
-  console.log(`Fetching cart items for user ID: ${userId}`);
+  // console.log(`Fetching cart items for user ID: ${userId}`);
   try {
     const cartItemsUser = await Cart.find({ userId });
-    console.log(`Cart items found: ${JSON.stringify(cartItemsUser)}`);
+    // console.log(`Cart items found: ${JSON.stringify(cartItemsUser)}`);
     if (cartItemsUser.length === 0) {
       return res
         .status(404)

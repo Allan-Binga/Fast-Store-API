@@ -67,10 +67,10 @@ const Wishlist = () => {
   };
 
   return (
-    <div>
+    <div className="flex flex-col min-h-screen">
       <TopHeader />
       <Header />
-      <div className="flex flex-col items-start gap-4 relative ml-[150px] mt-[35px]">
+      <div className="flex-grow flex flex-col items-start gap-4 relative ml-[150px] mt-[35px]">
         <div className="flex items-center gap-4">
           <div className="w-6">
             <div className="h-10 bg-blue-500" />
@@ -80,9 +80,14 @@ const Wishlist = () => {
           </div>
         </div>
 
-        <button className="bg-white text-black text-lg font-medium py-3 px-6 rounded">
-          Add all to cart.
-        </button>
+        <div className="flex justify-between items-center w-full px-4 py-2">
+          <div className="text-black font-semibold text-lg">
+            Wishlist ({wishlistProducts.length})
+          </div>
+          <button className="text-black text-m font-medium h-9 px-4 border-2 border-black mr-[150px]">
+            Move All To Cart
+          </button>
+        </div>
 
         {loading && (
           <p className="text-lg text-gray-600">Loading wishlist...</p>

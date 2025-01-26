@@ -93,6 +93,12 @@ const Header = () => {
           >
             Sign Up
           </span>
+          <span
+            className="text-base text-black cursor-pointer hover:font-bold hover:border-b-2 hover:border-black"
+            onClick={() => navigate("/login")}
+          >
+            Login
+          </span>
         </nav>
 
         {/* Actions */}

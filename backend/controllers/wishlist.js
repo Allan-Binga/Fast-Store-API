@@ -120,7 +120,6 @@ const removeProductWishlist = async (req, res) => {
   }
 };
 
-//ADD WISHLIST PRODUCTS TO CART
 // ADD WISHLIST PRODUCTS TO CART
 const addWishlistToCart = async (req, res) => {
   // EXTRACT storeSession SESSION COOKIE
