@@ -32,7 +32,6 @@ const FlashSaleSchema = new mongoose.Schema(
       required: true,
       min: 0,
     },
-
     title: {
       type: String,
       required: true,

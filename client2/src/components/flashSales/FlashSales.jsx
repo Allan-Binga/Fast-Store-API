@@ -88,27 +88,19 @@ const FlashSales = () => {
   };
 
   //HEART ICON FOR ADDING A PRODUCT TO WISHLIST
-  const addProductToWishlist = async (flashsaleProduct) => {
+  const addProductToWishlist = async (productId) => {
     try {
-      console.log("Received Product:", flashsaleProduct);
-
-      if (!flashsaleProduct || !flashsaleProduct.productId) {
-        throw new Error("Invalid product object or missing productId");
-      }
-
-      const productId = flashsaleProduct.productId;
-
       const response = await axios.post(
-        "/api/wishlist",
+        `${backendAPI}/api/wishlist/add-to-wishlist`,
         { productId },
-        { withCredentials: true }
+        { withCredentials: true } // Ensures cookies are sent
       );
-
-      console.log("Response from Backend:", response.data);
-      alert("Product added to wishlist!");
+      if (response.status === 200) {
+        navigate("/wishlist");
+      }
     } catch (error) {
-      console.error("Error adding product to wishlist:", error.message);
-      alert("Failed to add product to wishlist");
+      console.error(error);
+      alert(error.response?.data?.error || "Something went wrong");
     }
   };
 
@@ -164,7 +156,10 @@ const FlashSales = () => {
 
             {/* Heart Icon */}
             <div className="absolute top-4 right-4 flex items-center justify-center w-10 h-10 rounded-full text-black hover:bg-red-500 cursor-pointer">
-              <CiHeart className="text-3xl" onClick={addProductToWishlist} />
+              <CiHeart
+                className="text-3xl"
+                onClick={() => addProductToWishlist(product.product, navigate)}
+              />
             </div>
 
             {/* Shopping Cart Icon */}
