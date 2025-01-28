@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { FaArrowRight, FaArrowLeft } from "react-icons/fa";
 import { CiHeart, CiShoppingCart } from "react-icons/ci";
-import { useNavigate } from "react-router-dom";
 import { backendAPI } from "../../endpoint";
 import axios from "axios";
 import { FaStar, FaRegStar } from "react-icons/fa";
+import toast from "react-hot-toast";
 
 const PRODUCTS_ALLOWED = 4;
 
 const FlashSales = () => {
-  const navigate = useNavigate(); // Initialize useNavigate
+  //const navigate = useNavigate(); // Initialize useNavigate
   const [products, setProducts] = useState([]);
   const [startIndex, setStartIndex] = useState(0);
   const [timeLeft, setTimeLeft] = useState({
@@ -88,19 +88,18 @@ const FlashSales = () => {
   };
 
   //HEART ICON FOR ADDING A PRODUCT TO WISHLIST
-  const addProductToWishlist = async (productId) => {
+  const handleAddToWishlist = async (product) => {
     try {
       const response = await axios.post(
         `${backendAPI}/api/wishlist/add-to-wishlist`,
-        { productId },
-        { withCredentials: true } // Ensures cookies are sent
+        product,
+        {
+          withCredentials: true, // Send cookies for authentication
+        }
       );
-      if (response.status === 200) {
-        navigate("/wishlist");
-      }
+      toast.success(response.data.message);
     } catch (error) {
-      console.error(error);
-      alert(error.response?.data?.error || "Something went wrong");
+      toast.error("Something went wrong.");
     }
   };
 
@@ -185,7 +184,7 @@ const FlashSales = () => {
             <div className="absolute top-4 right-4 flex items-center justify-center w-10 h-10 rounded-full text-black hover:bg-red-500 cursor-pointer">
               <CiHeart
                 className="text-3xl"
-                onClick={() => addProductToWishlist(product.product, navigate)}
+                onClick={() => handleAddToWishlist(product)}
               />
             </div>
 

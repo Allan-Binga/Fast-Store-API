@@ -108,51 +108,51 @@ const addProductToWishlist = async (req, res) => {
   }
 };
 
-//REMOVE PRODUCT FROM WISHLIST
-const removeProductWishlist = async (req, res) => {
+// REMOVE PRODUCT FROM WISHLIST
+const removeProductFromWishlist = async (req, res) => {
   try {
-    // Extract the user ID from cookies and the product ID from the request body
     const userId = req.cookies.storeSession;
-    const { productId } = req.body;
 
-    //VALIDATE LOGGED IN USER
+    // Check if the user is logged in
     if (!userId) {
-      return res.status(401).json("Please log in to perform this action.");
+      return res.status(401).json({ error: "Please log in first." });
     }
 
-    //VALIDATE PRODUCTID EXISTENCE
+    const { productId } = req.body;
+
+    // Validate the productId
     if (!productId) {
       return res.status(400).json({ error: "Product ID is required." });
     }
 
     // Find the user's wishlist
-    const userWishlist = await Wishlist.findOne({ user: userId });
+    const wishlist = await Wishlist.findOne({ user: userId });
 
-    if (!userWishlist) {
-      return res
-        .status(404)
-        .json({ error: "Wishlist not found for this user." });
+    if (!wishlist) {
+      return res.status(404).json({ error: "Wishlist not found." });
     }
 
-    //CHECK IF PRODUCT EXISTS IN THE WISHLIST
-    if (!userWishlist.products.includes(productId)) {
-      return res.status(400).json("Product not found in the wishlist.");
+    // Find the index of the product to remove
+    const productIndex = wishlist.products.findIndex(
+      (product) => product._id.toString() === productId.toString()
+    );
+
+    if (productIndex === -1) {
+      return res.status(404).json({ error: "Product not found in wishlist." });
     }
 
-    // Remove the product from the products array
-    const updatedWishlist = await Wishlist.findOneAndUpdate(
-      { user: userId },
-      { $pull: { products: productId } },
-      { new: true } // Return the updated document
-    ).populate("products");
+    // Remove the product from the wishlist
+    wishlist.products.splice(productIndex, 1);
 
-    res.status(200).json({
-      message: "Product removed from wishlist successfully.",
-      wishlist: updatedWishlist,
-    });
+    // Save the updated wishlist
+    await wishlist.save();
+
+    res.status(200).json({ message: "Product removed from wishlist." });
   } catch (error) {
     console.error("Error removing product from wishlist:", error);
-    res.status(500).json({ error: "Failed to remove product from wishlist." });
+    res.status(500).json({
+      error: "An error occurred while removing the product from the wishlist.",
+    });
   }
 };
 
@@ -207,11 +207,11 @@ const addWishlistToCart = async (req, res) => {
   }
 };
 
-//EXPORT FUNCTION
+//EXPORT
 module.exports = {
   getWishlists,
   getUserWishlist,
   addProductToWishlist,
-  removeProductWishlist,
+  removeProductFromWishlist,
   addWishlistToCart,
 };

@@ -111,10 +111,15 @@ const Wishlist = () => {
                 />
               </div>
 
-              <h3 className="text-lg font-bold">{product.title}</h3>
-              <p className="text-gray-600">${product.price}</p>
+              <h3 className="text-lg font-bold">{product.name}</h3>
+              <div className="text-base text-red-600 font-bold">
+                ${product.currentPrice}
+                <span className="ml-2 text-m text-gray-500 line-through">
+                  ${product.originalPrice}
+                </span>
+              </div>
               <p className="flex items-center text-xs text-gray-700 mt-1">
-                {renderStars(product.rating.rate)} ({product.rating.count}{" "}
+                {renderStars(product.reviews.rate)} ({product.reviews.count}{" "}
                 reviews)
               </p>
             </div>
