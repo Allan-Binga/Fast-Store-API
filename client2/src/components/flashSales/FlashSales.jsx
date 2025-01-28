@@ -4,7 +4,7 @@ import { CiHeart, CiShoppingCart } from "react-icons/ci";
 import { useNavigate } from "react-router-dom";
 import { backendAPI } from "../../endpoint";
 import axios from "axios";
-import toast from "react-hot-toast";
+import { FaStar, FaRegStar } from "react-icons/fa";
 
 const PRODUCTS_ALLOWED = 4;
 
@@ -104,6 +104,33 @@ const FlashSales = () => {
     }
   };
 
+  //REVIEWS SECTION STARS
+  const renderStars = (rate) => {
+    const fullStars = Math.floor(rate);
+    const halfStars = rate % 1 >= 0.5 ? 1 : 0;
+    const emptyStars = 5 - fullStars - halfStars;
+
+    return (
+      <>
+        {Array(fullStars)
+          .fill()
+          .map((_, i) => (
+            <FaStar key={`full-${i}`} className="text-yellow-500" />
+          ))}
+        {Array(halfStars)
+          .fill()
+          .map((_, i) => (
+            <FaStar key={`half-${i}`} className="text-yellow-500 opacity-50" />
+          ))}
+        {Array(emptyStars)
+          .fill()
+          .map((_, i) => (
+            <FaRegStar key={`empty-${i}`} className="text-gray-300" />
+          ))}
+      </>
+    );
+  };
+
   return (
     <div className="flex flex-col items-start gap-4 relative ml-[150px] mt-[35px]">
       {/* Flash Sales Header */}
@@ -146,12 +173,12 @@ const FlashSales = () => {
       <div className="grid grid-cols-4 gap-6 mt-6 mr-20">
         {visibleProducts.map((product) => (
           <div
-            key={product.product}
+            key={product._id}
             className="relative flex flex-col bg-white rounded-lg shadow-md hover:shadow-lg transition-all overflow-hidden group"
           >
             {/* Discount Badge */}
             <div className="absolute top-4 left-4 bg-red-500 text-white text-sm font-bold py-1 px-2 rounded">
-              -{product.discount}
+              -{product.discount}%
             </div>
 
             {/* Heart Icon */}
@@ -179,21 +206,21 @@ const FlashSales = () => {
             {/* Product Details */}
             <div className="p-4 flex flex-col gap-2 mt-auto">
               <h3 className="text-xl font-bold text-gray-800">
-                {product.title}
+                {product.name}
               </h3>
               <div className="text-base text-red-600 font-bold">
-                ${product.salePrice}
-                <span className="text-m text-gray-500 line-through">
+                ${product.currentPrice}
+                <span className="ml-2 text-m text-gray-500 line-through">
                   ${product.originalPrice}
                 </span>
-              </div>
-              <div className="text-sm text-gray-500">
-                Quantity Available: {product.quantityAvailable}
               </div>
               <div className="text-xs text-gray-400">
                 Sale Ends: {new Date(product.endTime).toLocaleString()}
               </div>
-              <div>Ratings</div>
+              <p className="flex items-center text-x text-gray-700 mt-1">
+                {renderStars(product.reviews.rate)} ({product.reviews.count}{" "}
+                reviews)
+              </p>
             </div>
           </div>
         ))}

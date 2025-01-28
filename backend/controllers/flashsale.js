@@ -15,13 +15,11 @@ const getFlashSaleProducts = async (_req, res) => {
 //ADDING PRODUCTS TO FLASHSALE
 const addProductToFlashSale = async (req, res) => {
   try {
-    // Destructure the request body according to the model's schema
     const {
       productId,
       name,
       currentPrice,
       originalPrice,
-      discount,
       category,
       description,
       image,
@@ -31,7 +29,6 @@ const addProductToFlashSale = async (req, res) => {
       quantityAvailable,
     } = req.body;
 
-    // Validate all required fields
     if (
       !productId ||
       !name ||
@@ -49,13 +46,17 @@ const addProductToFlashSale = async (req, res) => {
       return res.status(400).json({ error: "All fields are required." });
     }
 
-    // Validate product existence
+    if (currentPrice >= originalPrice) {
+      return res
+        .status(400)
+        .json({ error: "Current price must be less than original price." });
+    }
+
     const productExists = await Product.findById(productId);
     if (!productExists) {
       return res.status(404).json({ error: "Product does not exist." });
     }
 
-    // Parse dates if they come in ISO format (as in your example)
     const parsedStartTime = new Date(startTime);
     const parsedEndTime = new Date(endTime);
 
@@ -65,15 +66,14 @@ const addProductToFlashSale = async (req, res) => {
         .json({ error: "Invalid date format for start or end time." });
     }
 
-    // Create a new flash sale product
     const newFlashSaleProduct = new FlashSale({
       productId,
       name,
       currentPrice,
       originalPrice,
-      discount: discount
-        ? Number(discount)
-        : Math.round(((originalPrice - currentPrice) / originalPrice) * 100),
+      discount: Math.round(
+        ((originalPrice - currentPrice) / originalPrice) * 100
+      ),
       category,
       description,
       image,
@@ -86,7 +86,6 @@ const addProductToFlashSale = async (req, res) => {
       quantityAvailable: Number(quantityAvailable),
     });
 
-    // Save the new flash sale product
     const savedProduct = await newFlashSaleProduct.save();
     res.status(201).json(savedProduct);
   } catch (error) {

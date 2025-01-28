@@ -1,6 +1,8 @@
 import React from "react";
 import { CiHeart, CiShoppingCart } from "react-icons/ci";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { FaStar, FaRegStar } from "react-icons/fa";
 
 const products = [
   {
@@ -61,7 +63,7 @@ const products = [
   // Additional products...
 ];
 
-const BestSellers = () => {
+const OurProducts = () => {
   const navigate = useNavigate();
 
   return (
@@ -140,4 +142,4 @@ const BestSellers = () => {
   );
 };
 
-export default BestSellers;
+export default OurProducts;
