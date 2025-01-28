@@ -3,13 +3,23 @@ const mongoose = require("mongoose");
 //PRODUCT SCHEMA
 const ProductSchema = new mongoose.Schema(
   {
-    title: {
+    name: {
       type: String,
       required: true,
     },
-    price: {
+    currentPrice: {
       type: Number,
       required: true,
+      min: 0,
+    },
+    originalPrice: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    discount: {
+      type: Number,
+      default: 0,
     },
     category: {
       type: String,
@@ -23,7 +33,7 @@ const ProductSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    rating: {
+    reviews: {
       rate: {
         type: Number,
         required: true,

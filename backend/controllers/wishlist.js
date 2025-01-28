@@ -44,31 +44,67 @@ const getUserWishlist = async (req, res) => {
   }
 };
 
-//ADD PRODUCT TO WISHLIST
+// ADD PRODUCT TO WISHLIST
 const addProductToWishlist = async (req, res) => {
-  const { productId } = req.body;
+  const {
+    name,
+    currentPrice,
+    originalPrice,
+    discount,
+    category,
+    description,
+    image,
+    reviews,
+  } = req.body;
   const userId = req.cookies.storeSession;
-  //IF NO LOGIN COOKIE, RETURN WITH STATUS 401.
+
+  // IF NO LOGIN COOKIE, RETURN WITH STATUS 401
   if (!userId) {
     return res.status(401).json({ error: "Please log in first." });
   }
 
   try {
     let wishlist = await Wishlist.findOne({ user: userId });
+
+    // Create a new wishlist if none exists
     if (!wishlist) {
       wishlist = new Wishlist({ user: userId, products: [] });
     }
 
-    if (!wishlist.products.includes(productId)) {
-      wishlist.products.push(productId);
+    // Ensure products is an array
+    if (!Array.isArray(wishlist.products)) {
+      wishlist.products = [];
+    }
+
+    // Check if product already exists in the wishlist
+    const existingProduct = wishlist.products.find(
+      (product) => product?.name === name && product?.category === category
+    );
+
+    if (!existingProduct) {
+      // Add new product to the wishlist
+      wishlist.products.push({
+        name,
+        currentPrice,
+        originalPrice,
+        discount,
+        category,
+        description,
+        image,
+        reviews,
+      });
       await wishlist.save();
-      return res.status(200).json("Product added to wishlist.");
+      return res.status(200).json({ message: "Product added to wishlist." });
     } else {
-      return res.status(400).json("Product already exists in wishlist.");
+      return res
+        .status(400)
+        .json({ error: "Product already exists in wishlist." });
     }
   } catch (error) {
     console.error(error);
-    res.status(500).json("Invalid product ID.");
+    res.status(500).json({
+      error: "An error occurred while adding the product to the wishlist.",
+    });
   }
 };
 

@@ -22,17 +22,69 @@ const getLimitedProducts = async (req, res) => {
   }
 };
 
-//Adding a new product.
+// Adding a new product.
 const addNewProduct = async (req, res) => {
   try {
-    const { title, price, category, description, image, rating } = req.body;
+    const {
+      name,
+      currentPrice,
+      originalPrice,
+      category,
+      description,
+      image,
+      reviews,
+    } = req.body;
 
-    if (!title || !price || !category || !description || !image || !rating) {
+    // Validation of required fields
+    if (
+      !name ||
+      currentPrice === undefined ||
+      originalPrice === undefined ||
+      !category ||
+      !description ||
+      !image ||
+      !reviews ||
+      reviews.rate === undefined ||
+      reviews.count === undefined
+    ) {
       console.log("Validation failed: Missing fields.");
       return res.status(400).json({ error: "All fields are required." });
     }
-    const newProduct = new Product(req.body);
 
+    // Validate `currentPrice` and `originalPrice` are non-negative
+    if (currentPrice < 0 || originalPrice < 0) {
+      return res.status(400).json({
+        error: "Prices must be non-negative values.",
+      });
+    }
+
+    // Validate `reviews.rate` and `reviews.count`
+    if (reviews.rate < 0 || reviews.rate > 5 || reviews.count < 0) {
+      return res.status(400).json({
+        error:
+          "Invalid review data. Rate must be between 0 and 5, and count must be non-negative.",
+      });
+    }
+
+    // Calculate discount dynamically
+    const discount =
+      originalPrice > 0
+        ? ((originalPrice - currentPrice) / originalPrice) * 100
+        : 0;
+
+    // Create a new product
+    const newProduct = new Product({
+      name,
+      currentPrice,
+      originalPrice,
+      discount, // Include calculated discount
+      category,
+      description,
+      image,
+      reviews,
+    });
+
+    // Save product to the database
     const savedProduct = await newProduct.save();
     res.status(200).json(savedProduct);
   } catch (error) {

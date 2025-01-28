@@ -15,71 +15,85 @@ const getFlashSaleProducts = async (_req, res) => {
 //ADDING PRODUCTS TO FLASHSALE
 const addProductToFlashSale = async (req, res) => {
   try {
-    //BODY ITEMS
+    // Destructure the request body according to the model's schema
     const {
       productId,
-      title,
-      image,
-      salePrice,
+      name,
+      currentPrice,
       originalPrice,
       discount,
+      category,
+      description,
+      image,
+      reviews,
       startTime,
       endTime,
       quantityAvailable,
     } = req.body;
 
-    //VALIDATE BODY AND CHECK FOR MISSING ITEMS
+    // Validate all required fields
     if (
-      (!productId,
-      !salePrice,
-      !originalPrice,
-      !discount,
-      !startTime,
-      !endTime,
-      !quantityAvailable,
-      !image,
-      !title)
+      !productId ||
+      !name ||
+      !currentPrice ||
+      !originalPrice ||
+      !category ||
+      !description ||
+      !image ||
+      !reviews?.rate ||
+      !reviews?.count ||
+      !startTime ||
+      !endTime ||
+      !quantityAvailable
     ) {
       return res.status(400).json({ error: "All fields are required." });
     }
-    //VALIDATE PRODUCT
+
+    // Validate product existence
     const productExists = await Product.findById(productId);
     if (!productExists) {
       return res.status(404).json({ error: "Product does not exist." });
     }
 
-    // Convert readable date format to a valid Date object
-    const parsedStartTime = moment(
-      startTime,
-      "dddd MMMM DD YYYY HH:mm"
-    ).toDate();
-    const parsedEndTime = moment(endTime, "dddd MMMM DD YYYY HH:mm").toDate();
+    // Parse dates if they come in ISO format (as in your example)
+    const parsedStartTime = new Date(startTime);
+    const parsedEndTime = new Date(endTime);
 
-    //CALCULATE DISCOUNT IF NOT PROVIDED
-    const calculatedDiscount = `${Math.round(
-      ((originalPrice - salePrice) / originalPrice) * 100
-    )}%`;
+    if (isNaN(parsedStartTime.getTime()) || isNaN(parsedEndTime.getTime())) {
+      return res
+        .status(400)
+        .json({ error: "Invalid date format for start or end time." });
+    }
 
-    //FLASHSALE ENTRY TO HANDLE CALCULATED DISCOUNT SITUATION and ADD PRODUCT TO FLASHSALE
+    // Create a new flash sale product
     const newFlashSaleProduct = new FlashSale({
       productId,
-      title,
-      image,
-      salePrice,
+      name,
+      currentPrice,
       originalPrice,
-      discount: discount || calculatedDiscount,
+      discount: discount
+        ? Number(discount)
+        : Math.round(((originalPrice - currentPrice) / originalPrice) * 100),
+      category,
+      description,
+      image,
+      reviews: {
+        rate: Number(reviews.rate),
+        count: Number(reviews.count),
+      },
       startTime: parsedStartTime,
       endTime: parsedEndTime,
-      quantityAvailable,
+      quantityAvailable: Number(quantityAvailable),
     });
 
+    // Save the new flash sale product
     const savedProduct = await newFlashSaleProduct.save();
     res.status(201).json(savedProduct);
   } catch (error) {
-    console.error("Error occured while adding products to flashsale", error);
+    console.error("Error occurred while adding product to flashsale:", error);
     res
       .status(500)
-      .json({ error: "Error occured while adding product to flashsale." });
+      .json({ error: "Error occurred while adding product to flashsale." });
   }
 };
 
