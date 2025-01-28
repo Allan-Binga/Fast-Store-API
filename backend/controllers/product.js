@@ -66,18 +66,14 @@ const addNewProduct = async (req, res) => {
       });
     }
 
-    // Calculate discount dynamically
-    const discount =
-      originalPrice > 0
-        ? ((originalPrice - currentPrice) / originalPrice) * 100
-        : 0;
-
     // Create a new product
     const newProduct = new Product({
       name,
       currentPrice,
       originalPrice,
-      discount, // Include calculated discount
+      discount: Math.round(
+        ((originalPrice - currentPrice) / originalPrice) * 100
+      ),
       category,
       description,
       image,
