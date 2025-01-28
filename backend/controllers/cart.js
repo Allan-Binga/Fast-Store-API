@@ -3,6 +3,7 @@ const Cart = require("../models/cart");
 // ADD PRODUCTS TO CART
 const addProductToCart = async (req, res) => {
   try {
+    // Parse the cookie to extract userId
     const userId = req.cookies.storeSession;
 
     // Check if the user is logged in
@@ -19,23 +20,32 @@ const addProductToCart = async (req, res) => {
       });
     }
 
+    // Validate each product
     for (const product of products) {
-      const { _id, title, category, price, quantity, description, image } =
-        product;
+      const {
+        name,
+        currentPrice,
+        originalPrice,
+        discount,
+        category,
+        description,
+        image,
+        reviews,
+        quantity,
+      } = product;
 
       // Ensure required fields are provided
       if (
-        !_id ||
-        !title ||
+        !name ||
+        !currentPrice ||
+        !originalPrice ||
         !category ||
-        !price ||
-        !quantity ||
         !description ||
-        !image
+        !image ||
+        !quantity
       ) {
         return res.status(400).json({
-          error:
-            "Each product must include _id, title, category, price, quantity, description, and image.",
+          error: "All product fields are required, including quantity.",
         });
       }
 
@@ -44,6 +54,23 @@ const addProductToCart = async (req, res) => {
         return res.status(400).json({
           error: "Quantity must be greater than zero.",
         });
+      }
+
+      // Validate reviews structure if provided
+      if (reviews) {
+        const { rate, count } = reviews;
+        if (
+          typeof rate !== "number" ||
+          rate < 0 ||
+          rate > 5 ||
+          typeof count !== "number" ||
+          count < 0
+        ) {
+          return res.status(400).json({
+            error:
+              "Invalid reviews data. Rate must be between 0-5, and count must be non-negative.",
+          });
+        }
       }
     }
 
@@ -56,11 +83,11 @@ const addProductToCart = async (req, res) => {
 
     // Add or update products in the cart
     for (const product of products) {
-      const { _id, quantity } = product;
+      const { name, quantity } = product;
 
-      // Check if the product exists in the cart by _id
+      // Check if the product exists in the cart by name
       let existingProductIndex = cart.products.findIndex(
-        (p) => p._id.toString() === _id.toString()
+        (p) => p.name === name
       );
 
       if (existingProductIndex !== -1) {
@@ -75,7 +102,7 @@ const addProductToCart = async (req, res) => {
     // Save the updated cart
     await cart.save();
 
-    res.status(200).json(cart);
+    res.status(200).json("Added to cart successfully.");
   } catch (error) {
     console.error("Error adding product to cart:", error);
     res.status(500).json({
@@ -151,7 +178,7 @@ const clearCart = async (req, res) => {
     }
 
     // Clear the products array
-    cart.products = [];
+    await Cart.deleteOne({ userId });
 
     //Save updated cart
     await cart.save();
@@ -176,26 +203,41 @@ const getCart = async (req, res) => {
 };
 
 //GET CART PRODUCTS FOR A SINGLE USER
-const getCartsUser = async (req, res) => {
-  const { id: userId } = req.params;
-  // console.log(`Fetching cart items for user ID: ${userId}`);
+const getCartUser = async (req, res) => {
   try {
-    const cartItemsUser = await Cart.find({ userId });
-    // console.log(`Cart items found: ${JSON.stringify(cartItemsUser)}`);
-    if (cartItemsUser.length === 0) {
+    // Get the authenticated user's ID from cookies
+    const loggedInUserId = req.cookies.storeSession;
+    console.log(loggedInUserId);
+    // Check if the session cookie exists
+    if (!loggedInUserId) {
+      return res.status(401).json({ error: "Please log in to proceed." });
+    }
+
+    // Find the wishlist for the authenticated user
+    const userCart = await Cart.findOne({
+      userId: loggedInUserId,
+    }).populate("products");
+
+    // Handle case where no cart exists for the user
+    if (!userCart) {
       return res
         .status(404)
-        .json({ message: "No cart items found for this user." });
+        .json({ error: "No cart found for the logged-in user." });
     }
-    res.status(200).json(cartItemsUser);
+
+    // Return the cart if it exists
+    return res.status(200).json(userCart);
   } catch (error) {
-    res.status(500).json("Error fetching products.");
+    console.error("Error fetching user's cart:", error);
+    return res
+      .status(500)
+      .json({ error: "An error occurred while fetching the wishlist." });
   }
 };
 
 module.exports = {
   getCart,
-  getCartsUser,
+  getCartUser,
   addProductToCart,
   removeProductFromCart,
   clearCart,

@@ -6,30 +6,47 @@ import { backendAPI } from "../../endpoint";
 import axios from "axios";
 import { CiTrash } from "react-icons/ci";
 import { FaStar, FaRegStar } from "react-icons/fa";
-
-// Function to fetch logged-in user's wishlist
-const getWishlistProducts = async () => {
-  try {
-    const response = await axios.get(`${backendAPI}/api/wishlist/user`, {
-      withCredentials: true, // Ensures cookies are sent with the request
-    });
-    return response.data; // Return the fetched data
-  } catch (error) {
-    throw error.response?.data?.error || "Failed to fetch wishlist.";
-  }
-};
+import toast from "react-hot-toast";
 
 const Wishlist = () => {
   const [wishlistProducts, setWishlistProducts] = useState([]);
   const [loading, setLoading] = useState(true); // Loading state
   const [error, setError] = useState(null); // Error state
 
+  const getWishlistProducts = async () => {
+    try {
+      const response = await axios.get(`${backendAPI}/api/wishlist/user`, {
+        withCredentials: true, // Ensures cookies are sent with the request
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data?.error || "Failed to fetch wishlist.";
+    }
+  };
+
+  const removeFromWishlist = async (productId) => {
+    try {
+      const response = await axios.delete(`${backendAPI}/api/wishlist`, {
+        data: { productId },
+        withCredentials: true,
+      });
+
+      // Remove the product from frontend state
+      setWishlistProducts((prev) =>
+        prev.filter((product) => product._id !== productId)
+      );
+      toast.success(response.data.message); // Keep the toast for successful removal
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to remove product.");
+    }
+  };
+
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
         const data = await getWishlistProducts();
-        setWishlistProducts(data.products || []); // Assuming `products` is part of the response
+        setWishlistProducts(data.products || []);
         setError(null); // Clear any previous errors
       } catch (err) {
         setError(err);
@@ -94,6 +111,12 @@ const Wishlist = () => {
         )}
         {error && <p className="text-lg text-red-500">{error}</p>}
 
+        {!loading && wishlistProducts.length === 0 && !error && (
+          <p className="text-lg text-gray-500 italic">
+            No products in wishlist yet.
+          </p>
+        )}
+
         <div className="grid grid-cols-4 gap-6 mt-6 mr-20">
           {wishlistProducts.map((product) => (
             <div
@@ -101,7 +124,10 @@ const Wishlist = () => {
               className="relative flex flex-col bg-white rounded-lg shadow-md hover:shadow-lg transition-all overflow-hidden group"
             >
               <div className="absolute top-4 right-4 flex items-center justify-center w-10 h-10 rounded-full text-black hover:bg-red-500 cursor-pointer">
-                <CiTrash className="text-3xl" />
+                <CiTrash
+                  className="text-3xl"
+                  onClick={() => removeFromWishlist(product._id)}
+                />
               </div>
               <div className="w-[300px] h-[350px] flex items-center justify-center overflow-hidden">
                 <img

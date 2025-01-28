@@ -8,6 +8,7 @@ import toast from "react-hot-toast";
 import axios from "axios";
 
 const Header = () => {
+  const [wishlistCount, setWishlistCount] = useState(0);
   const [isCardVisible, setIsCardVisible] = useState(false);
   const cardRef = useRef(null);
   const navigate = useNavigate();
@@ -26,12 +27,9 @@ const Header = () => {
       );
 
       if (response.status === 200) {
-        // Server confirms logout, we can now safely clear the cookie
         document.cookie = "storeSession=; Max-Age=0; path=/;";
         toast.success("Successfully logged out.");
-        // Optionally, redirect or update UI state here
       } else {
-        // If the server tells us no user is logged in or another error
         toast.error("You are not logged in.");
       }
     } catch (error) {
@@ -53,8 +51,24 @@ const Header = () => {
 
   const handleOptionClick = (path) => {
     navigate(path);
-    setIsCardVisible(false); // Close the card after navigation
+    setIsCardVisible(false);
   };
+
+  //FETCH WISHLIST COUNT
+  useEffect(() => {
+    const fetchWishlist = async () => {
+      try {
+        const response = await axios.get(`${backendAPI}/api/wishlist/user`, {
+          withCredentials: true,
+        });
+        setWishlistCount(response.data.products.length || 0);
+      } catch (error) {
+        console.error("Error fetching wishlist");
+      }
+    };
+
+    fetchWishlist();
+  }, []);
 
   return (
     <header className="bg-white border-b border-gray-200 py-2 px-5 font-sans">
@@ -103,6 +117,7 @@ const Header = () => {
 
         {/* Actions */}
         <div className="flex items-center gap-5">
+          {/* Search */}
           <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden bg-gray-50 px-3 py-2">
             <input
               type="text"
@@ -113,22 +128,37 @@ const Header = () => {
               <CiSearch />
             </button>
           </div>
-          <CiHeart
-            className="text-2xl cursor-pointer text-black transition-colors hover:text-gray-800"
+
+          {/* Wishlist with Badge */}
+          <div
+            className="relative cursor-pointer"
             onClick={() => navigate("/wishlist")}
-          />
+          >
+            <CiHeart className="text-2xl text-black transition-colors hover:text-gray-800" />
+            {wishlistCount > 0 ? (
+              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                {wishlistCount}
+              </span>
+            ) : (
+              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                0
+              </span>
+            )}
+          </div>
+
+          {/* Cart */}
           <PiShoppingCartThin
             className="text-2xl cursor-pointer text-black transition-colors hover:text-gray-800"
             onClick={() => navigate("/cart")}
           />
+
+          {/* Account Dropdown */}
           <div className="relative">
-            {/* Account Icon */}
             <VscAccount
               className="text-2xl cursor-pointer text-black transition-colors hover:text-gray-800"
-              onClick={toggleCard}
+              onClick={() => setIsCardVisible((prev) => !prev)}
             />
 
-            {/* Dropdown Card */}
             {isCardVisible && (
               <div
                 ref={cardRef}
@@ -136,13 +166,13 @@ const Header = () => {
               >
                 <button
                   className="w-full text-left text-sm text-gray-700 hover:bg-gray-100 p-2 rounded"
-                  onClick={() => handleOptionClick("/my-orders")}
+                  onClick={() => navigate("/my-orders")}
                 >
                   My Orders
                 </button>
                 <button
                   className="w-full text-left text-sm text-gray-700 hover:bg-gray-100 p-2 rounded"
-                  onClick={() => handleOptionClick("/account-settings")}
+                  onClick={() => navigate("/account-settings")}
                 >
                   Account Settings
                 </button>

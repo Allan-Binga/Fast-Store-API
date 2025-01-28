@@ -160,16 +160,15 @@ const removeProductFromWishlist = async (req, res) => {
 const addWishlistToCart = async (req, res) => {
   // EXTRACT storeSession SESSION COOKIE
   const userId = req.cookies.storeSession;
-  // IF THERE'S NO COOKIE RETURN WITH STATUS 401
+
+  // IF THERE'S NO COOKIE, RETURN WITH STATUS 401
   if (!userId) {
     return res.status(401).json("Please login to perform this action.");
   }
 
   try {
     // RETRIEVE USER'S WISHLIST WITH PRODUCT DETAILS
-    const userWishlist = await Wishlist.findOne({ user: userId }).populate(
-      "products"
-    );
+    const userWishlist = await Wishlist.findOne({ user: userId });
 
     if (!userWishlist || userWishlist.products.length === 0) {
       return res.status(404).json("No products in wishlist to add to cart.");
@@ -184,15 +183,19 @@ const addWishlistToCart = async (req, res) => {
 
     // ADD PRODUCTS FROM WISHLIST TO CART
     for (const product of userWishlist.products) {
-      // Check if product already exists in cart
+      // Check if product already exists in the cart
       if (!userCart.products.some((p) => p._id && p._id.equals(product._id))) {
         userCart.products.push({
           _id: product._id,
-          title: product.title,
+          name: product.name,
           description: product.description,
-          price: product.price,
+          currentPrice: product.currentPrice,
+          originalPrice: product.originalPrice,
+          discount: product.discount,
+          category: product.category,
+          image: product.image,
           quantity: 1, // Default quantity to 1
-          image: product.image || undefined, // Use undefined for optional fields if not present
+          reviews: product.reviews || {}, // Optional reviews field
         });
       }
     }
