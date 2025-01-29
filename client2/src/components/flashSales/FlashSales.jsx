@@ -103,6 +103,26 @@ const FlashSales = () => {
     }
   };
 
+  //SHOPPING CART ICON for ADDING A PRODUCT TO CART
+  const handleAddToCart = async (product) => {
+    try {
+      // Wrap the product in an array to match the backend's expected format
+      const response = await axios.post(
+        `${backendAPI}/api/products/add-to-cart`,
+        { products: [product] }, // Wrap the product in an array
+        {
+          withCredentials: true, // Send cookies for authentication
+        }
+      );
+      toast.success("Product added to cart successfully!");
+    } catch (error) {
+      console.error("Error adding product to cart:", error);
+      toast.error(
+        error.response?.data?.error || "Failed to add product to cart."
+      );
+    }
+  };
+
   //REVIEWS SECTION STARS
   const renderStars = (rate) => {
     const fullStars = Math.floor(rate);
@@ -190,7 +210,10 @@ const FlashSales = () => {
 
             {/* Shopping Cart Icon */}
             <div className="absolute top-16 right-4 flex items-center justify-center w-10 h-10 rounded-full text-black hover:bg-red-500 cursor-pointer">
-              <CiShoppingCart className="text-3xl" />
+              <CiShoppingCart
+                className="text-3xl"
+                onClick={() => handleAddToCart(product)}
+              />
             </div>
 
             {/* Product Image */}

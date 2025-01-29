@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { FaStar, FaRegStar } from "react-icons/fa";
 import { backendAPI } from "../../endpoint";
+import toast from "react-hot-toast";
 
 const OurProducts = () => {
   const navigate = useNavigate();
@@ -55,6 +56,22 @@ const OurProducts = () => {
     );
   };
 
+  //HEART ICON FOR ADDING A PRODUCT TO WISHLIST
+  const handleAddToWishlist = async (product) => {
+    try {
+      const response = await axios.post(
+        `${backendAPI}/api/wishlist/add-to-wishlist`,
+        product,
+        {
+          withCredentials: true, // Send cookies for authentication
+        }
+      );
+      toast.success(response.data.message);
+    } catch (error) {
+      toast.error("Something went wrong.");
+    }
+  };
+
   return (
     <div className="flex flex-col items-start gap-4 relative ml-[150px] mt-[35px]">
       {/* Our Products Header */}
@@ -86,7 +103,10 @@ const OurProducts = () => {
             </div>
             {/* Heart Icon */}
             <div className="absolute top-4 right-4 flex items-center justify-center w-10 h-10 rounded-full text-black hover:bg-red-500 cursor-pointer">
-              <CiHeart className="text-3xl" />
+              <CiHeart
+                className="text-3xl"
+                onClick={() => handleAddToWishlist(product)}
+              />
             </div>
 
             {/* Shopping Cart Icon */}
