@@ -108,7 +108,7 @@ const OurProducts = () => {
                 onClick={() => handleAddToWishlist(product)}
               />
             </div>
-
+          <div></div>
             {/* Shopping Cart Icon */}
             <div className="absolute top-16 right-4 flex items-center justify-center w-10 h-10 rounded-full text-black hover:bg-red-500 cursor-pointer">
               <CiShoppingCart
