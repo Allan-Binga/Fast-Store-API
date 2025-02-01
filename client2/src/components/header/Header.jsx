@@ -9,6 +9,7 @@ import axios from "axios";
 
 const Header = () => {
   const [wishlistCount, setWishlistCount] = useState(0);
+  const [cartCount, setCartCount] = useState(0)
   const [isCardVisible, setIsCardVisible] = useState(false);
   const cardRef = useRef(null);
   const navigate = useNavigate();
@@ -69,6 +70,20 @@ const Header = () => {
 
     fetchWishlist();
   }, []);
+
+  useEffect(() => {
+    const fetchCart = async () => {
+      try {
+        const response = await axios.get(`${backendAPI}/api/cart/user`, {
+          withCredentials: true,
+        })
+        setCartCount(response.data.products.length || 0)
+      } catch (error) {
+        console.error("Error fetching cart products.")
+      }
+    }
+    fetchCart()
+  }, [])
 
   return (
     <header className="bg-white border-b border-gray-200 py-2 px-5 font-sans">
@@ -147,11 +162,21 @@ const Header = () => {
           </div>
 
           {/* Cart */}
-          <PiShoppingCartThin
-            className="text-2xl cursor-pointer text-black transition-colors hover:text-gray-800"
+          <div
+            className="relative cursor-pointer"
             onClick={() => navigate("/cart")}
-          />
-
+          >
+            <PiShoppingCartThin className="text-2xl text-black transition-colors hover:text-gray-800" />
+            {cartCount > 0 ? (
+              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                {cartCount}
+              </span>
+            ) : (
+              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                0
+              </span>
+            )}
+          </div>
           {/* Account Dropdown */}
           <div className="relative">
             <VscAccount

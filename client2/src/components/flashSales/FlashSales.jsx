@@ -99,27 +99,59 @@ const FlashSales = () => {
       );
       toast.success(response.data.message);
     } catch (error) {
-      toast.error("Something went wrong.");
+      if (error.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        if (error.response.status === 401) {
+          toast.error("Please login to add product to wishlist.");
+        } else if (error.response.status === 400) {
+          toast.error(error.response.data.error);
+        } else {
+          toast.error(
+            "An error occurred while adding the product to the wishlist."
+          );
+        }
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        toast.error(
+          "An error occurred while adding the product to the wishlist."
+        );
+      }
     }
   };
 
   //SHOPPING CART ICON for ADDING A PRODUCT TO CART
-  const handleAddToCart = async (product) => {
+  //SHOPPING CART ICON for ADDING A PRODUCT TO CART
+  const handleAddToCart = async (productId) => {
     try {
-      // Wrap the product in an array to match the backend's expected format
       const response = await axios.post(
         `${backendAPI}/api/products/add-to-cart`,
-        { products: [product] }, // Wrap the product in an array
         {
-          withCredentials: true, // Send cookies for authentication
+          products: [{ productId, quantity: 1 }], // Sending product in expected format
+        },
+        {
+          withCredentials: true, // Ensure cookies are sent for authentication
         }
       );
-      toast.success("Product added to cart successfully!");
+
+      toast.success(response.data.message);
     } catch (error) {
-      console.error("Error adding product to cart:", error);
-      toast.error(
-        error.response?.data?.error || "Failed to add product to cart."
-      );
+      if (error.response) {
+        if (error.response.status === 401) {
+          toast.error("Please login to add product to cart.");
+        } else if (
+          error.response.status === 400 ||
+          error.response.status === 404
+        ) {
+          toast.error(error.response.data.error);
+        } else {
+          toast.error(
+            "An error occurred while adding the product to the cart."
+          );
+        }
+      } else {
+        toast.error("An unexpected error occurred.");
+      }
     }
   };
 
@@ -212,7 +244,7 @@ const FlashSales = () => {
             <div className="absolute top-16 right-4 flex items-center justify-center w-10 h-10 rounded-full text-black hover:bg-red-500 cursor-pointer">
               <CiShoppingCart
                 className="text-3xl"
-                onClick={() => handleAddToCart(product)}
+                onClick={() => handleAddToCart(product._id)}
               />
             </div>
 

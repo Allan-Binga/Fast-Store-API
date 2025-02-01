@@ -72,6 +72,40 @@ const OurProducts = () => {
     }
   };
 
+  //SHOPPING CART ICON for ADDING A PRODUCT TO CART
+  const handleAddToCart = async (productId) => {
+    try {
+      const response = await axios.post(
+        `${backendAPI}/api/products/add-to-cart`,
+        {
+          products: [{ productId, quantity: 1 }], // Sending product in expected format
+        },
+        {
+          withCredentials: true, // Ensure cookies are sent for authentication
+        }
+      );
+
+      toast.success(response.data.message);
+    } catch (error) {
+      if (error.response) {
+        if (error.response.status === 401) {
+          toast.error("Please login to add product to cart.");
+        } else if (
+          error.response.status === 400 ||
+          error.response.status === 404
+        ) {
+          toast.error(error.response.data.error);
+        } else {
+          toast.error(
+            "An error occurred while adding the product to the cart."
+          );
+        }
+      } else {
+        toast.error("An unexpected error occurred.");
+      }
+    }
+  };
+
   return (
     <div className="flex flex-col items-start gap-4 relative ml-[150px] mt-[35px]">
       {/* Our Products Header */}
@@ -108,11 +142,11 @@ const OurProducts = () => {
                 onClick={() => handleAddToWishlist(product)}
               />
             </div>
-          
+
             {/* Shopping Cart Icon */}
             <div className="absolute top-16 right-4 flex items-center justify-center w-10 h-10 rounded-full text-black hover:bg-red-500 cursor-pointer">
               <CiShoppingCart
-                onClick={() => navigate("/cart")}
+                onClick={() => handleAddToCart(product._id)}
                 className="text-3xl"
               />
             </div>
