@@ -83,6 +83,21 @@ const Wishlist = () => {
     );
   };
 
+  //Add products to wishlist
+  const addWishlistProductsToCart = async () => {
+    try {
+      const response = await axios.post(
+        `${backendAPI}/api/wishlist/add-to-cart`, 
+        null,  // Explicitly pass null to indicate no body
+        { withCredentials: true }
+      );
+      toast.success("Added all wishlist items to cart!");
+    } catch (error) {
+      toast.error(error.response?.data?.error || "Failed to add wishlist items to cart.");
+    }
+  };
+  
+
   return (
     <div className="flex flex-col min-h-screen">
       <TopHeader />
@@ -101,7 +116,10 @@ const Wishlist = () => {
           <div className="text-black font-semibold text-lg">
             Wishlist ({wishlistProducts.length})
           </div>
-          <button className="text-black text-m font-medium h-9 px-4 border-2 border-black mr-[150px]">
+          <button
+            className="text-black text-m font-medium h-9 px-4 border-2 border-black mr-[150px]"
+            onClick={addWishlistProductsToCart}
+          >
             Move All To Cart
           </button>
         </div>
