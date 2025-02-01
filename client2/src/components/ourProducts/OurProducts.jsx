@@ -96,7 +96,7 @@ const OurProducts = () => {
           <div
             key={product._id}
             className="relative flex flex-col bg-white rounded-lg shadow-md hover:shadow-lg transition-all overflow-hidden group"
-          >
+          > <div></div>
             {/* Discount Badge */}
             <div className="absolute top-4 left-4 bg-blue-400 text-white text-sm font-bold py-1 px-2 rounded">
               -{product.discount}%
