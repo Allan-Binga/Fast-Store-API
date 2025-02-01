@@ -54,7 +54,7 @@ const Categories = () => {
     <div className="flex flex-col items-start gap-4 relative ml-[150px] mt-[35px]">
       <div className="flex gap-4">
         <div className="w-5">
-          <div className="h-10 bg-red-500" />
+          <div className="h-10 bg-blue-500" />
         </div>
         <div className="font-semibold text-secondary-2 text-[16px] tracking-[0.02em] leading-[1.5] mt-2">
           Categories
@@ -86,7 +86,7 @@ const Categories = () => {
         {visibleCategories.map((category) => (
           <div
             key={category.id}
-            className="w-[400px] h-[360px] bg-white text-black flex flex-col items-center justify-center border border-gray-500 hover:bg-red-500 hover:text-white transition-all duration-300 cursor-pointer "
+            className="w-[400px] h-[360px] bg-white text-black flex flex-col items-center justify-center border border-gray-500 hover:bg-blue-400 hover:text-white transition-all duration-300 cursor-pointer "
           >
             {category.icon}
             <p className="mt-2 font-medium">{category.name}</p>

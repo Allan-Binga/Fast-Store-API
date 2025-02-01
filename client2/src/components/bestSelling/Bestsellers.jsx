@@ -90,7 +90,7 @@ const BestSellers = () => {
       {/* Flash Sales Header */}
       <div className="flex items-center gap-4">
         <div className="w-5">
-          <div className="h-10 bg-red-500" />
+          <div className="h-10 bg-blue-500" />
         </div>
         <div className="font-semibold text-secondary-2 text-[16px] tracking-[0.02em] leading-[1.5]">
           Past Month
@@ -127,16 +127,16 @@ const BestSellers = () => {
             className="relative flex flex-col bg-white rounded-lg shadow-md hover:shadow-lg transition-all overflow-hidden group"
           >
             {/* Discount Badge */}
-            <div className="absolute top-4 left-4 bg-red-500 text-white text-sm font-bold py-1 px-2 rounded">
+            <div className="absolute top-4 left-4 bg-blue-500 text-white text-sm font-bold py-1 px-2 rounded">
               {product.discount}
             </div>
             {/* Heart Icon */}
-            <div className="absolute top-4 right-4 flex items-center justify-center w-10 h-10 rounded-full text-black hover:bg-red-500 cursor-pointer">
+            <div className="absolute top-4 right-4 flex items-center justify-center w-10 h-10 rounded-full text-black hover:bg-blue-500 cursor-pointer">
               <CiHeart className="text-3xl" />
             </div>
 
             {/* Shopping Cart Icon */}
-            <div className="absolute top-16 right-4 flex items-center justify-center w-10 h-10 rounded-full text-black hover:bg-red-500 cursor-pointer">
+            <div className="absolute top-16 right-4 flex items-center justify-center w-10 h-10 rounded-full text-black hover:bg-blue-500 cursor-pointer">
               <CiShoppingCart onClick={() => navigate("/cart")} className="text-3xl"/>
             </div>
 
@@ -153,7 +153,7 @@ const BestSellers = () => {
               <h3 className="text-lg font-bold text-gray-800">
                 {product.name}
               </h3>
-              <div className="text-sm text-red-600 font-bold">
+              <div className="text-sm text-blue-600 font-bold">
                 {product.price}{" "}
                 <span className="text-gray-500 line-through">
                   {product.originalPrice}

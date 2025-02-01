@@ -233,7 +233,7 @@ const FlashSales = () => {
             </div>
 
             {/* Heart Icon */}
-            <div className="absolute top-4 right-4 flex items-center justify-center w-10 h-10 rounded-full text-black hover:bg-red-500 cursor-pointer">
+            <div className="absolute top-4 right-4 flex items-center justify-center w-10 h-10 rounded-full text-black hover:bg-blue-500 cursor-pointer">
               <CiHeart
                 className="text-3xl"
                 onClick={() => handleAddToWishlist(product)}
@@ -241,7 +241,7 @@ const FlashSales = () => {
             </div>
 
             {/* Shopping Cart Icon */}
-            <div className="absolute top-16 right-4 flex items-center justify-center w-10 h-10 rounded-full text-black hover:bg-red-500 cursor-pointer">
+            <div className="absolute top-16 right-4 flex items-center justify-center w-10 h-10 rounded-full text-black hover:bg-blue-500 cursor-pointer">
               <CiShoppingCart
                 className="text-3xl"
                 onClick={() => handleAddToCart(product._id)}
@@ -262,7 +262,7 @@ const FlashSales = () => {
               <h3 className="text-xl font-bold text-gray-800">
                 {product.name}
               </h3>
-              <div className="text-base text-red-600 font-bold">
+              <div className="text-base text-blue-600 font-bold">
                 ${product.currentPrice}
                 <span className="ml-2 text-m text-gray-500 line-through">
                   ${product.originalPrice}
