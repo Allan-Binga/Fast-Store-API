@@ -96,7 +96,7 @@ const OurProducts = () => {
           <div
             key={product._id}
             className="relative flex flex-col bg-white rounded-lg shadow-md hover:shadow-lg transition-all overflow-hidden group"
-          > <div></div>
+          >
             {/* Discount Badge */}
             <div className="absolute top-4 left-4 bg-blue-400 text-white text-sm font-bold py-1 px-2 rounded">
               -{product.discount}%
@@ -108,7 +108,7 @@ const OurProducts = () => {
                 onClick={() => handleAddToWishlist(product)}
               />
             </div>
-          <div></div>
+          
             {/* Shopping Cart Icon */}
             <div className="absolute top-16 right-4 flex items-center justify-center w-10 h-10 rounded-full text-black hover:bg-red-500 cursor-pointer">
               <CiShoppingCart
