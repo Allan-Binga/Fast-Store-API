@@ -69,8 +69,7 @@ const Cart = () => {
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
       <TopHeader />
-      <Header />
-     
+      <Header /> 
       <div className="flex-grow container mx-auto px-6 py-8">
       <div className="flex items-center gap-4 mb-1">
         <div className="w-6">
