@@ -14,6 +14,7 @@ import axios from "axios";
 const Account = () => {
   const [activeSection, setActiveSection] = useState("My Orders");
   const [addresses, setAddresses] = useState([]);
+  const [user, setUser] = useState({});
 
   //Fetch addresses
   const getAddresses = async () => {
@@ -25,7 +26,22 @@ const Account = () => {
     }
   };
 
-  //useEffect
+  //Fetch user info
+  const getUser = async () => {
+    try {
+      const response = await axios.get(
+        `${backendAPI}/api/users/logged-in-user`,
+        {
+          withCredentials: true,
+        }
+      );
+      return response.data;
+    } catch (error) {
+      throw error.message.data.message;
+    }
+  };
+
+  //Addresses useEffect
   useEffect(() => {
     const fetchAddresses = async () => {
       const data = await getAddresses();
@@ -33,6 +49,24 @@ const Account = () => {
     };
     fetchAddresses();
   }, []);
+
+  //User info useEffect
+  useEffect(() => {
+    const fetchUser = async () => {
+      const data = await getUser();
+      setUser(data);
+    };
+    fetchUser();
+  }, []);
+
+  //Format the date
+  const formatDate = (isoDate) => {
+    return new Date(isoDate).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -223,7 +257,7 @@ const Account = () => {
                         First Name
                       </label>
                       <p className="text-gray-900 w-2/3 text-right">
-                        Allan
+                        {user.firstName}
                       </p>
                     </div>
 
@@ -233,7 +267,7 @@ const Account = () => {
                         Last Name
                       </label>
                       <p className="text-gray-900 w-2/3 text-right">
-                      bINGA
+                        {user.lastName}
                       </p>
                     </div>
 
@@ -243,7 +277,7 @@ const Account = () => {
                         Email
                       </label>
                       <p className="text-gray-900 w-2/3 text-right">
-                        allanbinga73@gmail.com
+                        {user.email}
                       </p>
                     </div>
 
@@ -253,7 +287,17 @@ const Account = () => {
                         Phone Number
                       </label>
                       <p className="text-gray-900 w-2/3 text-right">
-                        +1254712519615
+                        +{user.phone}
+                      </p>
+                    </div>
+
+                    {/* Date joined */}
+                    <div className="flex justify-between items-center">
+                      <label className="block text-sm font-medium text-gray-900 w-1/3">
+                        Date joined
+                      </label>
+                      <p className="text-gray-900 w-2/3 text-right">
+                        {formatDate(user.createdAt)}
                       </p>
                     </div>
                   </div>
