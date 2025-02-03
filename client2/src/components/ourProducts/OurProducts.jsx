@@ -142,7 +142,7 @@ const OurProducts = () => {
               -{product.discount}%
             </div>
             {/* Heart Icon */}
-            <div className="absolute top-4 right-4 flex items-center justify-center w-10 h-10 rounded-full text-black hover:bg-red-500 cursor-pointer">
+            <div className="absolute top-4 right-4 flex items-center justify-center w-10 h-10 rounded-full text-black hover:bg-blue-500 cursor-pointer">
               <CiHeart
                 className="text-3xl"
                 onClick={() => handleAddToWishlist(product)}
@@ -150,7 +150,7 @@ const OurProducts = () => {
             </div>
 
             {/* Shopping Cart Icon */}
-            <div className="absolute top-16 right-4 flex items-center justify-center w-10 h-10 rounded-full text-black hover:bg-red-500 cursor-pointer">
+            <div className="absolute top-16 right-4 flex items-center justify-center w-10 h-10 rounded-full text-black hover:bg-blue-500 cursor-pointer">
               <CiShoppingCart
                 onClick={() => handleAddToCart(product._id)}
                 className="text-3xl"

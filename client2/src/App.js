@@ -7,7 +7,6 @@ import Login from "./pages/logIn/login";
 import Wishlist from "./pages/wishlist/wishlist";
 import Cart from "./pages/cart/cart";
 import Account from "./pages/account/account";
-
 import Single from "./pages/singleProduct/Single";
 
 const App = () => {
