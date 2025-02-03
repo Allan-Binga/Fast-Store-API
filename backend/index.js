@@ -7,6 +7,7 @@ const wishlistRoute = require("./routes/wishlist.js")
 const checkoutRoute = require("./routes/checkout.js");
 const cartRoute = require("./routes/cart.js");
 const flashSaleRoute = require("./routes/flashsales.js")
+const addressRoute = require("./routes/address.js")
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const cors = require("cors");
@@ -57,6 +58,9 @@ app.use("/api/users", usersRoute);
 
 //Stripe Checkout Route
 app.use("/api/checkout", checkoutRoute);
+
+//Address ROute
+app.use("/api/address", addressRoute)
 
 app.listen("5500", () => {
   console.log("Backend up and running.");
