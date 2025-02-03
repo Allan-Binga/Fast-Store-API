@@ -155,7 +155,7 @@ const Cart = () => {
                 <span>Total</span>
                 <span>${calculateTotal()}</span>
               </div>
-              <button className="bg-red-500 text-white w-full py-3 mt-4">
+              <button className="bg-blue-500 text-white w-full py-3 mt-4">
                 Proceed to checkout
               </button>
             </div>
