@@ -70,7 +70,16 @@ const Cart = () => {
     <div className="flex flex-col min-h-screen bg-gray-50">
       <TopHeader />
       <Header />
+     
       <div className="flex-grow container mx-auto px-6 py-8">
+      <div className="flex items-center gap-4 mb-1">
+        <div className="w-6">
+          <div className="h-10 bg-blue-500" />
+        </div>
+        <div className="font-semibold text-secondary-2 text-[46px] tracking-[0.02em] leading-[1.5]">
+          Shopping Cart
+        </div>
+      </div>
         {loading ? (
           <p className="text-center text-gray-600 text-lg">
             Loading your cart...

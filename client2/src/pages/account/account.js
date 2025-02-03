@@ -8,6 +8,9 @@ const Account = () => {
     <div>
       <TopHeader/>
       <Header/>
+      <div>
+        
+      </div>
       <Footer/>
     </div>
   )
