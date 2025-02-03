@@ -12,11 +12,10 @@ const getFlashSaleProducts = async (_req, res) => {
   }
 };
 
-//ADDING PRODUCTS TO FLASHSALE
 const addProductToFlashSale = async (req, res) => {
   try {
     const {
-      productId,
+      productId, // This is now the _id
       name,
       currentPrice,
       originalPrice,
@@ -52,9 +51,18 @@ const addProductToFlashSale = async (req, res) => {
         .json({ error: "Current price must be less than original price." });
     }
 
+    // Check if the product exists in the Products collection
     const productExists = await Product.findById(productId);
     if (!productExists) {
       return res.status(404).json({ error: "Product does not exist." });
+    }
+
+    // Check if the product is already in FlashSale
+    const alreadyInFlashSale = await FlashSale.findById(productId);
+    if (alreadyInFlashSale) {
+      return res
+        .status(400)
+        .json({ error: "Product is already in flash sale." });
     }
 
     const parsedStartTime = new Date(startTime);
@@ -66,8 +74,9 @@ const addProductToFlashSale = async (req, res) => {
         .json({ error: "Invalid date format for start or end time." });
     }
 
+    // Create a new FlashSale entry using productId as _id
     const newFlashSaleProduct = new FlashSale({
-      productId,
+      _id: productId, // Explicitly setting it as _id
       name,
       currentPrice,
       originalPrice,
@@ -89,10 +98,18 @@ const addProductToFlashSale = async (req, res) => {
     const savedProduct = await newFlashSaleProduct.save();
     res.status(201).json(savedProduct);
   } catch (error) {
-    console.error("Error occurred while adding product to flashsale:", error);
+    console.error("Error occurred while adding product to flash sale:", error);
+
+    // Handle duplicate key error (E11000)
+    if (error.code === 11000) {
+      return res
+        .status(400)
+        .json({ error: "Product is already in flash sale." });
+    }
+
     res
       .status(500)
-      .json({ error: "Error occurred while adding product to flashsale." });
+      .json({ error: "Error occurred while adding product to flash sale." });
   }
 };
 

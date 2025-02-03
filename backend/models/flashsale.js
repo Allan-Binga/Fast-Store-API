@@ -2,9 +2,9 @@ const mongoose = require("mongoose");
 
 const FlashSaleSchema = new mongoose.Schema(
   {
-    productId: {
+    _id: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Product",
+      ref: "Product", // Using productId as _id
       required: true,
     },
     name: {
@@ -64,8 +64,8 @@ const FlashSaleSchema = new mongoose.Schema(
       min: 0,
     },
   },
-  { timestamps: true }
+  { timestamps: true, _id: false } // Disables default _id generation
 );
 
-const FlashSale = mongoose.model("Flashsale", FlashSaleSchema);
+const FlashSale = mongoose.model("FlashSale", FlashSaleSchema);
 module.exports = FlashSale;
