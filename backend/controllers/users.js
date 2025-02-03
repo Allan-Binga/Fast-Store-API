@@ -16,7 +16,7 @@ const getUsers = async (req, res) => {
 //GET SINGLE USER
 const getSingleUser = async (req, res) => {
   try {
-    const userId = req.params.id;
+    const userId = req.cookies.storeSession
     const user = await User.findById(userId);
 
     if (!user) {

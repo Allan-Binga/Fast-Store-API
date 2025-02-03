@@ -8,7 +8,7 @@ const {
 const router = express.Router();
 
 router.get("/", getUsers);
-router.get("/:id", getSingleUser);
+router.get("/logged-in-user", getSingleUser);
 router.patch("/:id", updatedUser);
 
 module.exports = router;
