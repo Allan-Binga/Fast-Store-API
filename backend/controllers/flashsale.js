@@ -1,6 +1,6 @@
 const FlashSale = require("../models/flashsale");
 const Product = require("../models/product");
-const moment = require("moment");
+const Cart = require("../models/cart");
 
 //GETTING FLASHSALE PRODUCTS
 const getFlashSaleProducts = async (_req, res) => {
@@ -12,6 +12,7 @@ const getFlashSaleProducts = async (_req, res) => {
   }
 };
 
+//ADD FLASHSALE PRODUCTS
 const addProductToFlashSale = async (req, res) => {
   try {
     const {
@@ -113,7 +114,62 @@ const addProductToFlashSale = async (req, res) => {
   }
 };
 
+//ADD FLASHSALE PRODUCTS TO CART
+const addFlashsaleProductsToCart = async (req, res) => {
+  // EXTRACT storeSession SESSION COOKIE
+  const userId = req.cookies.storeSession;
+
+  // IF THERE'S NO COOKIE, RETURN WITH STATUS 401
+  if (!userId) {
+    return res.status(401).json("Please login to perform this action.");
+  }
+
+  try {
+    //Retrieve flashsale products
+    const flashSaleProducts = await FlashSale.findOne({ _id: userId });
+
+    if (!flashSaleProducts || !flashSaleProducts === 0) {
+      return res.status(404).json("No products in Flashsale to add to cart.");
+    }
+
+    // RETRIEVE THE Flashsale
+    let userCart = await Cart.findOne({ userId });
+
+    if (!userCart) {
+      userCart = new Cart({ userId, products: [] });
+    }
+
+    // ADD PRODUCTS FROM FLASHSALE TO CART
+    for (const product of flashSaleProducts.products) {
+      // Check if product already exists in the cart
+      if (!userCart.products.some((p) => p._id && p._id.equals(product._id))) {
+        userCart.products.push({
+          _id: product._id,
+          name: product.name,
+          description: product.description,
+          currentPrice: product.currentPrice,
+          originalPrice: product.originalPrice,
+          discount: product.discount,
+          category: product.category,
+          image: product.image,
+          quantity: 1, // Default quantity to 1
+          reviews: product.reviews || {}, // Optional reviews field
+        });
+      }
+    }
+
+    // SAVE UPDATED CART
+    await userCart.save();
+
+    res.status(200).json("Added to cart successfully.");
+  } catch (error) {
+    console.error("Error adding flashsale product to cart:", error);
+    res.status(500).json({ error: "Failed to add products to cart." });
+  }
+};
+
 module.exports = {
   getFlashSaleProducts,
   addProductToFlashSale,
+  addFlashsaleProductsToCart,
 };

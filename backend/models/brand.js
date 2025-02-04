@@ -15,6 +15,12 @@ const BrandSchema = new mongoose.Schema(
       maxlength: [100, "Slogan cannot exceed 100 characters"],
       required: true,
     },
+    products: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Product",
+      },
+    ],
   },
   { timestamps: true }
 );

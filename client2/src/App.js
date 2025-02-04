@@ -8,6 +8,7 @@ import Wishlist from "./pages/wishlist/wishlist";
 import Cart from "./pages/cart/cart";
 import Account from "./pages/account/account";
 import Single from "./pages/singleProduct/Single";
+import BrandProducts from "./pages/brandProducts/BrandProducts";
 
 const App = () => {
   return (
@@ -21,6 +22,7 @@ const App = () => {
         <Route path="/cart" element={<Cart />} />
         <Route path="/my-account" element={<Account />} />
         <Route path="/products/:id" element={<Single />} />
+        <Route path="/brand/products" element={<BrandProducts />} />
       </Routes>
     </Router>
   );

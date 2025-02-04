@@ -118,7 +118,14 @@ const Account = () => {
               >
                 <FaUser /> <span>Account details</span>
               </button>
-              <button className="text-lg font-medium flex items-center gap-3 text-gray-600">
+              <button
+                className={`text-lg font-medium flex items-center gap-3 ${
+                  activeSection === "Wishlist"
+                    ? "text-blue-500"
+                    : "text-gray-600"
+                }`}
+                onClick={() => setActiveSection("Wishlist")}
+              >
                 <FaHeart /> <span>Wishlist</span>
               </button>
               <button className="text-lg font-medium flex items-center gap-3 text-gray-600">
@@ -309,6 +316,11 @@ const Account = () => {
                     </button>
                   </div>
                 </div>
+              )}
+
+              {/*WISHLIST*/}
+              {activeSection === "Wishlist" && (
+                <div></div>
               )}
             </div>
           </div>
