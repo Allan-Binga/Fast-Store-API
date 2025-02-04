@@ -83,9 +83,9 @@ const ShopByBrand = () => {
       <div className="grid grid-cols-4 gap-6 mt-6 mr-20 ml">
         {visibleBrands.map((brand) => (
           <div
-            onClick={() => navigate("/brand/products")}
+            onClick={() => navigate(`/brand/${brand._id}/products`)}
             className="cursor-pointer"
-            key={brand.brand}
+            key={brand._id}
           >
             {/* Brand Image */}
             <div className="relative bg-white flex items-center justify-center overflow-hidden p-4">

@@ -2,12 +2,15 @@ const Brand = require("../models/brand");
 const Product = require("../models/product");
 
 //GETTING BRANDS
-const getBrands = async (_req, res) => {
+const getBrandWithProducts = async (req, res) => {
   try {
-    const brands = await Brand.find();
-    res.status(200).json(brands);
+    const brand = await Brand.findById(req.params.id).populate("products");
+    if (!brand) {
+      return res.status(404).json({ message: "Brand not found" });
+    }
+    res.json(brand);
   } catch (error) {
-    res.status(500).json({ error: "Failed to fetch brands." });
+    res.status(500).json({ error: error.message });
   }
 };
 
@@ -70,5 +73,6 @@ const addProductsToBrands = async (req, res) => {
   }
 };
 
+
 //EXPORT FUNCTION
-module.exports = { getBrands, addBrand, addProductsToBrands };
+module.exports = { getBrandWithProducts, addBrand, addProductsToBrands };
