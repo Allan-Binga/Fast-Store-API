@@ -5,8 +5,6 @@ import Footer from "../../components/footer/Footer";
 import { BsFillCartCheckFill } from "react-icons/bs";
 import { RiUserLocationFill, RiLockPasswordFill } from "react-icons/ri";
 import { FaUser } from "react-icons/fa6";
-import { FaHeart } from "react-icons/fa";
-import { MdReviews } from "react-icons/md";
 import { IoLogOut } from "react-icons/io5";
 import { backendAPI } from "../../endpoint";
 import axios from "axios";
@@ -120,21 +118,20 @@ const Account = () => {
               </button>
               <button
                 className={`text-lg font-medium flex items-center gap-3 ${
-                  activeSection === "Wishlist"
+                  activeSection === "Update Password"
                     ? "text-blue-500"
                     : "text-gray-600"
                 }`}
-                onClick={() => setActiveSection("Wishlist")}
+                onClick={() => setActiveSection("Update Password")}
               >
-                <FaHeart /> <span>Wishlist</span>
-              </button>
-              <button className="text-lg font-medium flex items-center gap-3 text-gray-600">
-                <MdReviews /> <span>Reviews</span>
-              </button>
-              <button className="text-lg font-medium flex items-center gap-3 text-gray-600">
                 <RiLockPasswordFill /> <span>Update Password</span>
               </button>
-              <button className="text-lg font-medium flex items-center gap-3 text-gray-600">
+              <button
+                className={`text-lg font-medium flex items-center gap-3 ${
+                  activeSection === "Logout" ? "text-blue-500" : "text-gray-600"
+                }`}
+                onClick={() => setActiveSection("Logout")}
+              >
                 <IoLogOut /> <span>Logout</span>
               </button>
             </div>
@@ -318,9 +315,76 @@ const Account = () => {
                 </div>
               )}
 
-              {/*WISHLIST*/}
-              {activeSection === "Wishlist" && (
-                <div></div>
+              {/*UPDATE PASSWORD*/}
+              {activeSection === "Update Password" && (
+                <div className="max-w-lg mx-auto mt-4 bg-white p-8 rounded-xl shadow-xl border">
+                  <h2 className="text-3xl font-bold text-gray-800 text-center mb-6">
+                    Change Password
+                  </h2>
+
+                  <form className="space-y-6">
+                    <div>
+                      <label
+                        htmlFor="currentPassword"
+                        className="block text-base font-medium text-gray-700 mb-2"
+                      >
+                        Current Password
+                      </label>
+                      <input
+                        type="password"
+                        id="currentPassword"
+                        placeholder="Current Password"
+                        className="w-full px-5 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
+                      />
+                    </div>
+
+                    <div>
+                      <label
+                        htmlFor="newPassword"
+                        className="block text-base font-medium text-gray-700 mb-2"
+                      >
+                        New Password
+                      </label>
+                      <input
+                        type="password"
+                        id="newPassword"
+                        placeholder="New Password"
+                        className="w-full px-5 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
+                      />
+                    </div>
+
+                    <div>
+                      <label
+                        htmlFor="confirmPassword"
+                        className="block text-base font-medium text-gray-700 mb-2"
+                      >
+                        Re-Enter Password
+                      </label>
+                      <input
+                        type="password"
+                        id="confirmPassword"
+                        placeholder="Confirm Password"
+                        className="w-full px-5 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
+                      />
+                    </div>
+
+                    <button
+                      type="submit"
+                      className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition font-semibold"
+                    >
+                      Submit
+                    </button>
+                  </form>
+                </div>
+              )}
+
+              {/*LOGOUT BUTTON*/}
+              {activeSection === "Logout" && (
+                <div>
+                  <button className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition font-semibold">
+                    Logout
+                  </button>
+                </div>
               )}
             </div>
           </div>
