@@ -8,8 +8,14 @@ import { FaUser } from "react-icons/fa6";
 import { IoLogOut } from "react-icons/io5";
 import { backendAPI } from "../../endpoint";
 import axios from "axios";
+import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 const Account = () => {
+  const navigate = useNavigate();
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [activeSection, setActiveSection] = useState("My Orders");
   const [addresses, setAddresses] = useState([]);
   const [user, setUser] = useState({});
@@ -36,6 +42,50 @@ const Account = () => {
       return response.data;
     } catch (error) {
       throw error.message.data.message;
+    }
+  };
+
+  //Update Password API
+  const updatePassword = async (e) => {
+    e.preventDefault();
+
+    if (newPassword !== confirmPassword) {
+      toast.error("New password and confirm password do not match");
+      return;
+    }
+    try {
+      await axios.patch(
+        `${backendAPI}/api/auth/update-password`,
+        { currentPassword, newPassword },
+        { withCredentials: true }
+      );
+      toast.success("Password updated successfully. Please log in again.");
+      // navigate("/login")
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message ||
+          "An error occured while updating password."
+      );
+    }
+  };
+
+  //LOGOUT HANDLING
+  const handleLogout = async () => {
+    try {
+      const response = await axios.post(
+        `${backendAPI}/api/auth/logout`,
+        {},
+        { withCredentials: true } // This ensures cookies are sent with the request
+      );
+      if (response.status === 200) {
+        document.cookie = "storeSession=; Max-Age=0; path=/;";
+        toast.success("Successfully logged out.");
+      } else {
+        toast.error("You are not logged in.");
+      }
+    } catch (error) {
+      console.error("Logout error:", error);
+      toast.error("You are not logged in.");
     }
   };
 
@@ -322,7 +372,7 @@ const Account = () => {
                     Change Password
                   </h2>
 
-                  <form className="space-y-6">
+                  <form className="space-y-6" onSubmit={updatePassword}>
                     <div>
                       <label
                         htmlFor="currentPassword"
@@ -334,6 +384,8 @@ const Account = () => {
                         type="password"
                         id="currentPassword"
                         placeholder="Current Password"
+                        value={currentPassword}
+                        onChange={(e) => setCurrentPassword(e.target.value)}
                         className="w-full px-5 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
                       />
                     </div>
@@ -349,6 +401,8 @@ const Account = () => {
                         type="password"
                         id="newPassword"
                         placeholder="New Password"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
                         className="w-full px-5 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
                       />
                     </div>
@@ -364,6 +418,8 @@ const Account = () => {
                         type="password"
                         id="confirmPassword"
                         placeholder="Confirm Password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
                         className="w-full px-5 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
                       />
                     </div>
@@ -381,7 +437,10 @@ const Account = () => {
               {/*LOGOUT BUTTON*/}
               {activeSection === "Logout" && (
                 <div>
-                  <button className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition font-semibold">
+                  <button
+                    className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition font-semibold"
+                    onClick={handleLogout}
+                  >
                     Logout
                   </button>
                 </div>
