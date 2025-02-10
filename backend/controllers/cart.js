@@ -169,7 +169,7 @@ const getCartUser = async (req, res) => {
   try {
     // Get the authenticated user's ID from cookies
     const loggedInUserId = req.cookies.storeSession;
-    console.log(loggedInUserId);
+    // console.log(loggedInUserId);
     // Check if the session cookie exists
     if (!loggedInUserId) {
       return res.status(401).json({ error: "Please log in to proceed." });
