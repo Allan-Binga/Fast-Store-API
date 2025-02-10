@@ -1,5 +1,6 @@
 const express = require("express");
 const {
+  getBrands,
   getBrandWithProducts,
   addBrand,
   addProductsToBrands,
@@ -8,6 +9,7 @@ const {
 const router = express.Router();
 
 //ROUTES
+router.get("/", getBrands);
 router.get("/:id", getBrandWithProducts);
 router.post("/add", addBrand);
 router.post("/add-product-to-brand", addProductsToBrands);
