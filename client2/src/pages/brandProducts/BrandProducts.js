@@ -19,7 +19,7 @@ const BrandProducts = () => {
       console.error(error);
       setBrand(null);
     }
-  };
+  }; //
 
   useEffect(() => {
     getBrandProducts();
