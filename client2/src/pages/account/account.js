@@ -30,6 +30,11 @@ const Account = () => {
     }
   };
 
+  //Delete address
+  // const deleteAddress = async () => {
+    
+  // }
+
   //Fetch user info
   const getUser = async () => {
     try {
@@ -41,7 +46,7 @@ const Account = () => {
       );
       return response.data;
     } catch (error) {
-      throw error.message.data.message;
+      throw error.response.data.message;
     }
   };
 
@@ -367,7 +372,7 @@ const Account = () => {
 
               {/*UPDATE PASSWORD*/}
               {activeSection === "Update Password" && (
-                <div className="max-w-lg mx-auto mt-4 bg-white p-8 rounded-xl shadow-xl border">
+                <div className="w-full max-w-2xl mt-4 bg-white p-8 rounded-xl shadow-xl border">
                   <h2 className="text-3xl font-bold text-gray-800 text-center mb-6">
                     Change Password
                   </h2>
