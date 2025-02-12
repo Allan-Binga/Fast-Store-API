@@ -9,6 +9,7 @@ import toast from "react-hot-toast";
 const OurProducts = () => {
   const navigate = useNavigate();
   const [products, setProducts] = useState([]);
+  const [visibleProducts, setVisibleProducts] = useState(1);
 
   //FETCH OUR PRODUCTS FROM THE BACKEND
   const getProducts = async () => {
@@ -28,6 +29,11 @@ const OurProducts = () => {
     };
     fetchProducts();
   }, []);
+
+  //Show more products
+  const handleMore = () => {
+    setVisibleProducts((prev) => prev + 1);
+  };
 
   //REVIEWS SECTION STARS
   const renderStars = (rate) => {
@@ -112,9 +118,9 @@ const OurProducts = () => {
   };
 
   return (
-    <div className="flex flex-col items-start gap-4 relative ml-[150px] mt-[35px]">
+    <div className="flex flex-col items-center gap-4 relative ml-[150px] mt-[35px]">
       {/* Our Products Header */}
-      <div className="flex items-center gap-4">
+      <div className="w-full flex justify-start items-center gap-4">
         <div className="w-5">
           <div className="h-10 bg-blue-500" />
         </div>
@@ -131,7 +137,7 @@ const OurProducts = () => {
 
       {/* Product Cards */}
       <div className="grid grid-cols-4 gap-6 mt-6 mr-20">
-        {products.slice(0, 8).map((product) => (
+        {products.slice(0, visibleProducts * 4).map((product) => (
           <div
             key={product._id}
             onClick={() => handleProductClick(product._id)}
@@ -183,6 +189,15 @@ const OurProducts = () => {
             </div>
           </div>
         ))}
+      </div>
+      {/*Show More*/}
+      <div className="flex justify-center items-center mt-[45px] mb-[45px]">
+        <button
+          onClick={handleMore}
+          className="bg-blue-500 text-white text-lg font-medium py-3 px-6 rounded"
+        >
+          Show More
+        </button>
       </div>
     </div>
   );
