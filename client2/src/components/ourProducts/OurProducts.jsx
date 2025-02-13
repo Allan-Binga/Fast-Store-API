@@ -21,7 +21,7 @@ const OurProducts = () => {
     }
   };
 
-  //useEffect FOR FETCHING ON COMPONENT MOUNT
+  //useEffect For FETCHING ON COMPONENT MOUNT
   useEffect(() => {
     const fetchProducts = async () => {
       const data = await getProducts();
