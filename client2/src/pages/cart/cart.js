@@ -6,6 +6,7 @@ import { FaRegTrashAlt } from "react-icons/fa";
 import { backendAPI } from "../../endpoint";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { loadStripe } from "@stripe/stripe-js";
 
 const Cart = () => {
   const [cartProducts, setCartProducts] = useState([]);
@@ -66,19 +67,52 @@ const Cart = () => {
     }
   };
 
+  const handleCheckout = async () => {
+    const stripe = await loadStripe(
+      process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY
+    );
+
+    //SEND CART DATA TO THE BACKEND
+    const response = await axios.post(
+      `${backendAPI}/api/checkout/create-checkout-session`,
+      {
+        items: cartProducts.map((product) => ({
+          title: product.name,
+          description: product.description,
+          price: product.price,
+          quantity: product.quantity,
+          image: product.image,
+        })),
+      }
+    );
+
+    const session = await response.data
+
+    //REDIRECT TO STRIPE CHECKOUT
+    const {error} = await stripe.redirectToCheckout({
+      sessionId: session.id
+    })
+
+    if(error) {
+      console.error("Error redirecting to checkout:", error)
+    } else {
+      setCartProducts([])
+    }
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
       <TopHeader />
-      <Header /> 
+      <Header />
       <div className="flex-grow container mx-auto px-6 py-8">
-      <div className="flex items-center gap-4 mb-1">
-        <div className="w-6">
-          <div className="h-10 bg-blue-500" />
+        <div className="flex items-center gap-4 mb-1">
+          <div className="w-6">
+            <div className="h-10 bg-blue-500" />
+          </div>
+          <div className="font-semibold text-secondary-2 text-[46px] tracking-[0.02em] leading-[1.5]">
+            Shopping Cart
+          </div>
         </div>
-        <div className="font-semibold text-secondary-2 text-[46px] tracking-[0.02em] leading-[1.5]">
-          Shopping Cart
-        </div>
-      </div>
         {loading ? (
           <p className="text-center text-gray-600 text-lg">
             Loading your cart...
@@ -163,7 +197,7 @@ const Cart = () => {
                 <span>Total</span>
                 <span>${calculateTotal()}</span>
               </div>
-              <button className="bg-blue-500 text-white w-full py-3 mt-4">
+              <button className="bg-blue-500 text-white w-full py-3 mt-4 hover:bg-blue-800" onClick={handleCheckout}>
                 Proceed to checkout
               </button>
             </div>
