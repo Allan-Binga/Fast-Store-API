@@ -197,7 +197,7 @@ const Cart = () => {
                 <span>Total</span>
                 <span>${calculateTotal()}</span>
               </div>
-              <button className="bg-blue-500 text-white w-full py-3 mt-4 hover:bg-blue-800" onClick={handleCheckout}>
+              <button className="bg-blue-500 text-white w-full py-3 mt-4 hover:bg-blue-600" onClick={handleCheckout}>
                 Proceed to checkout
               </button>
             </div>
