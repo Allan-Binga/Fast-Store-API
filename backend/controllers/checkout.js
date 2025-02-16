@@ -13,7 +13,7 @@ const createCheckoutSession = async (req, res) => {
       items.map(async (item) => {
         // Dynamically create a product for each item
         const stripeProduct = await stripe.products.create({
-          name: item.name, // Use 'name' from the frontend
+          name: item.name, // Use 'title' from the frontend
           description: item.description, // Use 'description' from the frontend
           images: item.image ? [item.image] : [], // Add 'image' from the frontend
         });
