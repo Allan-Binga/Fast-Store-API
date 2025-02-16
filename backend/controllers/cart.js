@@ -131,11 +131,11 @@ const clearCart = async (req, res) => {
 
     //If no cart is found return not found
     if (!cart) {
-      return res.status(404).json({ error: "Cart not found." });
+      return res.status(404).json({ error: "No cart found to clear." });
     }
 
     // Clear the products array
-    await Cart.deleteOne({ userId });
+    cart.products = []
 
     //Save updated cart
     await cart.save();

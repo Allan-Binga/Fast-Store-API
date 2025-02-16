@@ -10,22 +10,16 @@ import { loadStripe } from "@stripe/stripe-js";
 
 const Cart = () => {
   const [cartProducts, setCartProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        setLoading(true);
         const response = await axios.get(`${backendAPI}/api/cart/user`, {
           withCredentials: true,
         });
-        setCartProducts(response.data.products);
-        setError(null);
+        setCartProducts(response.data.products || []);
       } catch (err) {
-        setError("Failed to load cart products. Please try again.");
-      } finally {
-        setLoading(false);
+        setCartProducts([]); // Default to an empty cart
       }
     };
     fetchProducts();
@@ -42,60 +36,45 @@ const Cart = () => {
   };
 
   const calculateSubtotal = (price, quantity) => price * quantity;
-  const calculateTotal = () => {
-    return cartProducts
+  const calculateTotal = () =>
+    cartProducts
       .reduce(
         (total, product) =>
           total + calculateSubtotal(product.price, product.quantity),
         0
       )
       .toFixed(2);
-  };
 
   const handleRemoveProduct = async (productId) => {
     try {
-      const response = await axios.delete(`${backendAPI}/api/cart/remove`, {
+      await axios.delete(`${backendAPI}/api/cart/remove`, {
         data: { productId },
         withCredentials: true,
       });
-      setCartProducts((prev) =>
-        prev.filter((product) => product._id !== productId)
-      );
-      toast.success(response.data.message);
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to remove product.");
+      setCartProducts((prev) => prev.filter((product) => product._id !== productId));
+      toast.success("Product removed from cart.");
+    } catch {
+      toast.error("Failed to remove product.");
     }
   };
 
   const handleCheckout = async () => {
-    const stripe = await loadStripe(
-      process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY
-    );
-
-    //SEND CART DATA TO THE BACKEND
+    const stripe = await loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
     const response = await axios.post(
       `${backendAPI}/api/checkout/create-checkout-session`,
       {
-        items: cartProducts.map((product) => ({
-          name: product.name,
-          description: product.description,
-          price: product.price,
-          quantity: product.quantity,
-          image: product.image,
+        items: cartProducts.map(({ name, description, price, quantity, image }) => ({
+          name,
+          description,
+          price,
+          quantity,
+          image,
         })),
       }
     );
 
-    const session = await response.data
-
-    //REDIRECT TO STRIPE CHECKOUT
-    const {error} = await stripe.redirectToCheckout({
-      sessionId: session.id
-    })
-
-    if(!error) {
-      await axios.post(`${backendAPI}`)
-    }
+    const session = response.data;
+    await stripe.redirectToCheckout({ sessionId: session.id });
   };
 
   return (
@@ -111,16 +90,9 @@ const Cart = () => {
             Shopping Cart
           </div>
         </div>
-        {loading ? (
-          <p className="text-center text-gray-600 text-lg">
-            Loading your cart...
-          </p>
-        ) : error ? (
-          <p className="text-center text-red-600 text-lg">{error}</p>
-        ) : cartProducts.length === 0 ? (
-          <p className="text-center text-gray-600 text-lg">
-            Your cart is empty.
-          </p>
+
+        {cartProducts.length === 0 ? (
+          <p className="text-center text-gray-600 text-lg">Your cart is empty.</p>
         ) : (
           <div className="flex flex-col md:flex-row gap-6">
             {/* Cart Items Section */}
@@ -157,18 +129,12 @@ const Cart = () => {
                       min={1}
                       className="w-12 px-2 py-1 border rounded-md text-center focus:ring focus:ring-indigo-200"
                       onChange={(e) =>
-                        handleQuantityChange(
-                          product._id,
-                          parseInt(e.target.value) || 1
-                        )
+                        handleQuantityChange(product._id, parseInt(e.target.value) || 1)
                       }
                     />
                   </div>
                   <div className="text-gray-700 font-medium text-sm">
-                    $
-                    {calculateSubtotal(product.price, product.quantity).toFixed(
-                      2
-                    )}
+                    ${calculateSubtotal(product.price, product.quantity).toFixed(2)}
                   </div>
                   <div className="text-right">
                     <FaRegTrashAlt
