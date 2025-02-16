@@ -77,7 +77,7 @@ const Cart = () => {
       `${backendAPI}/api/checkout/create-checkout-session`,
       {
         items: cartProducts.map((product) => ({
-          title: product.name,
+          name: product.name,
           description: product.description,
           price: product.price,
           quantity: product.quantity,
@@ -93,10 +93,8 @@ const Cart = () => {
       sessionId: session.id
     })
 
-    if(error) {
-      console.error("Error redirecting to checkout:", error)
-    } else {
-      setCartProducts([])
+    if(!error) {
+      await axios.post(`${backendAPI}`)
     }
   };
 
