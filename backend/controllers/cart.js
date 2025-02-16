@@ -126,11 +126,6 @@ const clearCart = async (req, res) => {
   try {
     const userId = req.cookies.storeSession;
 
-    //check if a user is logged in
-    if (!userId) {
-      return res.status(401).json({ error: "Please log in first." });
-    }
-
     //Find user's cart
     const cart = await Cart.findOne({ userId });
 
