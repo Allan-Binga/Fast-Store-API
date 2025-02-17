@@ -51,7 +51,9 @@ const Cart = () => {
         data: { productId },
         withCredentials: true,
       });
-      setCartProducts((prev) => prev.filter((product) => product._id !== productId));
+      setCartProducts((prev) =>
+        prev.filter((product) => product._id !== productId)
+      );
       toast.success("Product removed from cart.");
     } catch {
       toast.error("Failed to remove product.");
@@ -59,22 +61,38 @@ const Cart = () => {
   };
 
   const handleCheckout = async () => {
-    const stripe = await loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
-    const response = await axios.post(
-      `${backendAPI}/api/checkout/create-checkout-session`,
-      {
-        items: cartProducts.map(({ name, description, price, quantity, image }) => ({
-          name,
-          description,
-          price,
-          quantity,
-          image,
-        })),
-      }
+    const stripe = await loadStripe(
+      process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY
     );
 
-    const session = response.data;
-    await stripe.redirectToCheckout({ sessionId: session.id });
+    try {
+      const response = await axios.post(
+        `${backendAPI}/api/checkout/create-checkout-session`,
+        {
+          items: cartProducts.map((product) => ({
+            name: product.name,
+            description: product.description,
+            price: product.price,
+            quantity: product.quantity,
+            image: product.image,
+          })),
+        }
+      );
+
+      const session = response.data;
+
+      // Redirect to Stripe Checkout
+      const { error } = await stripe.redirectToCheckout({
+        sessionId: session.id,
+      });
+
+      if (error) {
+        toast.error("Checkout failed. Please try again.");
+      }
+    } catch (error) {
+      console.error("Checkout failed:", error);
+      toast.error("Checkout failed. Please try again.");
+    }
   };
 
   return (
@@ -92,7 +110,9 @@ const Cart = () => {
         </div>
 
         {cartProducts.length === 0 ? (
-          <p className="text-center text-gray-600 text-lg">Your cart is empty.</p>
+          <p className="text-center text-gray-600 text-lg">
+            Your cart is empty.
+          </p>
         ) : (
           <div className="flex flex-col md:flex-row gap-6">
             {/* Cart Items Section */}
@@ -129,12 +149,18 @@ const Cart = () => {
                       min={1}
                       className="w-12 px-2 py-1 border rounded-md text-center focus:ring focus:ring-indigo-200"
                       onChange={(e) =>
-                        handleQuantityChange(product._id, parseInt(e.target.value) || 1)
+                        handleQuantityChange(
+                          product._id,
+                          parseInt(e.target.value) || 1
+                        )
                       }
                     />
                   </div>
                   <div className="text-gray-700 font-medium text-sm">
-                    ${calculateSubtotal(product.price, product.quantity).toFixed(2)}
+                    $
+                    {calculateSubtotal(product.price, product.quantity).toFixed(
+                      2
+                    )}
                   </div>
                   <div className="text-right">
                     <FaRegTrashAlt
@@ -161,7 +187,10 @@ const Cart = () => {
                 <span>Total</span>
                 <span>${calculateTotal()}</span>
               </div>
-              <button className="bg-blue-500 text-white w-full py-3 mt-4 hover:bg-blue-600" onClick={handleCheckout}>
+              <button
+                className="bg-blue-500 text-white w-full py-3 mt-4 hover:bg-blue-600"
+                onClick={handleCheckout}
+              >
                 Proceed to checkout
               </button>
             </div>
