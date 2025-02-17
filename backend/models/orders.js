@@ -2,7 +2,10 @@ const mongoose = require("mongoose");
 
 //ORDER SCHEMA
 const OrderSchema = new mongoose.Schema({
-  userId: { type: String, required: true },
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+  },
   items: { type: Array, required: true },
   totalAmount: { type: Number, required: true },
   currency: { type: String, required: true },
