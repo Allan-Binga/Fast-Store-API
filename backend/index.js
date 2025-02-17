@@ -9,6 +9,7 @@ const cartRoute = require("./routes/cart.js");
 const flashSaleRoute = require("./routes/flashsales.js")
 const addressRoute = require("./routes/address.js")
 const webhookRoute = require("./routes/webhook.js")
+const orderRoute = require("./routes/orders.js")
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const cors = require("cors");
@@ -16,6 +17,11 @@ const cookieParser = require("cookie-parser");
 
 dotenv.config();
 const app = express();
+
+//Webhook Route [Place the webhook route first to avoid `express.json()` parsing]
+app.use("/api/webhook", webhookRoute)
+
+
 app.use(express.json());
 
 //COOKIE PARSER
@@ -60,8 +66,8 @@ app.use("/api/users", usersRoute);
 //Stripe Checkout Route
 app.use("/api/checkout", checkoutRoute);
 
-//Webhook Route
-app.use("/api/webhook", webhookRoute)
+//Orders Route
+app.use("/api/orders", orderRoute)
 
 //Address ROute
 app.use("/api/address", addressRoute)

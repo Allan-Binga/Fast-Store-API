@@ -17,22 +17,29 @@ const handleWebhook = async (req, res) => {
   //Switch case for different event types
   switch (event.type) {
     case "payment_intent.succeeded":
-      const paymentIntent = event.data.object;
-      console.log("Payment successful:", paymentIntent.id);
+      console.log("Payment successful:", event.data.object.id);
       break;
-
+  
     case "payment_intent.payment_failed":
-      const paymentFailed = event.data.object;
-      console.log("Payment failed:", paymentFailed.id);
+      console.log("Payment failed:", event.data.object.id);
       break;
-    case "checkout_session.completed":
-      const session = event.data.object;
-      console.log("Checkout completed:", session.id);
+  
+    case "checkout.session.completed":
+      console.log("Checkout completed:", event.data.object.id);
       break;
-
+  
+    case "charge.succeeded":
+      console.log("Charge successful:", event.data.object.id);
+      break;
+  
+    case "charge.failed":
+      console.log("Charge failed:", event.data.object.id);
+      break;
+  
     default:
       console.log(`Unhandled event type: ${event.type}`);
   }
+  
 
   res.status(200).send("Webhook received.");
 };
