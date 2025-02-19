@@ -13,6 +13,28 @@ const getOrders = async (req, res) => {
   }
 };
 
+//Retrieve user's order
+const getUserOrder = async (req, res) => {
+  try {
+    //Get ID storeSession cookie.
+    const loggedInUser = req.cookies.storeSession;
+
+    const userOrders = await Order.find({ user: loggedInUser });
+
+    //Handle case where no orders exist
+    if (!userOrders) {
+      return res.status(404).json({ error: "No orders found for this user" });
+    }
+
+    return res.status(200).json(userOrders);
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ error: "Error occured while fetching orders." });
+  }
+};
+
 module.exports = {
   getOrders,
+  getUserOrder,
 };
