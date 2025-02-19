@@ -19,6 +19,10 @@ const getUserOrder = async (req, res) => {
     //Get ID storeSession cookie.
     const loggedInUser = req.cookies.storeSession;
 
+    if(!loggedInUser) {
+      return res.status(401).json({error: "Not authenticated to perform this action."})
+    }
+
     const userOrders = await Order.find({ user: loggedInUser });
 
     //Handle case where no orders exist
