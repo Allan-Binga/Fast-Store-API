@@ -76,7 +76,8 @@ const Cart = () => {
             quantity: product.quantity,
             image: product.image,
           })),
-        }
+        },
+        { withCredentials: true }
       );
 
       const session = response.data;

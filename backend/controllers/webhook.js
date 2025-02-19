@@ -17,35 +17,63 @@ const handleWebhook = async (req, res) => {
 
   switch (event.type) {
     case "payment_intent.succeeded":
-      const paymentIntent = event.data.object;
-      try {
-        // Extract necessary data from the payment intent
-        const { id: paymentId, amount, currency } = paymentIntent;
-        const { customer: userId } = paymentIntent.metadata; // Assuming you've stored user ID in metadata
-
-        // Create an order
-        const newOrder = new Order({
-          user: userId,
-          items: paymentIntent.metadata.items ? JSON.parse(paymentIntent.metadata.items) : [], // Assuming items are stored as JSON string
-          totalAmount: amount / 100, // Stripe uses cents, so convert to dollars or your currency's smallest unit
-          currency: currency,
-          paymentStatus: "completed",
-        });
-
-        await newOrder.save();
-        console.log("Order created:", newOrder._id);
-      } catch (error) {
-        console.error("Failed to create order:", error.message);
-      }
+      // console.log("Payment succeeded.");
       break;
 
     case "payment_intent.payment_failed":
-      console.log("Payment failed:", event.data.object.id);
+      // console.log("Payment failed.");
+
+      const session = event.data.object;
+      const userId = session.metadata?.user; // Get userId from metadata
+      const orderId = session.metadata?.orderId; // Get orderId if available
+
+      try {
+        let order;
+
+        if (orderId) {
+          // If the order already exists, update it
+          order = await Order.findById(orderId);
+          if (order) {
+            order.paymentStatus = "Failed";
+            await order.save();
+          }
+        } else {
+          // If no order exists, create a new one
+          order = new Order({
+            user: userId,
+            items: [], // Since we don’t have `items` in metadata, we can't save them
+            totalAmount: session.amount_total ? session.amount_total / 100 : 0,
+            currency: session.currency || "usd",
+            paymentStatus: "Failed",
+          });
+          await order.save();
+        }
+
+        // console.log("Order marked as 'Failed'.");
+      } catch (error) {
+        console.error("Failed to handle failed payment:", error.message);
+      }
       break;
 
     case "checkout.session.completed":
-      console.log("Checkout completed:", event.data.object.id);
-      // If you also want to handle order creation from checkout session, you can do so here similar to payment_intent.succeeded
+      const completedSession = event.data.object;
+      const completedOrderId = completedSession.metadata.orderId;
+
+      try {
+        const completedOrder = await Order.findById(completedOrderId);
+        if (!completedOrder) {
+          console.error("Order not found:", completedOrderId);
+          return;
+        }
+
+        // Update order status
+        completedOrder.paymentStatus = completedSession.payment_status;
+        await completedOrder.save();
+
+        // console.log("Order updated successfully.");
+      } catch (error) {
+        console.error("Failed to update order:", error.message);
+      }
       break;
 
     default:
