@@ -70,6 +70,12 @@ const Header = () => {
           </span>
           <span
             className="text-base text-black cursor-pointer hover:font-bold hover:border-b-2 hover:border-black"
+            onClick={() => navigate("/orders")}
+          >
+            Orders
+          </span>
+          <span
+            className="text-base text-black cursor-pointer hover:font-bold hover:border-b-2 hover:border-black"
             onClick={() => navigate("/signup")}
           >
             Sign Up
