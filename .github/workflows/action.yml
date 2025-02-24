@@ -27,26 +27,3 @@ jobs:
           docker build -t allanbinga/clientstoreapi:v1.0.0 .
           docker push allanbinga/clientstoreapi:v1.0.0
 
-#    notify_slack:
-#       needs: [build_images, docker_push]
-#       runs-on: ubuntu-24.04
-#       steps:
-#         - name: Notify Slack if job succeeds.
-#           if: success()
-#           uses: slackapi/slack-github-action@v1.25.0
-#           with:
-#             channel-id: ${{ secrets.CHANNEL_ID }}
-#             slack-message: |
-#               :white_check_mark: Job Succeeded!
-#           env:
-#             SLACK_BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
-
-#         - name: Notify Slack if job fails.
-#           if: failure()
-#           uses: slackapi/slack-github-action@v1.25.0
-#           with:
-#             channel-id: ${{ secrets.CHANNEL_ID }}
-#             slack-message: |
-#               :x: Deployment Workflow Failed!
-#           env:
-#             SLACK_BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
