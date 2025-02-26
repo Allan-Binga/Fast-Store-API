@@ -1,6 +1,9 @@
 /* groovylint-disable-next-line CompileStatic */
 pipeline {
     agent any
+    tools {
+        nodejs 'nodejs 23'  // Use the Node.js version configured in Jenkins
+    }
     stages {
         stage('Clone Repository') {
             steps {
