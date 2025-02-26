@@ -8,10 +8,12 @@ pipeline {
                 git 'https://github.com/Allan-Binga/Fast-Store-API'
             }
         }
-        // stage () {
-        //     steps {
-
-    //     }
-    // }
+        stage('Install Dependencies') {
+            steps {
+                dir('backend') {
+                    sh 'npm install'
+                }
+            }
+        }
     }
 }
