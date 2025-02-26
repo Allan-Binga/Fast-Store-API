@@ -32,7 +32,9 @@ describe("Auth Controller", () => {
     await createUser(req, res);
 
     expect(res.statusCode).toBe(409);
-    expect(res._getJSONData()).toEqual({ message: "User already exists!" });
+    expect(res._getJSONData()).toEqual({
+      message: "User already exists with this email or phone!",
+    });
   });
 
   it("should create a new user", async () => {
@@ -73,7 +75,7 @@ describe("Auth Controller", () => {
     await loginUser(req, res);
 
     expect(res.statusCode).toBe(400);
-    expect(JSON.parse(res._getData())).toBe("Wrong username or password.");
+    expect(JSON.parse(res._getData())).toBe("Wrong email or password.");
   });
 
   it("should return 400 if password is incorrect", async () => {

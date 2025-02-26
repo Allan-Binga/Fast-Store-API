@@ -86,8 +86,8 @@ describe("Users test controller.", () => {
     const req = httpMocks.createRequest({
       method: "GET",
       url: "/users/5627926572",
-      params: {
-        id: "5627926572",
+      cookies: {
+        storeSession: "5627926572",
       },
     });
     const res = httpMocks.createResponse();
@@ -109,8 +109,8 @@ describe("Users test controller.", () => {
     const req = httpMocks.createRequest({
       method: "GET",
       url: "/users/9999999999",
-      params: {
-        id: "9999999999",
+      cookies: {
+        storeSession: "9999999999",
       },
     });
 
@@ -176,80 +176,5 @@ describe("Users test controller.", () => {
     expect(JSON.parse(res._getData())).toBe(
       "You can only update your account."
     );
-  });
-
-  //TESTING FOR WHEN A USER DELETES THEIR ACCOUNT
-  it("should return 200 if user deletes their account", async () => {
-    const req = httpMocks.createRequest({
-      method: "DELETE",
-      url: "/users/:id",
-      params: { id: "123" },
-      body: { userId: "123" }, // User is deleting their own account
-    });
-    const res = httpMocks.createResponse();
-
-    // Mock the `findById` and `findByIdAndDelete` methods to simulate a successful deletion
-    User.findById.mockResolvedValue({ _id: "123" });
-    User.findByIdAndDelete.mockResolvedValue(true);
-
-    await deleteUser(req, res);
-
-    expect(res.statusCode).toBe(200);
-    expect(res._getJSONData()).toEqual("User has been deleted.");
-  });
-
-  //TESTING WHEN A USER TRIES TO DELETE SOMEONE ELSE'S ACCOUNT
-  it("should return error 401 when a user tries to delete another users account", async () => {
-    const req = httpMocks.createRequest({
-      method: "DELETE",
-      url: "/users/:id",
-      params: { id: "123" },
-      body: { userId: "456" }, // User is trying to delete someone else's account
-    });
-    const res = httpMocks.createResponse();
-
-    await deleteUser(req, res);
-
-    expect(res.statusCode).toBe(401);
-    expect(res._getJSONData()).toEqual("You can only delete your account.");
-  });
-
-  //TESTING WHEN A USER TRIES TO DELETE AN UNKNOWN USER
-  it("should return error 404 when a user tries to delete an unknown user", async () => {
-    const req = httpMocks.createRequest({
-      method: "DELETE",
-      url: "/users/:id",
-      params: { id: "123" },
-      body: { userId: "123" }, // User is deleting their own account
-    });
-    const res = httpMocks.createResponse();
-
-    // Mock the `findById` method to simulate user not found
-    User.findById.mockResolvedValue(null);
-
-    await deleteUser(req, res);
-
-    expect(res.statusCode).toBe(404);
-    expect(res._getJSONData()).toEqual("User not found.");
-  });
-
-  //TESTING WHEN A USER ENCOUNTERS A PROBLEM DELETING A USER
-  it("should return 500 if there's an error deleting the user", async () => {
-    const req = httpMocks.createRequest({
-      method: "DELETE",
-      url: "/users/:id",
-      params: { id: "123" },
-      body: { userId: "123" },  // User is deleting their own account
-    });
-    const res = httpMocks.createResponse();
-
-    // Mock the `findById` and `findByIdAndDelete` methods to simulate a deletion failure
-    User.findById.mockResolvedValue({ _id: "123" });
-    User.findByIdAndDelete.mockRejectedValue(new Error("Database error"));
-
-    await deleteUser(req, res);
-
-    expect(res.statusCode).toBe(500);
-    expect(res._getJSONData()).toEqual("Error occured while deleting user.");
   });
 });

@@ -106,15 +106,14 @@ describe("Products test controller", () => {
 
   //TESTING FOR ADDING A PRODUCT
   it("should add a product", async () => {
-    //TEST DESCRIPTION
-    //OBJECT CREATION WITH title, price, description, image and rating PROPERTIES.
     const mockProduct = {
-      title: "Gaming Chair",
-      price: 300,
+      name: "Gaming Chair",
+      currentPrice: 300,
+      originalPrice: 400, // Added this since it's required
       category: "Furniture",
       description: "Ergonomic gaming chair with lumbar support",
       image: "chair.jpg",
-      rating: {
+      reviews: {
         rate: 4.5,
         count: 120,
       },
