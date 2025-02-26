@@ -2,7 +2,7 @@
 pipeline {
     agent any
     stages {
-        stage ('Clone Repository') {
+        stage('Clone Repository') {
             steps {
                 //CLONE GITHUB REPOSITORY
                 git 'https://github.com/Allan-Binga/Fast-Store-API'
@@ -11,7 +11,7 @@ pipeline {
         // stage () {
         //     steps {
 
-        //     }
-        // }
+    //     }
+    // }
     }
 }
