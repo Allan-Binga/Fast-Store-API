@@ -18,5 +18,12 @@ pipeline {
                 }
             }
         }
+        stage('Run unit tests') {
+            steps {
+                dir('backend') {
+                    sh 'npm test'
+                }
+            }
+        }
     }
 }
