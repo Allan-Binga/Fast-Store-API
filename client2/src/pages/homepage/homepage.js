@@ -5,7 +5,7 @@ import SideBarAndPromo from "../../components/sideBarAndPromo/Promo";
 import FlashSales from "../../components/flashSales/FlashSales";
 import TopHeader from "../../components/topHeader/TopHeader";
 import CategorySection from "../../components/categories/Categories";
-import BestSellers from "../../components/bestSelling/Bestsellers";
+import NewArrivals from "../../components/newArrivals/NewArrivals";
 import OurProducts from "../../components/ourProducts/OurProducts";
 import Deal from "../../components/superDeal/deal";
 import Customer from "../../components/customer/customer";
@@ -25,8 +25,8 @@ const Homepage = () => {
     <div>
       <TopHeader />
       <Header />
-       {/* Progress Bar */}
-       {isLoading && (
+      {/* Progress Bar */}
+      {isLoading && (
         <div className="absolute top-0 left-0 w-full h-1 bg-blue-800">
           <div
             className="h-full bg-blue-500 transition-all duration-300"
@@ -36,9 +36,9 @@ const Homepage = () => {
       )}
       <SideBarAndPromo />
       <FlashSales />
-      <ShopByBrand/>
+      <ShopByBrand />
       <CategorySection />
-      <BestSellers />
+      <NewArrivals />
       <Deal />
       <OurProducts />
       <Customer />

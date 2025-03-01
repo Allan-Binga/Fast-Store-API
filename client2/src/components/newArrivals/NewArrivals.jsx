@@ -64,7 +64,7 @@ const products = [
   // Additional products...
 ];
 
-const BestSellers = () => {
+const NewArrivals = () => {
   const navigate = useNavigate(); // Initialize useNavigate
   const [startIndex, setStartIndex] = useState(0);
 
@@ -99,7 +99,7 @@ const BestSellers = () => {
 
       <div className="flex justify-between items-center w-full">
         <div className="text-text-2 font-semibold text-[36px] tracking-[0.02em] leading-[1.2]">
-          Best Selling Products
+          New Arrivals
         </div>
         <div className="flex items-center gap-4 mr-[120px]">
           <FaArrowLeft
@@ -174,4 +174,4 @@ const BestSellers = () => {
   );
 };
 
-export default BestSellers;
+export default NewArrivals;
