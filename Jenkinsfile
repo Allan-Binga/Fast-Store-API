@@ -25,5 +25,10 @@ pipeline {
                 }
             }
         }
+        stage('Notify Slack') {
+            steps {
+                sh ''
+            }
+        }
     }
 }
