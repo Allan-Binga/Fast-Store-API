@@ -21,7 +21,7 @@ describe("Auth Controller", () => {
 
   // Tests for createUser
   it("should return 409 if user already exists", async () => {
-    User.findOne.mockResoledValue(true);
+    User.findOne.mockResolvedValue(true);
 
     req.body = {
       username: "testuser",
