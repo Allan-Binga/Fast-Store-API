@@ -33,6 +33,7 @@ const addNewProduct = async (req, res) => {
       description,
       image,
       reviews,
+      newArrival,
     } = req.body;
 
     // Validation of required fields
@@ -66,7 +67,7 @@ const addNewProduct = async (req, res) => {
       });
     }
 
-    // Create a new product
+    // Create a new product with newArrival field (defaults to false if not provided)
     const newProduct = new Product({
       name,
       currentPrice,
@@ -78,6 +79,7 @@ const addNewProduct = async (req, res) => {
       description,
       image,
       reviews,
+      newArrival: newArrival ?? true, // Ensure it defaults to true if not specified
     });
 
     // Save product to the database
@@ -100,6 +102,20 @@ const getSingleProduct = async (req, res) => {
     res.status(200).json(product);
   } catch (error) {
     res.status(500).json({ message: "Product not found." });
+  }
+};
+
+//Getting new arrivals products
+const getNewArrivals = async (req, res) => {
+  try {
+    const newArrivals = await Product.find({ newArrival: true })
+      .sort({
+        createdAt: -1,
+      })
+      .limit(10);
+    res.status(200).json(newArrivals);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching new arrivals", error });
   }
 };
 
@@ -147,4 +163,5 @@ module.exports = {
   addNewProduct,
   getLimitedProducts,
   getAllProducts,
+  getNewArrivals,
 };

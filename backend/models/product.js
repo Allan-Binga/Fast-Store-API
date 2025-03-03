@@ -46,6 +46,9 @@ const ProductSchema = new mongoose.Schema(
         min: 0,
       },
     },
+    newArrival: { 
+      type: Boolean, 
+    },
   },
   { timestamps: true }
 );

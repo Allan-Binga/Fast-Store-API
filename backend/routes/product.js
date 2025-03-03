@@ -6,9 +6,10 @@ const {
   getSingleProduct,
   updateProduct,
   getLimitedProducts,
+  getNewArrivals,
 } = require("../controllers/product.js");
 
-const {addProductToCart} = require("../controllers/cart.js")
+const { addProductToCart } = require("../controllers/cart.js");
 
 const {
   getAllCategories,
@@ -26,10 +27,16 @@ router.get("/limit", getLimitedProducts);
 
 // Generic routes later
 router.get("/", getAllProducts);
+//New Arrivals route
+router.get("/new-arrivals", getNewArrivals);
 router.get("/:id", getSingleProduct);
+
 router.post("/", addNewProduct);
 router.put("/:id", updateProduct);
 router.delete("/:id", deleteProduct);
-router.post("/add-to-cart", addProductToCart)
+router.post("/add-to-cart", addProductToCart);
+
+//New Arrivals route
+router.get("/new-arrivals", getNewArrivals);
 
 module.exports = router;
