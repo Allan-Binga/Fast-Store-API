@@ -35,8 +35,7 @@ const Login = () => {
       }
     } catch (error) {
       const errorMessage =
-        error.response?.data?.message ||
-        "Wrong credentials. Please try again.";
+        error.response?.data?.message || "Wrong credentials. Please try again.";
       toast.error(errorMessage);
     } finally {
       setIsLoading(false);
@@ -48,9 +47,9 @@ const Login = () => {
       <TopHeader />
       <Header />
       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-        <div className="flex flex-wrap max-w-4xl bg-white shadow-lg rounded-lg overflow-hidden">
+        <div className="flex flex-wrap max-w-4xl bg-white shadow-lg rounded-lg overflow-hidden h-auto md:h-[500px]">
           {/* Left Section: Image */}
-          <div className="hidden md:flex flex-1 items-center justify-center bg-blue-50">
+          <div className="hidden md:flex flex-1 items-center justify-center bg-blue-50 min-w-[300px] min-h-[400px]">
             <img
               src="https://cdn.builder.io/api/v1/image/assets/TEMP/69e0f745a386da13ccf8560b79d75248221409e03e50215b2e917c121088ed4b?placeholderIfAbsent=true&apiKey=8cd4e88793e947cca676caa403f196cb"
               alt="E-commerce visual"
@@ -60,7 +59,7 @@ const Login = () => {
           </div>
 
           {/* Right Section: Login Form */}
-          <div className="flex-1 flex flex-col p-8 md:p-12">
+          <div className="flex-1 flex flex-col p-8 md:p-12 min-w-[300px]">
             <h1 className="text-3xl font-bold text-gray-800">Log in</h1>
             <p className="text-gray-600 mt-2">Enter your credentials below</p>
 
