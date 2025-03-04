@@ -18,11 +18,25 @@ const Orders = () => {
         });
         setOrders(response.data || []);
       } catch (error) {
-        setError(error.response?.data?.error || "Failed to retrieve orders");
+        if (error.response) {
+          if (error.response.status === 401) {
+            setError("Please log in to view your orders.");
+          } else if (
+            error.response.status === 400 ||
+            error.response.status === 404
+          ) {
+            setError(error.response.data.error);
+          } else {
+            setError("An error occurred while retrieving orders.");
+          }
+        } else {
+          setError("An unexpected error occurred.");
+        }
       } finally {
         setLoading(false);
       }
     };
+
     fetchOrders();
   }, []);
 
@@ -45,11 +59,16 @@ const Orders = () => {
         ) : error ? (
           <p className="text-center text-red-500 text-lg">{error}</p>
         ) : orders.length === 0 ? (
-          <p className="text-center text-gray-600 text-lg">You have no orders yet.</p>
+          <p className="text-center text-gray-600 text-lg">
+            You have no orders yet.
+          </p>
         ) : (
           <div className="flex flex-col gap-6">
             {orders.map((order) => (
-              <div key={order._id} className="bg-white shadow-lg rounded-lg p-6">
+              <div
+                key={order._id}
+                className="bg-white shadow-lg rounded-lg p-6"
+              >
                 <div className="grid grid-cols-4 gap-4 border-b pb-4 text-gray-700 font-medium text-sm md:text-base">
                   <div>Order ID</div>
                   <div>Total</div>
@@ -58,9 +77,15 @@ const Orders = () => {
                 </div>
                 <div className="grid grid-cols-4 gap-4 items-center py-6 border-b last:border-none">
                   <div className="truncate text-sm">{order._id}</div>
-                  <div className="font-medium text-sm">${order.totalAmount} {order.currency.toUpperCase()}</div>
-                  <div className="text-green-600 font-medium text-sm">{order.paymentStatus}</div>
-                  <div className="text-gray-600 text-sm">{new Date(order.createdAt).toLocaleString()}</div>
+                  <div className="font-medium text-sm">
+                    ${order.totalAmount} {order.currency.toUpperCase()}
+                  </div>
+                  <div className="text-green-600 font-medium text-sm">
+                    {order.paymentStatus}
+                  </div>
+                  <div className="text-gray-600 text-sm">
+                    {new Date(order.createdAt).toLocaleString()}
+                  </div>
                 </div>
                 <h3 className="mt-4 font-medium">Items</h3>
                 <div className="grid grid-cols-4 gap-4 border-b pb-2 text-gray-700 font-medium text-sm">
@@ -70,14 +95,27 @@ const Orders = () => {
                   <div>Subtotal</div>
                 </div>
                 {order.items.map((item, index) => (
-                  <div key={index} className="grid grid-cols-4 gap-4 items-center py-4 border-b last:border-none">
+                  <div
+                    key={index}
+                    className="grid grid-cols-4 gap-4 items-center py-4 border-b last:border-none"
+                  >
                     <div className="flex items-center gap-3">
-                      <img src={item.image} alt={item.name} className="w-16 h-16 object-cover rounded-lg border" />
-                      <span className="text-gray-700 truncate max-w-[160px] text-sm">{item.name}</span>
+                      <img
+                        src={item.image}
+                        alt={item.name}
+                        className="w-16 h-16 object-cover rounded-lg border"
+                      />
+                      <span className="text-gray-700 truncate max-w-[160px] text-sm">
+                        {item.name}
+                      </span>
                     </div>
-                    <div className="text-gray-700 font-medium text-sm">${item.price}</div>
+                    <div className="text-gray-700 font-medium text-sm">
+                      ${item.price}
+                    </div>
                     <div className="text-gray-700 text-sm">{item.quantity}</div>
-                    <div className="text-gray-700 font-medium text-sm">${(item.price * item.quantity).toFixed(2)}</div>
+                    <div className="text-gray-700 font-medium text-sm">
+                      ${(item.price * item.quantity).toFixed(2)}
+                    </div>
                   </div>
                 ))}
               </div>

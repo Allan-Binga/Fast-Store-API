@@ -12,12 +12,6 @@ const FlashSales = () => {
   //const navigate = useNavigate(); // Initialize useNavigate
   const [products, setProducts] = useState([]);
   const [startIndex, setStartIndex] = useState(0);
-  const [timeLeft, setTimeLeft] = useState({
-    days: 3,
-    hours: 23,
-    minutes: 19,
-    seconds: 56,
-  });
 
   useEffect(() => {
     // Fetch flash sale products on component mount
@@ -27,38 +21,6 @@ const FlashSales = () => {
     };
     fetchProducts();
   }, []);
-
-  useEffect(() => {
-    // This is a simple countdown.
-    const timer = setInterval(() => {
-      if (timeLeft.seconds > 0) {
-        setTimeLeft({ ...timeLeft, seconds: timeLeft.seconds - 1 });
-      } else if (timeLeft.minutes > 0) {
-        setTimeLeft({
-          ...timeLeft,
-          minutes: timeLeft.minutes - 1,
-          seconds: 59,
-        });
-      } else if (timeLeft.hours > 0) {
-        setTimeLeft({
-          ...timeLeft,
-          hours: timeLeft.hours - 1,
-          minutes: 59,
-          seconds: 59,
-        });
-      } else if (timeLeft.days > 0) {
-        setTimeLeft({
-          ...timeLeft,
-          days: timeLeft.days - 1,
-          hours: 23,
-          minutes: 59,
-          seconds: 59,
-        });
-      }
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [timeLeft]);
 
   const visibleProducts = products.slice(
     startIndex,
@@ -120,7 +82,6 @@ const FlashSales = () => {
     }
   };
 
-  //SHOPPING CART ICON for ADDING A PRODUCT TO CART
   //SHOPPING CART ICON for ADDING A PRODUCT TO CART
   const handleAddToCart = async (productId) => {
     try {
@@ -198,10 +159,7 @@ const FlashSales = () => {
         <div className="text-text-2 font-semibold text-[36px] tracking-[0.02em] leading-[1.2]">
           Flash Sales
         </div>
-        <div className="text-xl text-black">
-          {timeLeft.days} : {timeLeft.hours} : {timeLeft.minutes} :{" "}
-          {timeLeft.seconds}
-        </div>
+
         <div className="flex items-center gap-4 mr-[120px]">
           <FaArrowLeft
             className={`w-9 h-9 p-2 bg-gray-200 text-black rounded-full cursor-pointer ${
