@@ -39,7 +39,5 @@ router.put("/:id", updateProduct);
 router.delete("/:id", deleteProduct);
 router.post("/add-to-cart", addProductToCart);
 
-//New Arrivals route
-router.get("/new-arrivals", getNewArrivals);
 
 module.exports = router;
