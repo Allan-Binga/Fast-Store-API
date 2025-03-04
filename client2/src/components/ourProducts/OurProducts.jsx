@@ -72,25 +72,9 @@ const OurProducts = () => {
           withCredentials: true, // Send cookies for authentication
         }
       );
-
       toast.success(response.data.message);
     } catch (error) {
-      if (error.response) {
-        if (error.response.status === 401) {
-          toast.error("Please login to add product to wishlist.");
-        } else if (
-          error.response.status === 400 ||
-          error.response.status === 404
-        ) {
-          toast.error(error.response.data.error);
-        } else {
-          toast.error(
-            "An error occurred while adding the product to the wishlist."
-          );
-        }
-      } else {
-        toast.error("An unexpected error occurred.");
-      }
+      toast.error("Something went wrong.");
     }
   };
 

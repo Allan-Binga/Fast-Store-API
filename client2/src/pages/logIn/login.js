@@ -18,7 +18,9 @@ const Login = () => {
   // LOGIN IMPLEMENTATION
   const loginUser = async (userData) => {
     try {
-      await axios.post(`${backendAPI}/api/auth/login`, userData);
+      await axios.post(`${backendAPI}/api/auth/login`, userData, {
+        withCredentials: true,  // Enable cookies in the request
+      });
       toast.success("Login successful!");
       navigate("/"); // Redirect to homepage
     } catch (error) {
