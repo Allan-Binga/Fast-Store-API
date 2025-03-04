@@ -7,6 +7,7 @@ const {
   updateProduct,
   getLimitedProducts,
   getNewArrivals,
+  searchResults,
 } = require("../controllers/product.js");
 
 const { addProductToCart } = require("../controllers/cart.js");
@@ -29,6 +30,8 @@ router.get("/limit", getLimitedProducts);
 router.get("/", getAllProducts);
 //New Arrivals route
 router.get("/new-arrivals", getNewArrivals);
+//Search Engine route
+router.get("/search", searchResults)
 router.get("/:id", getSingleProduct);
 
 router.post("/", addNewProduct);

@@ -119,6 +119,24 @@ const getNewArrivals = async (req, res) => {
   }
 };
 
+//Searching for a product
+const searchResults = async (req, res) => {
+  try {
+    const { q } = req.query;
+    if (!q) {
+      return res.status(400).json({ message: "Query parameter is required" });
+    }
+
+    // Full-Text Search Query
+    const results = await Product.find({
+      $text: { $search: q },
+    });
+    res.json(results);
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error", error });
+  }
+};
+
 //Update a product.
 const updateProduct = async (req, res) => {
   try {
@@ -164,4 +182,5 @@ module.exports = {
   getLimitedProducts,
   getAllProducts,
   getNewArrivals,
+  searchResults,
 };
