@@ -131,7 +131,7 @@ const Login = () => {
 
             {/* Forgot Password & Signup Link */}
             <div className="flex flex-col items-center mt-6">
-              <button className="text-blue-500 hover:underline">
+              <button className="text-blue-500 hover:underline" onClick={() => navigate("/password-reset")}>
                 Forgot password?
               </button>
               <p className="mt-4 text-gray-600">
