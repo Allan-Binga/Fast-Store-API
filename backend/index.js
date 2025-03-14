@@ -18,13 +18,13 @@ const cookieParser = require("cookie-parser");
 dotenv.config();
 const app = express();
 
-//Webhook Route [Place the webhook route first to avoid `express.json()` parsing]
+//Webhook Route 
 app.use("/api/webhook", webhookRoute)
 
 
 app.use(express.json());
 
-//COOKIE PARSER
+//Cookie parser
 app.use(cookieParser());
 
 //CORS IMPLEMENTATION
@@ -69,7 +69,7 @@ app.use("/api/checkout", checkoutRoute);
 //Orders Route
 app.use("/api/orders", orderRoute)
 
-//Address ROute
+//Address Route
 app.use("/api/address", addressRoute)
 
 app.listen("5500", () => {
