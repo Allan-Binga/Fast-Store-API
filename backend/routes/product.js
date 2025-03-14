@@ -14,14 +14,14 @@ const { addProductToCart } = require("../controllers/cart.js");
 
 const {
   getAllCategories,
-  getSpecificCategory,
+  getCategoryProducts,
 } = require("../controllers/category.js");
 
 const router = express.Router();
 
 // More specific routes first
 router.get("/categories", getAllCategories);
-router.get("/category/:category", getSpecificCategory);
+router.get("/category/:category", getCategoryProducts);
 
 router.get("/limit", getLimitedProducts);
 //router.get("/sort", sortProducts);

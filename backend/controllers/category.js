@@ -1,4 +1,4 @@
-const Product = require("../models/product")
+const Product = require("../models/product");
 
 const getAllCategories = async (req, res) => {
   try {
@@ -9,22 +9,27 @@ const getAllCategories = async (req, res) => {
   }
 };
 
-const getSpecificCategory = async (req, res) => {
+//Get Products from a Specific Category
+const getCategoryProducts = async (req, res) => {
   try {
-    const category = req.params.category;
+    const category = decodeURIComponent(req.params.category);
 
-    const products = await Product.find({ category: category });
+    const products = await Product.find({
+      category: { $regex: new RegExp(`^${category}$`, "i") }, // Case-insensitive match
+    });
 
     if (!products || products.length === 0) {
-      return res
-        .status(404)
-        .json({ error: `Category '${category}' not found or has no products.` });
+      return res.status(404).json({
+        error: `Category '${category}' not found or has no products.`,
+      });
     }
 
     res.status(200).json(products);
   } catch (error) {
-    res.status(500).json({ error: "An error occurred while fetching products." });
+    res
+      .status(500)
+      .json({ error: "An error occurred while fetching products." });
   }
 };
 
-module.exports = {getAllCategories, getSpecificCategory}
+module.exports = { getAllCategories, getCategoryProducts };
