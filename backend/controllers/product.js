@@ -41,7 +41,8 @@ const addNewProduct = async (req, res) => {
       !name ||
       currentPrice === undefined ||
       originalPrice === undefined ||
-      !category ||
+      !Array.isArray(category) ||
+      category.length === 0 ||
       !description ||
       !image ||
       !reviews ||

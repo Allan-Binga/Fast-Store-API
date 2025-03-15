@@ -21,7 +21,7 @@ const router = express.Router();
 
 // More specific routes first
 router.get("/categories", getAllCategories);
-router.get("/category/:category", getCategoryProducts);
+router.get("/:category", getCategoryProducts);
 
 router.get("/limit", getLimitedProducts);
 //router.get("/sort", sortProducts);
