@@ -110,7 +110,7 @@ describe("Products test controller", () => {
       name: "Gaming Chair",
       currentPrice: 300,
       originalPrice: 400, // Added this since it's required
-      category: "Furniture",
+      category: ["Furniture"],
       description: "Ergonomic gaming chair with lumbar support",
       image: "chair.jpg",
       reviews: {
