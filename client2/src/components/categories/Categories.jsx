@@ -9,6 +9,7 @@ import { IoFastFoodOutline, IoGameControllerOutline } from "react-icons/io5";
 import { GiNecklaceDisplay } from "react-icons/gi";
 import { MdShapeLine } from "react-icons/md";
 import { MdDevices } from "react-icons/md";
+import { MdLaptopMac } from "react-icons/md";
 import { backendAPI } from "../../endpoint";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -18,6 +19,7 @@ const categoryIcons = {
   Accessories: <MdShapeLine size={64}/>,
   Electronics: <MdDevices size={64}/>,
   Computers: <HiOutlineComputerDesktop size={64} />,
+  Laptops: <MdLaptopMac size={64}/>,
   Smartphones: <GiSmartphone size={64} />,
   Headphones: <CiHeadphones size={64} />,
   Cameras: <CiCamera size={64} />,

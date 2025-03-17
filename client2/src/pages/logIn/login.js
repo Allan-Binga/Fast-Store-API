@@ -24,7 +24,7 @@ const Login = () => {
       toast.success("Login successful!");
       navigate("/"); // Redirect to homepage
     } catch (error) {
-      toast.error(error.response?.data?.message || "Login failed. Try again.");
+      toast.success(error.response?.data?.message || "You are already logged in.");
     }
   };
 

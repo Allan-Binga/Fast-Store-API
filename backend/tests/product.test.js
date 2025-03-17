@@ -111,6 +111,7 @@ describe("Products test controller", () => {
       currentPrice: 300,
       originalPrice: 400, // Added this since it's required
       category: ["Furniture"],
+      quantity: 1,
       description: "Ergonomic gaming chair with lumbar support",
       image: "chair.jpg",
       reviews: {
