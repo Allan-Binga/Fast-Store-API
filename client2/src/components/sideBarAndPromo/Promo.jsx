@@ -6,6 +6,7 @@ import AppleLogo from "./apple-logo.png";
 import Line5 from "./line5.png";
 // import Line2 from "./line2.png";
 import { backendAPI } from "../../endpoint";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 const products = [
@@ -42,6 +43,7 @@ const getCategories = async () => {
 };
 
 const SideBarAndPromo = () => {
+  const navigate = useNavigate()
   const [currentProductIndex, setCurrentProductIndex] = useState(0);
   const [categories, setCategories] = useState([]);
 
@@ -61,6 +63,12 @@ const SideBarAndPromo = () => {
     fetchCategories();
   }, []);
 
+   //Category click
+   const categoryClick = (category) => {
+    const formattedCategory = encodeURIComponent(category.toLowerCase())
+    navigate(`/categories/${formattedCategory}`)
+  }
+
   const currentProduct = products[currentProductIndex];
 
   return (
@@ -72,6 +80,7 @@ const SideBarAndPromo = () => {
               <div
                 key={index}
                 className="relative w-fit font-normal text-black text-[16px] text-center tracking-[0.02em] leading-[1.5] whitespace-nowrap hover:bg-blue-300 hover:text-white cursor-pointer px-2 py-1 rounded-full"
+                 onClick={() => categoryClick(category)}
               >
                 {category.name || category}
               </div>

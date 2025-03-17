@@ -10,7 +10,7 @@ import Account from "./pages/account/account";
 import Single from "./pages/singleProduct/Single";
 import BrandProducts from "./pages/brandProducts/BrandProducts";
 import Success from "./pages/successPage/success";
-// import Orders from "./pages/orders/orders"
+import Orders from "./pages/orders/orders"
 import PasswordReset from "./pages/passwordReset/passwordreset";
 import CategoryProducts from "./pages/categoryProducts/categoryProducts";
 
@@ -29,6 +29,7 @@ const App = () => {
         <Route path="/brand/:id/products" element={<BrandProducts />} />
         <Route path="/categories/:category" element={<CategoryProducts/>}/>
         <Route path="/success" element={<Success/>}/>
+        <Route path="/orders" element={<Orders/>}/>
         <Route path ="/password-reset" element={<PasswordReset/>}/>
       </Routes>
     </Router>
