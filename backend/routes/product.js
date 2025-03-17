@@ -9,22 +9,13 @@ const {
   getNewArrivals,
   searchResults,
 } = require("../controllers/product.js");
-
 const { addProductToCart } = require("../controllers/cart.js");
 
-const {
-  getAllCategories,
-  getCategoryProducts,
-} = require("../controllers/category.js");
 
 const router = express.Router();
 
 //New Arrivals route
-router.get("/new-arrivals", getNewArrivals);
-// More specific routes first
-router.get("/categories", getAllCategories);
-router.get("/:category", getCategoryProducts);
-
+router.get("/new-arrivals", getNewArrivals)
 router.get("/limit", getLimitedProducts);
 //router.get("/sort", sortProducts);
 

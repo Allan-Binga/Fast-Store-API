@@ -50,7 +50,7 @@ app.use("/api/auth", authRoute);
 app.use("/api/products", productRoute);
 
 //Category Route
-app.use("/api/category", categoryRoute)
+app.use("/api/categories", categoryRoute)
 
 //Flashsale Route
 app.use("/api/flashsale", flashSaleRoute)
