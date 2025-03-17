@@ -19,6 +19,8 @@ const {
 
 const router = express.Router();
 
+//New Arrivals route
+router.get("/new-arrivals", getNewArrivals);
 // More specific routes first
 router.get("/categories", getAllCategories);
 router.get("/:category", getCategoryProducts);
@@ -28,8 +30,7 @@ router.get("/limit", getLimitedProducts);
 
 // Generic routes later
 router.get("/", getAllProducts);
-//New Arrivals route
-router.get("/new-arrivals", getNewArrivals);
+
 //Search Engine route
 router.get("/search", searchResults)
 router.get("/:id", getSingleProduct);
