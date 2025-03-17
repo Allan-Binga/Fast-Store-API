@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { CiCamera, CiHeadphones } from "react-icons/ci";
 import { GiSmartphone } from "react-icons/gi";
 import { HiOutlineComputerDesktop } from "react-icons/hi2";
@@ -7,28 +7,53 @@ import { FaArrowRight, FaArrowLeft } from "react-icons/fa";
 import { PiShirtFolded } from "react-icons/pi";
 import { IoFastFoodOutline, IoGameControllerOutline } from "react-icons/io5";
 import { GiNecklaceDisplay } from "react-icons/gi";
+import { MdShapeLine } from "react-icons/md";
+import { MdDevices } from "react-icons/md";
+import { backendAPI } from "../../endpoint";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const CATEGORIES_ALLOWED = 4; // Number of categories visible at a time
-const categories = [
-  { id: 1, icon: <HiOutlineComputerDesktop size={64} />, name: "Computers" },
-  { id: 2, icon: <GiSmartphone size={64} />, name: "Smartphones" },
-  { id: 3, icon: <CiHeadphones size={64} />, name: "Headphones" },
-  { id: 4, icon: <CiCamera size={64} />, name: "Cameras" },
-  { id: 5, icon: <GiLargeDress size={64} />, name: "Women's Fashion" },
-  { id: 6, icon: <PiShirtFolded size={64} />, name: "Men's Fashion" },
-  { id: 7, icon: <IoFastFoodOutline size={64} />, name: "Food" },
-  { id: 8, icon: <GiNecklaceDisplay size={64} />, name: "Jewelery" },
-  {
-    id: 9,
-    icon: <IoGameControllerOutline size={64} />,
-    name: "Gaming Consoles",
-  },
-  { id: 10, icon: <GiBookshelf size={64} />, name: "Books" },
-  { id: 11, icon: <GiConverseShoe size={64} />, name: "Footwear" },
-];
+const categoryIcons = {
+  Accessories: <MdShapeLine size={64}/>,
+  Electronics: <MdDevices size={64}/>,
+  Computers: <HiOutlineComputerDesktop size={64} />,
+  Smartphones: <GiSmartphone size={64} />,
+  Headphones: <CiHeadphones size={64} />,
+  Cameras: <CiCamera size={64} />,
+  "Women's Clothing": <GiLargeDress size={64} />,
+  "Men's Clothing": <PiShirtFolded size={64} />,
+  Food: <IoFastFoodOutline size={64} />,
+  Jewelery: <GiNecklaceDisplay size={64} />,
+  "Gaming Consoles": <IoGameControllerOutline size={64} />,
+  Books: <GiBookshelf size={64} />,
+  Sneakers: <GiConverseShoe size={64} />,
+};
 
 const Categories = () => {
+  const navigate = useNavigate()
+  const [categories, setCategories] = useState([]);
   const [startIndex, setStartIndex] = React.useState(0);
+ 
+
+  //Fetch categories
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await axios.get(`${backendAPI}/api/categories/all`);
+        setCategories(response.data);
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      }
+    };
+    fetchCategories();
+  }, []);
+
+  //Category click
+  const categoryClick = (category) => {
+    const formattedCategory = encodeURIComponent(category.toLowerCase())
+    navigate(`/categories/${formattedCategory}`)
+  }
 
   // Calculate visible categories
   const visibleCategories = categories.slice(
@@ -83,13 +108,14 @@ const Categories = () => {
       </div>
 
       <div className="grid grid-cols-4 gap-6 mt-6 mr-20">
-        {visibleCategories.map((category) => (
+        {visibleCategories.map((category, index) => (
           <div
-            key={category.id}
+            key={index}
             className="w-[400px] h-[360px] bg-white text-black flex flex-col items-center justify-center border border-gray-500 hover:bg-blue-400 hover:text-white transition-all duration-300 cursor-pointer "
+            onClick={() => categoryClick(category)}
           >
-            {category.icon}
-            <p className="mt-2 font-medium">{category.name}</p>
+            {categoryIcons[category] || <span>🛍️</span>}
+            <p className="mt-2 font-medium">{category}</p>
           </div>
         ))}
       </div>

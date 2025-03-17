@@ -34,7 +34,7 @@ const products = [
 
 const getCategories = async () => {
   try {
-    const response = await axios.get(`${backendAPI}/api/products/categories`);
+    const response = await axios.get(`${backendAPI}/api/categories/all`);
     return response.data;
   } catch (error) {
     console.error("Error fetching categories:", error.message);
