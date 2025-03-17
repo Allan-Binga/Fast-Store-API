@@ -109,7 +109,7 @@ const SideBarAndPromo = () => {
           </div>
           <div className="inline-flex items-center gap-2 absolute top-[253px] left-[3px]">
             <div className="inline-flex flex-col items-start gap-1 relative flex-[0_0_auto]">
-              <div className="relative w-fit mt-[-1px] font-medium text-black text-[16px] text-center tracking-[0.02em] leading-[1.5] whitespace-nowrap text-white">
+              <div className="relative w-fit mt-[-1px] font-medium text-black text-[16px] text-center tracking-[0.02em] leading-[1.5] whitespace-nowrap">
                 Shop Now
               </div>
               <img
