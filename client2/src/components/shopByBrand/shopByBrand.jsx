@@ -45,7 +45,7 @@ const ShopByBrand = () => {
   };
 
   return (
-    <div className="flex flex-col items-start gap-4 relative ml-[150px] mt-[35px]">
+    <div className="flex flex-col items-start gap-4 relative ml-4 mt-4 sm:ml-8 md:ml-12 lg:ml-[150px]">
       {/* Brands */}
       <div className="flex items-center gap-4">
         <div className="w-5">
@@ -56,12 +56,12 @@ const ShopByBrand = () => {
         </div>
       </div>
 
-      {/*Brands*/}
+      {/* Shop By Brand Header */}
       <div className="flex justify-between items-center w-full">
-        <div className="text-text-2 font-semibold text-[36px] tracking-[0.02em] leading-[1.2]">
+        <div className="text-text-2 font-semibold text-xl sm:text-2xl md:text-3xl lg:text-[36px] tracking-[0.02em] leading-[1.2]">
           Shop By Brand
         </div>
-        <div className="flex items-center gap-4 mr-[120px]">
+        <div className="flex items-center gap-4 mr-4 sm:mr-8 md:mr-12 lg:mr-[120px]">
           <FaArrowLeft
             className={`w-9 h-9 p-2 bg-gray-200 text-black rounded-full cursor-pointer ${
               startIndex === 0 ? "opacity-50 cursor-not-allowed" : ""
@@ -80,7 +80,7 @@ const ShopByBrand = () => {
       </div>
 
       {/* Brands Card */}
-      <div className="grid grid-cols-4 gap-6 mt-6 mr-20 ml">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-6">
         {visibleBrands.map((brand) => (
           <div
             onClick={() => navigate(`/brand/${brand._id}/products`)}
@@ -89,11 +89,11 @@ const ShopByBrand = () => {
           >
             {/* Brand Image */}
             <div className="relative bg-white flex items-center justify-center overflow-hidden p-4">
-              <div className="w-[390px] h-[390px] bg-gray-100 rounded-full border border-gray-300 flex items-center justify-center">
+              <div className="w-[250px] h-[250px] sm:w-[300px] sm:h-[300px] md:w-[350px] md:h-[350px] lg:w-[390px] lg:h-[390px] bg-gray-100 rounded-full border border-gray-300 flex items-center justify-center aspect-square">
                 <img
                   src={brand.logo}
-                  alt={brand.logo}
-                  className="w-[250px] h-[250px] object-contain "
+                  alt={brand.name}
+                  className="w-full h-full object-contain"
                 />
               </div>
             </div>
