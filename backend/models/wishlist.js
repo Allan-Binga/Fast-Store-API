@@ -14,7 +14,7 @@ const WishlistSchema = new mongoose.Schema(
         currentPrice: { type: Number, required: true, min: 0 },
         originalPrice: { type: Number, required: true, min: 0 },
         discount: { type: Number, default: 0 },
-        category: { type: String, required: true },
+        category: { type: [String], required: true },
         description: { type: String, required: true },
         image: { type: String, required: true },
         reviews: {

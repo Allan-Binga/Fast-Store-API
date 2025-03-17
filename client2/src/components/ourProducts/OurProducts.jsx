@@ -56,7 +56,7 @@ const OurProducts = () => {
         {Array(emptyStars)
           .fill()
           .map((_, i) => (
-            <FaRegStar key={`empty-${i}`} className="text-gray-300" />
+            <FaRegStar key={`empty-${i}`} className="text-gray-200" />
           ))}
       </>
     );

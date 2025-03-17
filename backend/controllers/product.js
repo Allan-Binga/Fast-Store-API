@@ -30,6 +30,7 @@ const addNewProduct = async (req, res) => {
       currentPrice,
       originalPrice,
       category,
+      quantity,
       description,
       image,
       reviews,
@@ -44,12 +45,12 @@ const addNewProduct = async (req, res) => {
       !Array.isArray(category) ||
       category.length === 0 ||
       !description ||
+      !quantity ||
       !image ||
       !reviews ||
       reviews.rate === undefined ||
       reviews.count === undefined
     ) {
-      console.log("Validation failed: Missing fields.");
       return res.status(400).json({ error: "All fields are required." });
     }
 
@@ -68,6 +69,14 @@ const addNewProduct = async (req, res) => {
       });
     }
 
+    //Validate if product exists in the DB
+    const existingProduct = await Product.findOne({name})
+
+    if (existingProduct) {
+      return res.status(400).json({
+        error: "This product already exists, please update quantity.",
+      });
+    }
     // Create a new product with newArrival field (defaults to false if not provided)
     const newProduct = new Product({
       name,
@@ -78,6 +87,7 @@ const addNewProduct = async (req, res) => {
       ),
       category,
       description,
+      quantity,
       image,
       reviews,
       newArrival: newArrival ?? true, // Ensure it defaults to true if not specified
