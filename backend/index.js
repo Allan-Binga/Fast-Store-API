@@ -10,6 +10,7 @@ const flashSaleRoute = require("./routes/flashsales.js")
 const addressRoute = require("./routes/address.js")
 const webhookRoute = require("./routes/webhook.js")
 const orderRoute = require("./routes/orders.js")
+const categoryRoute = require("./routes/category.js")
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const cors = require("cors");
@@ -47,6 +48,9 @@ app.use("/api/auth", authRoute);
 
 //Product Route
 app.use("/api/products", productRoute);
+
+//Category Route
+app.use("/api/category", categoryRoute)
 
 //Flashsale Route
 app.use("/api/flashsale", flashSaleRoute)
