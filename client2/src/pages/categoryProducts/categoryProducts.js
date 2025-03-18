@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { backendAPI } from "../../endpoint";
 import axios from "axios";
 import toast from "react-hot-toast";
@@ -12,6 +13,7 @@ import { FaStar } from "react-icons/fa";
 import { FaRegStar } from "react-icons/fa";
 
 const CategoryProducts = () => {
+  const navigate = useNavigate();
   const { category } = useParams(); // Get category from URL
   const [categoryProducts, setCategoryProducts] = useState([]);
   const [error, setError] = useState(null);
@@ -95,6 +97,42 @@ const CategoryProducts = () => {
     }
   };
 
+  //Adding product to cart
+  const handleAddToCart = async (productId) => {
+    try {
+      const response = await axios.post(
+        `${backendAPI}/api/products/add-to-cart`,
+        {
+          products: [{ productId, quantity: 1 }],
+        },
+        { withCredentials: true }
+      );
+      toast.success(response.data.message);
+    } catch (error) {
+      if (error.response) {
+        if (error.response.status === 401) {
+          toast.error("Please login to add product to cart.");
+        } else if (
+          error.response.status === 400 ||
+          error.response.status === 404
+        ) {
+          toast.error(error.response.data.error);
+        } else {
+          toast.error(
+            "An error occurred while adding the product to the cart."
+          );
+        }
+      } else {
+        toast.error("An unexpected error occurred.");
+      }
+    }
+  };
+
+  //Clicking a product
+  const handleProductClick = (id) => {
+    navigate(`/products/${id}`);
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
       <TopHeader />
@@ -120,7 +158,7 @@ const CategoryProducts = () => {
             {categoryProducts.map((product) => (
               <div
                 key={product._id}
-                // onClick={() => handleProductClick(product._id)}
+                onClick={() => handleProductClick(product._id)}
                 className="relative flex flex-col bg-white rounded-xl shadow-md hover:shadow-lg transition-all overflow-hidden group cursor-pointer transform hover:scale-105 duration-300"
               >
                 {/* Discount Badge */}
@@ -132,17 +170,20 @@ const CategoryProducts = () => {
                 <div className="absolute top-4 right-4 flex items-center justify-center w-10 h-10 rounded-full text-gray-700 hover:bg-gray-200 hover:text-red-500 cursor-pointer transition">
                   <CiHeart
                     className="text-2xl"
-                    onClick={() => handleAddToWishlist(product)}
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevents the click from bubbling up
+                      handleAddToWishlist(product);
+                    }}
                   />
                 </div>
 
                 {/* Shopping Cart Icon */}
                 <div
                   className="absolute top-16 right-4 flex items-center justify-center w-10 h-10 rounded-full text-gray-700 hover:bg-gray-200 hover:text-blue-500 cursor-pointer transition"
-                  // onClick={(e) => {
-                  //   e.stopPropagation();
-                  //   handleAddToCart(product._id);
-                  // }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleAddToCart(product._id);
+                  }}
                 >
                   <CiShoppingCart className="text-2xl" />
                 </div>

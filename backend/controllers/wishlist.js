@@ -78,7 +78,7 @@ const addProductToWishlist = async (req, res) => {
 
     // Check if product already exists in the wishlist
     const existingProduct = wishlist.products.find(
-      (product) => product?.name === name && product?.category === category
+      (product) => product?.name === name
     );
 
     if (!existingProduct) {

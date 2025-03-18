@@ -42,13 +42,14 @@ const addProductToCart = async (req, res) => {
       }
 
       // Check if the product is already in the cart
-      const existingItemIndex = cart.products.findIndex((item) =>
+      const existingItem = cart.products.find((item) =>
         item.productId.equals(productId)
       );
 
-      if (existingItemIndex > -1) {
-        // If product exists, update quantity
-        cart.products[existingItemIndex].quantity += quantity;
+      if (existingItem) {
+        return res.status(400).json({
+          error: "Product exists in cart. Please update quantity.",
+        });
       } else {
         // Add new product with fetched details
         cart.products.push({
@@ -135,7 +136,7 @@ const clearCart = async (req, res) => {
     }
 
     // Clear the products array
-    cart.products = []
+    cart.products = [];
 
     //Save updated cart
     await cart.save();
