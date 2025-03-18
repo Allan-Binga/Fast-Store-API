@@ -16,7 +16,7 @@ const getFlashSaleProducts = async (_req, res) => {
 const addProductToFlashSale = async (req, res) => {
   try {
     const {
-      productId, // This is now the _id
+      productId, // The _id
       name,
       currentPrice,
       originalPrice,
