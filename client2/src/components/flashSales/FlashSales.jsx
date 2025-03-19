@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { FaArrowRight, FaArrowLeft } from "react-icons/fa";
-import { CiHeart, CiShoppingCart } from "react-icons/ci";
+import { CiHeart } from "react-icons/ci";
+import { BsCart3 } from "react-icons/bs";
 import { backendAPI } from "../../endpoint";
 import axios from "axios";
 import { FaStar, FaRegStar } from "react-icons/fa";
@@ -9,7 +11,7 @@ import toast from "react-hot-toast";
 const PRODUCTS_ALLOWED = 4;
 
 const FlashSales = () => {
-  //const navigate = useNavigate(); // Initialize useNavigate
+  const navigate = useNavigate(); // Initialize useNavigate
   const [products, setProducts] = useState([]);
   const [startIndex, setStartIndex] = useState(0);
 
@@ -116,6 +118,11 @@ const FlashSales = () => {
     }
   };
 
+  //Clicking a single product
+  const handleProductClick = (id) => {
+    navigate(`/products/${id}`);
+  };
+
   //REVIEWS SECTION STARS
   const renderStars = (rate) => {
     const fullStars = Math.floor(rate);
@@ -178,15 +185,16 @@ const FlashSales = () => {
         </div>
       </div>
 
-      {/* Product Cards */}
+      {/* Product Card */}
       <div className="grid grid-cols-4 gap-6 mt-6 mr-20">
         {visibleProducts.map((product) => (
           <div
             key={product._id}
-            className="relative flex flex-col bg-white rounded-lg shadow-md hover:shadow-lg transition-all overflow-hidden group"
+            onClick={() => handleProductClick(product._id)}
+            className="relative flex flex-col bg-white rounded-lg shadow-md hover:shadow-lg transition-all overflow-hidden group cursor-pointer transform hover:scale-105 duration-400"
           >
             {/* Discount Badge */}
-            <div className="absolute top-4 left-4 bg-red-400 text-white text-sm font-bold py-1 px-2 rounded">
+            <div className="absolute top-4 left-4 bg-red-500 text-white text-sm font-bold py-1 px-2 rounded">
               -{product.discount}%
             </div>
 
@@ -200,7 +208,7 @@ const FlashSales = () => {
 
             {/* Shopping Cart Icon */}
             <div className="absolute top-16 right-4 flex items-center justify-center w-10 h-10 rounded-full text-black hover:bg-blue-500 cursor-pointer">
-              <CiShoppingCart
+              <BsCart3
                 className="text-3xl"
                 onClick={() => handleAddToCart(product._id)}
               />

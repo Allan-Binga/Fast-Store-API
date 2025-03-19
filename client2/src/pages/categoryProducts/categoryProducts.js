@@ -7,8 +7,7 @@ import toast from "react-hot-toast";
 import Footer from "../../components/footer/Footer";
 import TopHeader from "../../components/topHeader/TopHeader";
 import Header from "../../components/header/Header";
-import { CiHeart } from "react-icons/ci";
-import { CiShoppingCart } from "react-icons/ci";
+import { CiHeart , CiShoppingCart} from "react-icons/ci";
 import { FaStar } from "react-icons/fa";
 import { FaRegStar } from "react-icons/fa";
 
@@ -159,10 +158,10 @@ const CategoryProducts = () => {
               <div
                 key={product._id}
                 onClick={() => handleProductClick(product._id)}
-                className="relative flex flex-col bg-white rounded-xl shadow-md hover:shadow-lg transition-all overflow-hidden group cursor-pointer transform hover:scale-105 duration-300"
+                className="relative flex flex-col bg-white rounded-lg shadow-md hover:shadow-lg transition-all overflow-hidden group cursor-pointer transform hover:scale-105 duration-300"
               >
                 {/* Discount Badge */}
-                <div className="absolute top-4 left-4 bg-red-500 text-white text-xs font-bold py-1 px-2 rounded-lg">
+                <div className="absolute top-4 left-4 bg-red-500 text-white text-sm font-bold py-1 px-2 rounded">
                   -{product.discount}%
                 </div>
 
