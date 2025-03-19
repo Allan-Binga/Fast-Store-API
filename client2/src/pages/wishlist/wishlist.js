@@ -88,7 +88,7 @@ const Wishlist = () => {
   //Add products to wishlist
   const addWishlistProductsToCart = async () => {
     try {
-      const response = await axios.post(
+      await axios.post(
         `${backendAPI}/api/wishlist/add-to-cart`,
         null, // Explicitly pass null to indicate no body
         { withCredentials: true }
