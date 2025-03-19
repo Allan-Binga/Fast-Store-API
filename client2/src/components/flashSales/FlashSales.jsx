@@ -134,7 +134,7 @@ const FlashSales = () => {
     recentProducts.unshift(product);
 
     // Keep only the latest 6 products
-    recentProducts = recentProducts.slice(0, 6);
+    recentProducts = recentProducts.slice(0, 4);
 
     localStorage.setItem("recentlyViewed", JSON.stringify(recentProducts));
     navigate(`/products/${id}`);

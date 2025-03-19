@@ -114,6 +114,23 @@ const OurProducts = () => {
 
   //Clicking a single product
   const handleProductClick = (id) => {
+    let recentProducts =
+      JSON.parse(localStorage.getItem("recentlyViewed")) || [];
+
+    // Find the clicked product from products (const [products, setProducts] = useState([]);)
+    const product = products.find((p) => p._id === id);
+    if (!product) return; // Avoid errors if product isn't found
+
+    // Remove the product if it already exists
+    recentProducts = recentProducts.filter((p) => p._id !== id);
+
+    // Add the new product at the beginning
+    recentProducts.unshift(product);
+
+    // Keep only the latest 6 products
+    recentProducts = recentProducts.slice(0, 4);
+
+    localStorage.setItem("recentlyViewed", JSON.stringify(recentProducts));
     navigate(`/products/${id}`);
   };
 

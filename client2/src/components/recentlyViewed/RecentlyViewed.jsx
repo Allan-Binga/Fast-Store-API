@@ -7,7 +7,7 @@ const RecentlyViewed = () => {
     const storedProducts =
       JSON.parse(localStorage.getItem("recentlyViewed")) || [];
     setRecentlyViewed(storedProducts);
-  });
+  }, []);
   return (
     <div className="mt-6">
       <h3 className="text-xl font-bold mb-4">Recently Viewed</h3>

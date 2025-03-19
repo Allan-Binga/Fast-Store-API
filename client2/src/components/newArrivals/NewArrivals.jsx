@@ -119,6 +119,21 @@ const NewArrivals = () => {
 
   //Clicking a single product
   const handleProductClick = (id) => {
+    let recentProducts = JSON.parse(localStorage.getItem("recentlyViewed")) || []
+
+    //Find clicked product
+    const product = products.find((p) => p._id === id)
+    if (!product) return
+    //Remove if exists
+    recentProducts = recentProducts.filter((p) => p._id !== id)
+
+    //Add at the beginning
+    recentProducts.unshift(product)
+
+    //Keep latest 6 products
+    recentProducts = recentProducts.slice(0, 4);
+
+    localStorage.setItem("recentlyViewed", JSON.stringify(recentProducts));
     navigate(`/products/${id}`);
   };
 
