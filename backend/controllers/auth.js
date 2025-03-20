@@ -1,7 +1,9 @@
 const User = require("../models/users");
 const bcrypt = require("bcrypt");
-
 const dotenv = require("dotenv");
+const {sendVerificationEmail} = require("./emailService");
+const crypto = require("crypto");
+
 dotenv.config();
 
 // REGISTER NEW USER
@@ -48,6 +50,9 @@ const registerUser = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
+    //GENERATE VERIFICATION TOKEN
+    const verificationToken = crypto.randomBytes(32).toString("hex");
+
     // CREATE NEW USER
     const newUser = new User({
       firstName,
@@ -55,9 +60,14 @@ const registerUser = async (req, res) => {
       email,
       phone,
       password: hashedPassword,
+      isVerified: false,
+      verificationToken,
     });
 
     await newUser.save();
+
+    //Send email
+    await sendVerificationEmail(email, verificationToken);
     res.status(201).json({ message: "User registered successfully." });
   } catch (error) {
     console.error("Error registering user:", error);

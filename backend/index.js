@@ -11,6 +11,7 @@ const addressRoute = require("./routes/address.js")
 const webhookRoute = require("./routes/webhook.js")
 const orderRoute = require("./routes/orders.js")
 const categoryRoute = require("./routes/category.js")
+const mailRoute = require("./routes/emailService.js")
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const cors = require("cors");
@@ -45,6 +46,9 @@ main().catch((err) => console.log(err));
 
 //Auth Route
 app.use("/api/auth", authRoute);
+
+//Mail Route
+app.use("/api/verify", mailRoute)
 
 //Product Route
 app.use("/api/products", productRoute);
