@@ -5,11 +5,37 @@ const dotenv = require("dotenv");
 dotenv.config();
 
 // REGISTER NEW USER
-const createUser = async (req, res) => {
+const registerUser = async (req, res) => {
   try {
-    // CHECK IF EITHER EMAIL OR PHONE EXISTS
+    const { firstName, lastName, email, phone, password } = req.body;
+
+    // CHECK IF REQUIRED FIELDS EXIST
+    if (!firstName || !lastName || !email || !phone || !password) {
+      return res.status(400).json({
+        message:
+          "All fields are required: firstName, lastName, email, phone, and password.",
+      });
+    }
+
+    // VALIDATE EMAIL FORMAT
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ message: "Invalid email format." });
+    }
+
+    // VALIDATE PASSWORD STRENGTH
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (!passwordRegex.test(password)) {
+      return res.status(400).json({
+        message:
+          "Password must be at least 8 characters long, include one uppercase letter, one lowercase letter, one number, and one special character.",
+      });
+    }
+
+    // CHECK IF USER ALREADY EXISTS (EMAIL OR PHONE)
     const existingUser = await User.findOne({
-      $or: [{ email: req.body.email }, { phone: req.body.phone }],
+      $or: [{ email }, { phone }],
     });
 
     if (existingUser) {
@@ -18,27 +44,29 @@ const createUser = async (req, res) => {
         .json({ message: "User already exists with this email or phone!" });
     }
 
+    // HASH PASSWORD
     const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(req.body.password, salt);
+    const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Create a new user with firstName and lastName instead of username
+    // CREATE NEW USER
     const newUser = new User({
-      firstName: req.body.firstName,
-      lastName: req.body.lastName,
-      email: req.body.email,
-      phone: req.body.phone,
+      firstName,
+      lastName,
+      email,
+      phone,
       password: hashedPassword,
     });
 
-    const user = await newUser.save();
-    res.status(200).json(user);
+    await newUser.save();
+    res.status(201).json({ message: "User registered successfully." });
   } catch (error) {
-    console.error("Error in createUser:", error);
+    console.error("Error registering user:", error);
     res
       .status(500)
       .json({ message: "Something went wrong!", error: error.message });
   }
 };
+
 // LOGIN REGISTERED USER
 const loginUser = async (req, res) => {
   try {
@@ -102,11 +130,9 @@ const updatePassword = async (req, res) => {
 
     // VALIDATE INPUT FIELDS
     if (!currentPassword || !newPassword) {
-      return res
-        .status(400)
-        .json({
-          message: "Both current and new password fields are required!",
-        });
+      return res.status(400).json({
+        message: "Both current and new password fields are required!",
+      });
     }
 
     // FETCH USER FROM DATABASE
@@ -125,11 +151,9 @@ const updatePassword = async (req, res) => {
 
     // ENSURE NEW PASSWORD IS DIFFERENT FROM THE CURRENT PASSWORD
     if (currentPassword === newPassword) {
-      return res
-        .status(400)
-        .json({
-          message: "New password must be different from the current password.",
-        });
+      return res.status(400).json({
+        message: "New password must be different from the current password.",
+      });
     }
 
     // HASH NEW PASSWORD
@@ -154,4 +178,4 @@ const updatePassword = async (req, res) => {
   }
 };
 
-module.exports = { createUser, loginUser, logoutUser, updatePassword };
+module.exports = { registerUser, loginUser, logoutUser, updatePassword };
