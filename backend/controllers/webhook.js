@@ -1,12 +1,14 @@
 const Stripe = require("stripe");
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 const Order = require("../models/orders");
+const Cart = require("../models/cart");
 
 const handleWebhook = async (req, res) => {
   const endpointSecret = process.env.WEBHOOK_SECRET;
   const sig = req.headers["stripe-signature"];
 
   let event;
+  let userId;
 
   try {
     event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
@@ -16,15 +18,9 @@ const handleWebhook = async (req, res) => {
   }
 
   switch (event.type) {
-    case "payment_intent.succeeded":
-      // console.log("Payment succeeded.");
-      break;
-
     case "payment_intent.payment_failed":
-      // console.log("Payment failed.");
-
       const session = event.data.object;
-      const userId = session.metadata?.user; // Get userId from metadata
+      userId = session.metadata?.user; // Get userId from metadata
       const orderId = session.metadata?.orderId; // Get orderId if available
 
       try {
@@ -58,6 +54,7 @@ const handleWebhook = async (req, res) => {
     case "checkout.session.completed":
       const completedSession = event.data.object;
       const completedOrderId = completedSession.metadata.orderId;
+      userId = completedSession.metadata?.user;
 
       try {
         const completedOrder = await Order.findById(completedOrderId);
@@ -69,6 +66,14 @@ const handleWebhook = async (req, res) => {
         // Update order status
         completedOrder.paymentStatus = completedSession.payment_status;
         await completedOrder.save();
+
+        // Clear the cart only if we have a userId
+        if (userId) {
+          await Cart.findOneAndDelete({ userId });
+          console.log(`Cart cleared for user: ${userId}`);
+        } else {
+          console.warn("No userId found, cart not cleared.");
+        }
 
         // console.log("Order updated successfully.");
       } catch (error) {

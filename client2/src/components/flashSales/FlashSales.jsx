@@ -251,9 +251,7 @@ const FlashSales = () => {
                   ${product.originalPrice}
                 </span>
               </div>
-              {/* <div className="text-xs text-gray-400">
-                Sale Ends: {new Date(product.endTime).toLocaleString()}
-              </div> */}
+              
               <p className="flex items-center text-x text-gray-700 mt-1">
                 {renderStars(product.reviews.rate)} ({product.reviews.count}{" "}
                 reviews)
