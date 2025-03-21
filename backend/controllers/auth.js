@@ -1,7 +1,7 @@
 const User = require("../models/users");
 const bcrypt = require("bcrypt");
 const dotenv = require("dotenv");
-const {sendVerificationEmail} = require("./emailService");
+const { sendVerificationEmail } = require("./emailService");
 const crypto = require("crypto");
 
 dotenv.config();
@@ -68,7 +68,12 @@ const registerUser = async (req, res) => {
 
     //Send email
     await sendVerificationEmail(email, verificationToken);
-    res.status(201).json({ message: "User registered successfully." });
+    res
+      .status(201)
+      .json({
+        message:
+          "Registration successful. Please check your email for a verification link.",
+      });
   } catch (error) {
     console.error("Error registering user:", error);
     res
