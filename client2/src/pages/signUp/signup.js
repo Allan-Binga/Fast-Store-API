@@ -9,6 +9,7 @@ import axios from "axios";
 import { toast } from "react-hot-toast";
 import { backendAPI } from "../../endpoint";
 
+
 const Signup = () => {
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
@@ -45,7 +46,7 @@ const Signup = () => {
       toast.success(
         "Registration successful! Please check your email to verify your account."
       );
-      navigate("/verify-email"); // Redirect to a new page telling them to check their email
+      navigate("/"); // Redirect to a new page telling them to check their email
     } catch (err) {
       toast.error("An error occurred during registration.");
     }

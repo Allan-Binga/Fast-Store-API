@@ -12,7 +12,7 @@ const transporter = nodemailer.createTransport({
 });
 
 const sendVerificationEmail = async (email, token) => {
-  const verificationUrl = `http://localhost:5500/api/verify?token=${token}`;
+  const verificationUrl = `${process.env.CLIENT_URL}/account-verification?token=${token}`;
 
   const mailOptions = {
     from: `"FastStore API" <${process.env.MAIL_USER}>`, //Name and Email
@@ -37,6 +37,33 @@ const sendVerificationEmail = async (email, token) => {
   } catch (error) {
     console.error(`Error sending email to ${email}:`, error);
     throw error; // Re-throw to handle in the calling function
+  }
+};
+
+const sendAccountConfirmationEmail = async (email) => {
+  const mailOptions = {
+    from: `"FastStore API" <${process.env.MAIL_USER}>`,
+    to: email,
+    subject: "Account Verified Successfully!",
+    html: `<div style="font-family: Arial, sans-serif; text-align: center; padding: 20px; background-color: #f4f4f4;">
+        <div style="max-width: 600px; margin: auto; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
+          <h2 style="color: #28a745;"> Account verification successful.</h2>
+          <p style="color: #555;">Thank you for verifying your account. You can now start shopping.</p>
+          <a href="http://localhost:3100" 
+            style="display: inline-block; padding: 10px 20px; margin-top: 15px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 5px;">
+            Start Shopping 🛒
+          </a>
+          <p style="margin-top: 20px; color: #777;">Happy Shopping! 🛍️</p>
+        </div>
+      </div>`,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log(`Thank you email sent to ${email}`);
+  } catch (error) {
+    console.error(`Error sending thank you email to ${email}:`, error);
+    throw error;
   }
 };
 
@@ -68,33 +95,6 @@ const resendVerificationEmail = async (req, res) => {
   }
 };
 
-const sendAccountConfirmationEmail = async (email) => {
-  const mailOptions = {
-    from: `"FastStore API" <${process.env.MAIL_USER}>`,
-    to: email,
-    subject: "Account Verified Successfully!",
-    html: `<div style="font-family: Arial, sans-serif; text-align: center; padding: 20px; background-color: #f4f4f4;">
-        <div style="max-width: 600px; margin: auto; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
-          <h2 style="color: #28a745;"> Account verification successful.</h2>
-          <p style="color: #555;">Thank you for verifying your account. You can now start shopping.</p>
-          <a href="http://localhost:3100" 
-            style="display: inline-block; padding: 10px 20px; margin-top: 15px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 5px;">
-            Start Shopping 🛒
-          </a>
-          <p style="margin-top: 20px; color: #777;">Happy Shopping! 🛍️</p>
-        </div>
-      </div>`,
-  };
-
-  try {
-    await transporter.sendMail(mailOptions);
-    console.log(`Thank you email sent to ${email}`);
-  } catch (error) {
-    console.error(`Error sending thank you email to ${email}:`, error);
-    throw error;
-  }
-};
-
 const verifyUser = async (req, res) => {
   try {
     const { token } = req.query;
@@ -107,12 +107,12 @@ const verifyUser = async (req, res) => {
     //Check if the token has expired
     if (user.verificationTokenExpiry < Date.now()) {
       return res.status(400).json({
-        message: "Token expired. PLease request a new verification email.",
+        message: "Token expired. Please request a new verification email.",
       });
     }
 
     user.isVerified = true;
-    user.verificationToken = undefined; // // Remove token after verification
+    // user.verificationToken = undefined; // // Remove token after verification
     user.verificationTokenExpiry = undefined;
     await user.save();
 

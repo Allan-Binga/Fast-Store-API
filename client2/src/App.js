@@ -10,9 +10,11 @@ import Account from "./pages/account/account";
 import Single from "./pages/singleProduct/Single";
 import BrandProducts from "./pages/brandProducts/BrandProducts";
 import Success from "./pages/successPage/success";
-import Orders from "./pages/orders/orders"
+import Orders from "./pages/orders/orders";
 import PasswordReset from "./pages/passwordReset/passwordreset";
 import CategoryProducts from "./pages/categoryProducts/categoryProducts";
+// import RegistrationSuccess from "./pages/verifyEmail/verifyEmail";
+import AccountVerification from "./pages/accountVerification/accountVerification";
 
 const App = () => {
   return (
@@ -27,10 +29,11 @@ const App = () => {
         <Route path="/my-account" element={<Account />} />
         <Route path="/products/:id" element={<Single />} />
         <Route path="/brand/:id/products" element={<BrandProducts />} />
-        <Route path="/categories/:category" element={<CategoryProducts/>}/>
-        <Route path="/success" element={<Success/>}/>
-        <Route path="/orders" element={<Orders/>}/>
-        <Route path ="/password-reset" element={<PasswordReset/>}/>
+        <Route path="/categories/:category" element={<CategoryProducts />} />
+        <Route path="/success" element={<Success />} />
+        <Route path="/orders" element={<Orders />} />
+        <Route path="/password-reset" element={<PasswordReset />} />
+        <Route path="/account-verification" element={<AccountVerification/>} />
       </Routes>
     </Router>
   );
