@@ -42,8 +42,10 @@ const Signup = () => {
 
     try {
       await registerUser(formData);
-      toast.success("Registration successful!");
-      navigate("/login");
+      toast.success(
+        "Registration successful! Please check your email to verify your account."
+      );
+      navigate("/verify-email"); // Redirect to a new page telling them to check their email
     } catch (err) {
       toast.error("An error occurred during registration.");
     }
