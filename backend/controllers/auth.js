@@ -52,6 +52,7 @@ const registerUser = async (req, res) => {
 
     //GENERATE VERIFICATION TOKEN
     const verificationToken = crypto.randomBytes(32).toString("hex");
+    const verificationTokenExpiry = Date.now() + 10 * 60 * 1000
 
     // CREATE NEW USER
     const newUser = new User({
@@ -62,6 +63,7 @@ const registerUser = async (req, res) => {
       password: hashedPassword,
       isVerified: false,
       verificationToken,
+      verificationTokenExpiry
     });
 
     await newUser.save();

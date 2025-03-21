@@ -23,7 +23,7 @@ const sendVerificationEmail = async (email, token) => {
           <h2 style="color: #333;">Verify Your Account</h2>
           <p style="color: #555;">Click the button below to verify your account.</p>
           <a href="${verificationUrl}" 
-            style="display: inline-block; padding: 10px 20px; margin-top: 15px; background-color: #28a745; color: #fff; text-decoration: none; border-radius: 5px;">
+            style="display: inline-block; padding: 10px 20px; margin-top: 15px; background-color: #2582b8; color: #fff; text-decoration: none; border-radius: 5px;">
             Verify My Account
           </a>
           <p style="margin-top: 20px; color: #777;">If you did not create an account, you can ignore this email.</p>
@@ -37,6 +37,34 @@ const sendVerificationEmail = async (email, token) => {
   } catch (error) {
     console.error(`Error sending email to ${email}:`, error);
     throw error; // Re-throw to handle in the calling function
+  }
+};
+
+const resendVerificationEmail = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    if (user.isVerified) {
+      return res.status(400).json({ message: "User is already verified." });
+    }
+
+    // Generate a new token and expiration time
+    user.verificationToken = crypto.randomBytes(32).toString("hex");
+    user.verificationTokenExpiry = Date.now() + 10 * 60 * 1000;
+
+    await user.save();
+
+    // Send new verification email
+    await sendVerificationEmail(user.email, user.verificationToken);
+
+    res.json({ message: "New verification email sent." });
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -76,8 +104,16 @@ const verifyUser = async (req, res) => {
     if (!user)
       return res.status(400).json({ message: "Invalid or expired token" });
 
+    //Check if the token has expired
+    if (user.verificationTokenExpiry < Date.now()) {
+      return res.status(400).json({
+        message: "Token expired. PLease request a new verification email.",
+      });
+    }
+
     user.isVerified = true;
-    user.verificationToken = undefined; // Remove token after verification
+    user.verificationToken = undefined; // // Remove token after verification
+    user.verificationTokenExpiry = undefined;
     await user.save();
 
     //Send Thank you email
@@ -92,5 +128,6 @@ const verifyUser = async (req, res) => {
 module.exports = {
   sendVerificationEmail,
   sendAccountConfirmationEmail,
+  resendVerificationEmail,
   verifyUser,
 };
