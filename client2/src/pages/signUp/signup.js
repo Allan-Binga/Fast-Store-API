@@ -1,18 +1,18 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import PhoneInput from "react-phone-input-2";
+import "react-phone-input-2/lib/style.css";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import TopHeader from "../../components/topHeader/TopHeader";
 import Header from "../../components/header/Header";
 import Footer from "../../components/footer/Footer";
-import PhoneInput from "react-phone-input-2";
-import "react-phone-input-2/lib/style.css";
-import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import LoadingScreen from "../../components/loadingScreen/LoadingScreen";
 import { backendAPI } from "../../endpoint";
-import { ToastContainer, toast, Slide } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-
 
 const Signup = () => {
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     firstName: "",
@@ -22,114 +22,75 @@ const Signup = () => {
     password: "",
   });
 
-  //CREATE ACCOUNT IMPLEMENTATION
-  const registerUser = async (userData) => {
-    try {
-      await axios.post(`${backendAPI}/api/auth/register`, userData);
-    } catch (error) {
-      throw error.response.data.message;
-    }
-  };
-
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handlePhoneChange = (value) => {
+    if (!value.startsWith("+")) {
+      value = "+" + value;
+    }
     setFormData({ ...formData, phone: value });
+  };
+
+  const registerUser = async (userData) => {
+    try {
+      await axios.post(`${backendAPI}/api/auth/register`, userData);
+    } catch (error) {
+      throw error.response?.data?.message || "Something went wrong!";
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsLoading(true); // Start loading
 
     try {
       await registerUser(formData);
-      toast.success(
-        "Registration successful! Please check your email to verify your account.",
+
+      const toastId = toast.success(
+        "Registration successful! Check your email.",
         {
           position: "top-right",
-          autoClose: 5000,
-          hideProgressBar: false,
-          closeOnClick: false,
-          pauseOnHover: true,
-          draggable: true,
-          theme: "light",
-          transition: Slide,
-          className:
-            "bg-green-500 text-white font-semibold p-4 rounded-lg shadow-lg",
-          bodyClassName: "text-sm",
-          progressClassName: "bg-green-700",
+          autoClose: 4000,
         }
       );
-      navigate("/"); // Redirect to a new page telling them to check their email
+
+      toast.onChange((payload) => {
+        if (payload.status === "removed" && payload.id === toastId) {
+          navigate("/login");
+        }
+      });
     } catch (err) {
-      toast.error("An error occurred during registration.");
+      toast.error("Registration failed: " + err, {
+        position: "top-right",
+        autoClose: 5000,
+      });
+    } finally {
+      setIsLoading(false); // Stop loading
     }
   };
 
   const isFormValid = () => {
-    return (
-      formData.firstName &&
-      formData.lastName &&
-      formData.email &&
-      formData.phone &&
-      formData.password
-    );
+    return Object.values(formData).every((field) => field.trim() !== "");
   };
-
-  useEffect(() => {
-    // Simulate a loading state that ends after 2 seconds (you can adjust this)
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 2000);
-
-    return () => clearTimeout(timer); // Cleanup timer on component unmount
-  }, []);
 
   return (
     <div className="relative min-h-screen">
-      <ToastContainer
-        position="top-right"
-        autoClose={5000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-        toastClassName={() =>
-          "relative flex p-4 rounded-lg shadow-md bg-white text-gray-900 border border-gray-300"
-        }
-        bodyClassName={() => "text-sm font-medium"}
-        progressClassName="bg-blue-500"
-      />
-
+      <ToastContainer position="top-right" autoClose={3000} />
       <TopHeader />
       <Header />
-      {/* Progress Bar */}
-      {isLoading && (
-        <div className="absolute top-0 left-0 w-full h-1 bg-blue-800">
-          <div
-            className="h-full bg-blue-500 transition-all duration-300"
-            style={{ width: `${isLoading}%` }}
-          ></div>
-        </div>
-      )}
-
-      <div className="flex flex-col items-center justify-center min-h-[110vh] bg-gray-100">
+      {isLoading && <LoadingScreen />} {/* Show loading when submitting */}
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
         <div className="flex flex-wrap max-w-5xl bg-white shadow-lg rounded-lg overflow-hidden">
-          {/* Left Section: Image */}
           <div className="hidden md:flex flex-1 items-center justify-center bg-blue-50">
             <img
-              src="https://cdn.builder.io/api/v1/image/assets/TEMP/69e0f745a386da13ccf8560b79d75248221409e03e50215b2e917c121088ed4b?placeholderIfAbsent=true&apiKey=8cd4e88793e947cca676caa403f196cb"
+              src="https://cdn.builder.io/api/v1/image/assets/TEMP/69e0f745a386da13ccf8560b79d75248221409e03e50215b2e917c121088ed4b"
               alt="E-commerce visual"
               className="w-full h-full object-cover"
             />
           </div>
 
-          {/* Right Section: Signup Form */}
           <div className="flex-1 flex flex-col p-8 md:p-12">
             <h1 className="text-3xl font-bold text-gray-800">
               Create an account
@@ -137,38 +98,30 @@ const Signup = () => {
             <p className="text-gray-600 mt-2">Enter your details below</p>
 
             <form className="flex flex-col gap-6 mt-8" onSubmit={handleSubmit}>
-              {/* Name Input */}
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                {/* First Name Input */}
                 <div>
-                  <label
-                    htmlFor="firstName"
-                    className="block text-sm font-medium text-gray-700"
-                  >
+                  <label className="block text-sm font-medium text-gray-700">
                     First Name
                   </label>
                   <input
                     name="firstName"
                     type="text"
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"
                     placeholder="Enter your first name"
                     value={formData.firstName}
                     onChange={handleChange}
                     required
                   />
                 </div>
-                {/* Last Name Input */}
+
                 <div>
-                  <label
-                    htmlFor="lastName"
-                    className="block text-sm font-medium text-gray-700"
-                  >
+                  <label className="block text-sm font-medium text-gray-700">
                     Last Name
                   </label>
                   <input
                     name="lastName"
                     type="text"
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"
                     placeholder="Enter your last name"
                     value={formData.lastName}
                     onChange={handleChange}
@@ -177,18 +130,14 @@ const Signup = () => {
                 </div>
               </div>
 
-              {/* Email Input */}
               <div>
-                <label
-                  htmlFor="email"
-                  className="block text-sm font-medium text-gray-700"
-                >
+                <label className="block text-sm font-medium text-gray-700">
                   Email
                 </label>
                 <input
                   name="email"
                   type="email"
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"
                   placeholder="Enter your email"
                   value={formData.email}
                   onChange={handleChange}
@@ -196,35 +145,30 @@ const Signup = () => {
                 />
               </div>
 
-              {/* Phone Input */}
               <div>
-                <label
-                  htmlFor="phone"
-                  className="block text-sm font-medium text-gray-700"
-                >
+                <label className="block text-sm font-medium text-gray-700">
                   Phone Number
                 </label>
-                <PhoneInput
-                  country={"us"}
-                  value={formData.phone}
-                  onChange={handlePhoneChange}
-                  enableSearch
-                  inputClass="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+                <div className="w-full">
+                  <PhoneInput
+                    country={"us"}
+                    value={formData.phone}
+                    onChange={handlePhoneChange}
+                    enableSearch
+                    containerClass="w-full mt-1"
+                    inputClass="!w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"
+                  />
+                </div>
               </div>
 
-              {/* Password Input */}
               <div>
-                <label
-                  htmlFor="password"
-                  className="block text-sm font-medium text-gray-700"
-                >
+                <label className="block text-sm font-medium text-gray-700">
                   Password
                 </label>
                 <input
                   name="password"
                   type="password"
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"
                   placeholder="Enter your password"
                   value={formData.password}
                   onChange={handleChange}
@@ -232,26 +176,23 @@ const Signup = () => {
                 />
               </div>
 
-              {/* Signup Button */}
               <button
                 type="submit"
-                disabled={!isFormValid()}
+                disabled={!isFormValid() || isLoading}
                 className={`w-full py-3 font-semibold rounded-lg transition duration-200 ${
-                  isFormValid()
+                  isFormValid() && !isLoading
                     ? "bg-blue-500 text-white hover:bg-blue-700"
-                    : "bg-blue-300 text-white hover:bg-blue-400"
+                    : "bg-blue-300 text-white cursor-not-allowed"
                 }`}
               >
-                Create Account
+                Signup
               </button>
             </form>
 
-            {/* Already Have an Account */}
             <div className="flex flex-col items-center mt-6">
               <p className="mt-4 text-gray-600">
                 Already have an account?{" "}
                 <button
-                  a
                   className="text-blue-500 hover:underline"
                   onClick={() => navigate("/login")}
                 >

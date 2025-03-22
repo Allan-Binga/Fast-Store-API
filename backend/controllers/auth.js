@@ -53,7 +53,7 @@ const registerUser = async (req, res) => {
     //GENERATE VERIFICATION TOKEN
     const plainToken = crypto.randomBytes(32).toString("hex");
     const hashedToken = crypto.createHash("sha256").update(plainToken).digest("hex")
-    const verificationTokenExpiry = Date.now() + 10 * 60 * 1000
+    const verificationTokenExpiry = Date.now() + 2 * 60 * 1000
 
     // CREATE NEW USER
     const newUser = new User({
