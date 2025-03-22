@@ -2,6 +2,8 @@ const Stripe = require("stripe");
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 const Order = require("../models/orders");
 const Cart = require("../models/cart");
+const User = require("../models/users")
+const { sendOrderConfirmationEmail } = require("../controllers/emailService");
 
 const handleWebhook = async (req, res) => {
   const endpointSecret = process.env.WEBHOOK_SECRET;
@@ -66,6 +68,15 @@ const handleWebhook = async (req, res) => {
         // Update order status
         completedOrder.paymentStatus = completedSession.payment_status;
         await completedOrder.save();
+
+        // Fetch user email
+        const user = await User.findById(userId);
+        if (user && user.email) {
+          await sendOrderConfirmationEmail(user.email, completedOrder);
+          console.log(`Order confirmation email sent to ${user.email}`);
+        } else {
+          console.warn("User email not found, order confirmation not sent.");
+        }
 
         // Clear the cart only if we have a userId
         if (userId) {

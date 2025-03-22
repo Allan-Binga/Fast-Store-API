@@ -1,5 +1,6 @@
 const nodemailer = require("nodemailer");
 const User = require("../models/users");
+const crypto = require("crypto");
 
 require("dotenv").config();
 
@@ -11,6 +12,7 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+//Send verification email
 const sendVerificationEmail = async (email, token) => {
   const verificationUrl = `${process.env.CLIENT_URL}/account-verification?token=${token}`;
 
@@ -40,6 +42,7 @@ const sendVerificationEmail = async (email, token) => {
   }
 };
 
+//Confirmation email after verifying account successfsully.
 const sendAccountConfirmationEmail = async (email) => {
   const mailOptions = {
     from: `"FastStore API" <${process.env.MAIL_USER}>`,
@@ -67,39 +70,96 @@ const sendAccountConfirmationEmail = async (email) => {
   }
 };
 
+//Resends the verification link expires.
 const resendVerificationEmail = async (req, res) => {
   try {
+    console.log("Request received:", req.body); // Log incoming request data
+
     const { email } = req.body;
+
+    if (!email) {
+      console.error("❌ Error: No email provided");
+      return res.status(400).json({ message: "Email is required." });
+    }
+
     const user = await User.findOne({ email });
+    console.log("User found:", user); // Log the user object
 
     if (!user) {
+      console.error("❌ Error: User not found");
       return res.status(404).json({ message: "User not found." });
     }
 
     if (user.isVerified) {
+      console.error("⚠️ Warning: User already verified");
       return res.status(400).json({ message: "User is already verified." });
     }
 
     // Generate a new token and expiration time
     user.verificationToken = crypto.randomBytes(32).toString("hex");
     user.verificationTokenExpiry = Date.now() + 10 * 60 * 1000;
+    console.log("New token generated:", user.verificationToken);
 
     await user.save();
+    console.log("✅ User saved with new token");
 
     // Send new verification email
     await sendVerificationEmail(user.email, user.verificationToken);
+    console.log("📧 Verification email sent to:", user.email);
 
     res.json({ message: "New verification email sent." });
   } catch (error) {
+    console.error("🔥 Internal Server Error:", error); // Log the actual error
     res.status(500).json({ message: "Internal server error" });
   }
 };
 
+//Order confirmation email
+const sendOrderConfirmationEmail = async (email, order) => {
+  const mailOptions = {
+    from: `"FastStore" <${process.env.MAIL_USER}>`,
+    to: email,
+    subject: "Order Confirmation - FastStore",
+    html: `
+      <div style="font-family: Arial, sans-serif; text-align: center; padding: 20px; background-color: #f4f4f4;">
+        <div style="max-width: 600px; margin: auto; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
+          <h2 style="color: #28a745;">Your Order is Confirmed! ✅</h2>
+          <p>Thank you for shopping with us! Your order <b>#${
+            order._id
+          }</b> has been successfully placed.</p>
+          <h3>Order Summary:</h3>
+          <ul style="text-align: left;">
+            ${order.items
+              .map(
+                (item) =>
+                  `<li>${item.name} - ${item.quantity} x $${item.price}</li>`
+              )
+              .join("")}
+          </ul>
+          <p><b>Total Amount:</b> $${order.totalAmount.toFixed(2)}</p>
+          <p style="margin-top: 20px;">We will notify you when your order is shipped. 🚀</p>
+        </div>
+      </div>`,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log(`Order confirmation email sent to ${email}`);
+  } catch (error) {
+    console.error(`Error sending order confirmation email:`, error);
+    throw error;
+  }
+};
+
+//Function to verify the user
 const verifyUser = async (req, res) => {
   try {
     const { token } = req.query;
 
-    const user = await User.findOne({ verificationToken: token });
+    // Hash the incoming token before searching
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+
+    const user = await User.findOne({ verificationToken: hashedToken });
 
     if (!user)
       return res.status(400).json({ message: "Invalid or expired token" });
@@ -108,6 +168,7 @@ const verifyUser = async (req, res) => {
     if (user.verificationTokenExpiry < Date.now()) {
       return res.status(400).json({
         message: "Token expired. Please request a new verification email.",
+        // email: user.email
       });
     }
 
@@ -129,5 +190,6 @@ module.exports = {
   sendVerificationEmail,
   sendAccountConfirmationEmail,
   resendVerificationEmail,
+  sendOrderConfirmationEmail,
   verifyUser,
 };

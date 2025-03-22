@@ -51,7 +51,8 @@ const registerUser = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, salt);
 
     //GENERATE VERIFICATION TOKEN
-    const verificationToken = crypto.randomBytes(32).toString("hex");
+    const plainToken = crypto.randomBytes(32).toString("hex");
+    const hashedToken = crypto.createHash("sha256").update(plainToken).digest("hex")
     const verificationTokenExpiry = Date.now() + 10 * 60 * 1000
 
     // CREATE NEW USER
@@ -60,16 +61,16 @@ const registerUser = async (req, res) => {
       lastName,
       email,
       phone,
-      password: hashedPassword,
+      password: hashedPassword, //Store Hashed Password
       isVerified: false,
-      verificationToken,
+      verificationToken: hashedToken, //Store Hashed Token
       verificationTokenExpiry
     });
 
     await newUser.save();
 
     //Send email
-    await sendVerificationEmail(email, verificationToken);
+    await sendVerificationEmail(email, plainToken);
     res
       .status(201)
       .json({
