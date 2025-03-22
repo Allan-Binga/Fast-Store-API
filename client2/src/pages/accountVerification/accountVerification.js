@@ -63,9 +63,11 @@ const AccountVerification = () => {
       setMessage(
         response.data.message || "A new verification email has been sent."
       );
+      setStatus("success")
       setShowResend(false);
     } catch (error) {
       setMessage("Failed to resend verification email. Please try again.");
+      setStatus("error")
     }
   };
 

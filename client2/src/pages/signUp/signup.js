@@ -6,8 +6,9 @@ import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { toast } from "react-hot-toast";
 import { backendAPI } from "../../endpoint";
+import { ToastContainer, toast, Slide } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 
 const Signup = () => {
@@ -44,7 +45,21 @@ const Signup = () => {
     try {
       await registerUser(formData);
       toast.success(
-        "Registration successful! Please check your email to verify your account."
+        "Registration successful! Please check your email to verify your account.",
+        {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: false,
+          pauseOnHover: true,
+          draggable: true,
+          theme: "light",
+          transition: Slide,
+          className:
+            "bg-green-500 text-white font-semibold p-4 rounded-lg shadow-lg",
+          bodyClassName: "text-sm",
+          progressClassName: "bg-green-700",
+        }
       );
       navigate("/"); // Redirect to a new page telling them to check their email
     } catch (err) {
@@ -70,8 +85,27 @@ const Signup = () => {
 
     return () => clearTimeout(timer); // Cleanup timer on component unmount
   }, []);
+
   return (
     <div className="relative min-h-screen">
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+        toastClassName={() =>
+          "relative flex p-4 rounded-lg shadow-md bg-white text-gray-900 border border-gray-300"
+        }
+        bodyClassName={() => "text-sm font-medium"}
+        progressClassName="bg-blue-500"
+      />
+
       <TopHeader />
       <Header />
       {/* Progress Bar */}

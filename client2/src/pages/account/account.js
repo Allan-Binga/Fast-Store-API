@@ -9,10 +9,10 @@ import { IoLogOut } from "react-icons/io5";
 import { backendAPI } from "../../endpoint";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom";
 
 const Account = () => {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");

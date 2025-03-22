@@ -97,7 +97,7 @@ const resendVerificationEmail = async (req, res) => {
 
     // Generate a new token and expiration time
     user.verificationToken = crypto.randomBytes(32).toString("hex");
-    user.verificationTokenExpiry = Date.now() + 10 * 60 * 1000;
+    user.verificationTokenExpiry = Date.now() + 2 * 60 * 1000;
     console.log("New token generated:", user.verificationToken);
 
     await user.save();

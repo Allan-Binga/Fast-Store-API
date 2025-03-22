@@ -1,32 +1,31 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom"; // Import useParams
+import { useParams, useNavigate } from "react-router-dom";
 import TopHeader from "../../components/topHeader/TopHeader";
 import Header from "../../components/header/Header";
 import Footer from "../../components/footer/Footer";
 import { backendAPI } from "../../endpoint";
 import axios from "axios";
 import { CiHeart, CiShoppingCart } from "react-icons/ci";
-import { useNavigate } from "react-router-dom";
+
+// API service
+const getBrandProducts = async (id) => {
+  try {
+    const response = await axios.get(`${backendAPI}/api/brands/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+};
 
 const BrandProducts = () => {
   const navigate = useNavigate();
-  const { id } = useParams(); // Get brand ID from URL
+  const { id } = useParams();
   const [brand, setBrand] = useState(null);
 
-  // Fetch brand details including populated products
-  const getBrandProducts = async () => {
-    try {
-      const response = await axios.get(`${backendAPI}/api/brands/${id}`); // Fetch a specific brand
-      setBrand(response.data);
-    } catch (error) {
-      console.error(error);
-      setBrand(null);
-    }
-  }; //
-
   useEffect(() => {
-    getBrandProducts();
-  }, [id]); // Fetch when ID changes
+    getBrandProducts(id).then(data => setBrand(data));
+  }, [id]);
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -91,13 +90,6 @@ const BrandProducts = () => {
                       </span>
                     )}
                   </div>
-                  {/* <div className="flex items-center text-sm text-yellow-500">
-                    {"★".repeat(Math.floor(product.rating))}
-                    {"☆".repeat(5 - Math.floor(product.rating))}{" "}
-                    <span className="ml-2 text-gray-500">
-                      ({product.reviews} reviews)
-                    </span>
-                  </div> */}
                 </div>
               </div>
             ))
