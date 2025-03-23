@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
-import { ToastContainer, toast } from "react-toastify";
+import { ToastContainer, toast, Slide } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import TopHeader from "../../components/topHeader/TopHeader";
 import Header from "../../components/header/Header";
@@ -52,7 +52,10 @@ const Signup = () => {
         "Registration successful! Check your email.",
         {
           position: "top-right",
-          autoClose: 4000,
+          autoClose: 3000,
+          transition: Slide,
+          theme: "light",
+          pauseOnHover: true
         }
       );
 
@@ -62,9 +65,12 @@ const Signup = () => {
         }
       });
     } catch (err) {
-      toast.error("Registration failed: " + err, {
+      toast.info("Registration failed: " + err, {
         position: "top-right",
-        autoClose: 5000,
+        autoClose: 3000,
+        transition: Slide,
+        theme: "light",
+        pauseOnHover: true,
       });
     } finally {
       setIsLoading(false); // Stop loading
@@ -77,7 +83,7 @@ const Signup = () => {
 
   return (
     <div className="relative min-h-screen">
-      <ToastContainer position="top-right" autoClose={3000} />
+      <ToastContainer position="top-right" autoClose={3000} transition={Slide} theme="light" />
       <TopHeader />
       <Header />
       {isLoading && <LoadingScreen />} {/* Show loading when submitting */}
