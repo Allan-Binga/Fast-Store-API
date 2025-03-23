@@ -75,7 +75,7 @@ describe("Auth Controller", () => {
     await loginUser(req, res);
 
     expect(res.statusCode).toBe(400);
-    expect(JSON.parse(res._getData())).toBe("Wrong email or password.");
+    expect(JSON.parse(res._getData())).toBe("Invalid email or password.");
   });
 
   it("should return 400 if password is incorrect", async () => {
@@ -93,7 +93,9 @@ describe("Auth Controller", () => {
     await loginUser(req, res);
 
     expect(res.statusCode).toBe(400);
-    expect(JSON.parse(res._getData())).toBe("Wrong password.");
+    expect(JSON.parse(res._getData())).toBe(
+      "Invalid credentials. Please try again."
+    );
   });
 
   it("should return 200 and set cookie if login is successful", async () => {

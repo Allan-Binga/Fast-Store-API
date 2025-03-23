@@ -8,6 +8,7 @@ import { ToastContainer, toast, Slide } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { backendAPI } from "../../endpoint";
 import LoadingScreen from "../../components/loadingScreen/LoadingScreen";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const Login = () => {
   const [isLoading, setIsLoading] = useState(true); // Initial page loading
@@ -17,6 +18,7 @@ const Login = () => {
     email: "",
     password: "",
   });
+  const [showPassword, setShowPassword] = useState(false);
 
   // LOGIN IMPLEMENTATION
   const loginUser = async (userData) => {
@@ -75,7 +77,7 @@ const Login = () => {
   }, []);
 
   if (isLoading) {
-    return <LoadingScreen />; // Show loading screen during initial page load
+    return <LoadingScreen />;
   }
 
   return (
@@ -88,9 +90,8 @@ const Login = () => {
       />
       <TopHeader />
       <Header />
-
-      {isLoggingIn && <LoadingScreen />} {/* Show loading screen only while logging in */}
-
+      {isLoggingIn && <LoadingScreen />}{" "}
+      {/* Show loading screen only while logging in */}
       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
         <div className="flex flex-wrap max-w-4xl bg-white shadow-lg rounded-lg overflow-hidden">
           {/* Left Section: Image */}
@@ -128,7 +129,7 @@ const Login = () => {
               </div>
 
               {/* Password Input */}
-              <div>
+              <div className="relative">
                 <label
                   htmlFor="password"
                   className="block text-sm font-medium text-gray-700"
@@ -137,13 +138,24 @@ const Login = () => {
                 </label>
                 <input
                   name="password"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Enter your password"
                   value={formData.password}
                   onChange={handleChange}
                   required
                 />
+                <button
+                  type="button"
+                  className="absolute inset-y-0 right-0 flex items-center justify-center w-12 h-full text-gray-500"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? (
+                    <FaEyeSlash className="w-5 h-5" />
+                  ) : (
+                    <FaEye className="w-5 h-5" />
+                  )}
+                </button>
               </div>
 
               {/* Login Button */}
@@ -181,7 +193,6 @@ const Login = () => {
           </div>
         </div>
       </div>
-
       <Footer />
     </div>
   );

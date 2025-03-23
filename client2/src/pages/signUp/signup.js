@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import PhoneInput from "react-phone-input-2";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 import "react-phone-input-2/lib/style.css";
 import { ToastContainer, toast, Slide } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -12,8 +13,10 @@ import LoadingScreen from "../../components/loadingScreen/LoadingScreen";
 import { backendAPI } from "../../endpoint";
 
 const Signup = () => {
-  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -55,7 +58,7 @@ const Signup = () => {
           autoClose: 3000,
           transition: Slide,
           theme: "light",
-          pauseOnHover: true
+          pauseOnHover: true,
         }
       );
 
@@ -83,7 +86,12 @@ const Signup = () => {
 
   return (
     <div className="relative min-h-screen">
-      <ToastContainer position="top-right" autoClose={3000} transition={Slide} theme="light" />
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        transition={Slide}
+        theme="light"
+      />
       <TopHeader />
       <Header />
       {isLoading && <LoadingScreen />} {/* Show loading when submitting */}
@@ -112,7 +120,7 @@ const Signup = () => {
                   <input
                     name="firstName"
                     type="text"
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Enter your first name"
                     value={formData.firstName}
                     onChange={handleChange}
@@ -127,7 +135,7 @@ const Signup = () => {
                   <input
                     name="lastName"
                     type="text"
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Enter your last name"
                     value={formData.lastName}
                     onChange={handleChange}
@@ -143,7 +151,7 @@ const Signup = () => {
                 <input
                   name="email"
                   type="email"
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Enter your email"
                   value={formData.email}
                   onChange={handleChange}
@@ -162,24 +170,35 @@ const Signup = () => {
                     onChange={handlePhoneChange}
                     enableSearch
                     containerClass="w-full mt-1"
-                    inputClass="!w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"
+                    inputClass="!w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
               </div>
 
-              <div>
+              <div className="relative">
                 <label className="block text-sm font-medium text-gray-700">
                   Password
                 </label>
                 <input
                   name="password"
-                  type="password"
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3"
+                  type={showPassword ? "text" : "password"}
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Enter your password"
                   value={formData.password}
                   onChange={handleChange}
                   required
                 />
+                <button
+                  type="button"
+                  className="absolute inset-y-0 right-0 flex items-center justify-center w-12 h-full text-gray-500"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? (
+                    <FaEyeSlash className="w-5 h-5" />
+                  ) : (
+                    <FaEye className="w-5 h-5" />
+                  )}
+                </button>
               </div>
 
               <button
