@@ -169,7 +169,7 @@ const sendPasswordResetEmail = async (email) => {
     await user.save();
 
     // Reset link
-    const resetUrl = `${process.env.CLIENT_URL}/reset-password?token=${resetToken}`;
+    const resetUrl = `${process.env.CLIENT_URL}/password-reset?token=${resetToken}`;
 
     // Email options
     const mailOptions = {

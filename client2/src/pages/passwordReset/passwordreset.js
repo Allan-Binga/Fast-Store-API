@@ -1,19 +1,59 @@
-import React, { useState } from 'react';
-import TopHeader from '../../components/topHeader/TopHeader';
-import Header from '../../components/header/Header';
-import Footer from '../../components/footer/Footer';
+import React, { useState } from "react";
+import TopHeader from "../../components/topHeader/TopHeader";
+import Header from "../../components/header/Header";
+import Footer from "../../components/footer/Footer";
+import { backendAPI } from "../../endpoint";
+import axios from "axios";
+import { ToastContainer, toast, Slide } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const PasswordReset = () => {
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState("");
 
-  const handleSubmit = (e) => {
+  //Reset Password API
+  const resetPassword = async () => {
+    try {
+      const response = await axios.post(
+        `${backendAPI}/api/verify/reset-password`,
+        {
+          email, // Send email to backend
+        }
+      );
+
+      toast.success(
+        response.data.message || "Password reset email sent successfully.",
+        {
+          position: "top-right",
+          autoClose: 3000,
+          transition: Slide,
+          theme: "light",
+          pauseOnHover: true,
+        }
+      );
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Something went wrong.", {
+        position: "top-right",
+        autoClose: 3000,
+        transition: Slide,
+        theme: "light",
+        pauseOnHover: true,
+      });
+    }
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle password reset logic
-    console.log('Password reset link sent to:', email);
+    await resetPassword(); // Call resetPassword when form is submitted
   };
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        transition={Slide}
+        theme="light"
+      />
       <TopHeader />
       <Header />
       {/* Main Content */}
