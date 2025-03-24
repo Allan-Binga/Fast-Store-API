@@ -15,6 +15,7 @@ import PasswordReset from "./pages/passwordReset/passwordreset";
 import CategoryProducts from "./pages/categoryProducts/categoryProducts";
 // import RegistrationSuccess from "./pages/verifyEmail/verifyEmail";
 import AccountVerification from "./pages/accountVerification/accountVerification";
+import ChangePassword from "./pages/changePassword/changePassword";
 
 const App = () => {
   return (
@@ -34,6 +35,7 @@ const App = () => {
         <Route path="/orders" element={<Orders />} />
         <Route path="/password-reset" element={<PasswordReset />} />
         <Route path="/account-verification" element={<AccountVerification/>} />
+        <Route path="/password/reset" element={<ChangePassword/>}/>
       </Routes>
     </Router>
   );

@@ -63,11 +63,11 @@ const AccountVerification = () => {
       setMessage(
         response.data.message || "A new verification email has been sent."
       );
-      setStatus("success")
+      setStatus("success");
       setShowResend(false);
     } catch (error) {
       setMessage("Failed to resend verification email. Please try again.");
-      setStatus("error")
+      setStatus("error");
     }
   };
 
@@ -98,7 +98,7 @@ const AccountVerification = () => {
                 placeholder="Enter your email"
                 value={email || ""}
                 onChange={(e) => setEmail(e.target.value)}
-                className="px-4 py-2 border rounded w-full"
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
               />
               <button
                 onClick={resendVerificationEmail}

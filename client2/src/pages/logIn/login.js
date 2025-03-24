@@ -22,7 +22,7 @@ const Login = () => {
 
   // LOGIN IMPLEMENTATION
   const loginUser = async (userData) => {
-    setIsLoggingIn(true); // Start loading screen on login attempt
+    setIsLoggingIn(false); // Start loading screen on login attempt
     try {
       const response = await axios.post(
         `${backendAPI}/api/auth/login`,

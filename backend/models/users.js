@@ -29,10 +29,12 @@ const userSchema = new mongoose.Schema(
     },
     isVerified: { type: Boolean, default: false },
     verificationToken: { type: String },
-    verificationTokenExpiry: {type: Date}
+    verificationTokenExpiry: { type: Date },
+    passwordResetToken: { type: String },
+    passwordResetTokenExpiry: { type: Date },
   },
   {
-    timestamps: true,
+    timestamps: false,
   }
 );
 
