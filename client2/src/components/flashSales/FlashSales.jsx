@@ -6,7 +6,8 @@ import { BsCart3 } from "react-icons/bs";
 import { backendAPI } from "../../endpoint";
 import axios from "axios";
 import { FaStar, FaRegStar } from "react-icons/fa";
-import toast from "react-hot-toast";
+import { ToastContainer, toast, Slide } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const PRODUCTS_ALLOWED = 4;
 
@@ -61,7 +62,21 @@ const FlashSales = () => {
           withCredentials: true, // Send cookies for authentication
         }
       );
-      toast.success(response.data.message);
+      const toastId = toast.success(
+        response.data.message || "Please try again",
+        {
+          position: "top-right",
+          autoClose: 3000,
+          transition: Slide,
+          theme: "light",
+          pauseOnHover: true,
+        }
+      );
+      toast.onChange((payload) => {
+        if (payload.status === "removed" && payload.id === toastId) {
+          navigate("/wishlist");
+        }
+      });
     } catch (error) {
       if (error.response) {
         // The request was made and the server responded with a status code
@@ -97,7 +112,18 @@ const FlashSales = () => {
         }
       );
 
-      toast.success(response.data.message);
+      const toastId = toast.success(response.data.message || "Added to cart.", {
+        position: "top-right",
+        autoClose: 3000,
+        transition: Slide,
+        theme: "light",
+        pauseOnHover: true,
+      });
+      toast.onChange((payload) => {
+        if (payload.status === "removed" && payload.id === toastId) {
+          navigate("/cart");
+        }
+      });
     } catch (error) {
       if (error.response) {
         if (error.response.status === 401) {
@@ -169,13 +195,20 @@ const FlashSales = () => {
 
   return (
     <div className="flex flex-col items-start gap-4 relative ml-[150px] mt-[35px]">
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        transition={Slide}
+        theme="light"
+      />
       {/* Flash Sales Header */}
       <div className="flex items-center gap-4">
         <div className="w-5">
           <div className="h-10 bg-blue-500" />
         </div>
         <div className="font-semibold text-secondary-2 text-[16px] tracking-[0.02em] leading-[1.5]">
-          Today's Flash Sales
+          {new Date().toLocaleDateString("en-US", { weekday: "long" })}'s Flash
+          Sales
         </div>
       </div>
 
@@ -219,7 +252,10 @@ const FlashSales = () => {
             <div className="absolute top-4 right-4 flex items-center justify-center w-10 h-10 rounded-full text-black hover:bg-blue-500 cursor-pointer">
               <CiHeart
                 className="text-3xl"
-                onClick={() => handleAddToWishlist(product)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleAddToWishlist(product);
+                }}
               />
             </div>
 
@@ -227,7 +263,10 @@ const FlashSales = () => {
             <div className="absolute top-16 right-4 flex items-center justify-center w-10 h-10 rounded-full text-black hover:bg-blue-500 cursor-pointer">
               <BsCart3
                 className="text-3xl"
-                onClick={() => handleAddToCart(product._id)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleAddToCart(product._id);
+                }}
               />
             </div>
 
@@ -251,7 +290,7 @@ const FlashSales = () => {
                   ${product.originalPrice}
                 </span>
               </div>
-              
+
               <p className="flex items-center text-x text-gray-700 mt-1">
                 {renderStars(product.reviews.rate)} ({product.reviews.count}{" "}
                 reviews)

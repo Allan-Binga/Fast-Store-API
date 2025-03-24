@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import TopHeader from "../../components/topHeader/TopHeader";
 import Header from "../../components/header/Header";
 import Footer from "../../components/footer/Footer";
@@ -11,7 +11,6 @@ import LoadingScreen from "../../components/loadingScreen/LoadingScreen";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const Login = () => {
-  const [isLoading, setIsLoading] = useState(true); // Initial page loading
   const [isLoggingIn, setIsLoggingIn] = useState(false); // Login process state
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -22,7 +21,7 @@ const Login = () => {
 
   // LOGIN IMPLEMENTATION
   const loginUser = async (userData) => {
-    setIsLoggingIn(false); // Start loading screen on login attempt
+    setIsLoggingIn(true); // Start loading screen on login attempt
     try {
       const response = await axios.post(
         `${backendAPI}/api/auth/login`,
@@ -31,14 +30,21 @@ const Login = () => {
           withCredentials: true,
         }
       );
-      toast.success(response.data.message || "Login successful!", {
-        position: "top-right",
-        autoClose: 3000,
-        transition: Slide,
-        theme: "light",
-        pauseOnHover: true,
-      });
-      // navigate("/"); // Redirect to homepage after successful login
+      const toastId = toast.success(
+        response.data.message || "Login successful!",
+        {
+          position: "top-right",
+          autoClose: 3000,
+          transition: Slide,
+          theme: "light",
+          pauseOnHover: true,
+        }
+      );
+      toast.onChange((payload) => {
+        if (payload.status === "removed" && payload.id === toastId) {
+          navigate("/");
+        }
+      }); // Redirect to homepage after successful login
     } catch (error) {
       const errorMessage =
         error.response?.data?.error ||
@@ -69,17 +75,6 @@ const Login = () => {
     return formData.email && formData.password;
   };
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 2000);
-    return () => clearTimeout(timer);
-  }, []);
-
-  if (isLoading) {
-    return <LoadingScreen />;
-  }
-
   return (
     <div className="relative min-h-screen">
       <ToastContainer
@@ -105,7 +100,7 @@ const Login = () => {
 
           {/* Right Section: Login Form */}
           <div className="flex-1 flex flex-col p-8 md:p-12">
-            <h1 className="text-3xl font-bold text-gray-800">Welcome Back</h1>
+            <h1 className="text-3xl font-bold text-gray-800">Please login</h1>
             <p className="text-gray-600 mt-2">Enter your details below</p>
 
             <form className="flex flex-col gap-6 mt-8" onSubmit={handleSubmit}>

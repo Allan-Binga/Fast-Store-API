@@ -4,6 +4,7 @@ import Header from "../../components/header/Header";
 import Footer from "../../components/footer/Footer";
 import { backendAPI } from "../../endpoint";
 import axios from "axios";
+import LoadingScreen from "../../components/loadingScreen/LoadingScreen";
 
 const Orders = () => {
   const [orders, setOrders] = useState([]);
@@ -55,7 +56,7 @@ const Orders = () => {
         </div>
 
         {loading ? (
-          <p className="text-center text-gray-600 text-lg">Loading orders...</p>
+          <LoadingScreen />
         ) : error ? (
           <p className="text-center text-red-500 text-lg">{error}</p>
         ) : orders.length === 0 ? (

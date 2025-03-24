@@ -5,21 +5,27 @@ import Footer from "../../components/footer/Footer";
 import { FaRegTrashAlt } from "react-icons/fa";
 import { backendAPI } from "../../endpoint";
 import axios from "axios";
-import toast from "react-hot-toast";
 import { loadStripe } from "@stripe/stripe-js";
+import LoadingScreen from "../../components/loadingScreen/LoadingScreen";
+import { ToastContainer, toast, Slide } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const Cart = () => {
   const [cartProducts, setCartProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
+        setLoading(true); // Start loading
         const response = await axios.get(`${backendAPI}/api/cart/user`, {
           withCredentials: true,
         });
         setCartProducts(response.data.products || []);
       } catch (err) {
         setCartProducts([]); // Default to an empty cart
+      } finally {
+        setLoading(false); // Stop loading
       }
     };
     fetchProducts();
@@ -47,14 +53,20 @@ const Cart = () => {
 
   const handleRemoveProduct = async (productId) => {
     try {
-      await axios.delete(`${backendAPI}/api/cart/remove`, {
+      const response = await axios.delete(`${backendAPI}/api/cart/remove`, {
         data: { productId },
         withCredentials: true,
       });
       setCartProducts((prev) =>
         prev.filter((product) => product._id !== productId)
       );
-      toast.success("Product removed from cart.");
+      toast.success(response.data.message || "Product removed from cart", {
+        position: "top-right",
+        autoClose: 3000,
+        transition: Slide,
+        theme: "light",
+        pauseOnHover: true,
+      });
     } catch {
       toast.error("Failed to remove product.");
     }
@@ -98,6 +110,12 @@ const Cart = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        transition={Slide}
+        theme="light"
+      />
       <TopHeader />
       <Header />
       <div className="flex-grow container mx-auto px-6 py-8">
@@ -110,7 +128,9 @@ const Cart = () => {
           </div>
         </div>
 
-        {cartProducts.length === 0 ? (
+        {loading ? (
+          <LoadingScreen />
+        ) : cartProducts.length === 0 ? (
           <p className="text-center text-gray-600 text-lg">
             Your cart is empty.
           </p>

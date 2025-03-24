@@ -3,13 +3,14 @@ import { useParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { backendAPI } from "../../endpoint";
 import axios from "axios";
-import toast from "react-hot-toast";
 import Footer from "../../components/footer/Footer";
 import TopHeader from "../../components/topHeader/TopHeader";
 import Header from "../../components/header/Header";
-import { CiHeart , CiShoppingCart} from "react-icons/ci";
+import { CiHeart, CiShoppingCart } from "react-icons/ci";
 import { FaStar } from "react-icons/fa";
 import { FaRegStar } from "react-icons/fa";
+import { ToastContainer, toast, Slide } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const CategoryProducts = () => {
   const navigate = useNavigate();
@@ -115,7 +116,7 @@ const CategoryProducts = () => {
           error.response.status === 400 ||
           error.response.status === 404
         ) {
-          toast.error(error.response.data.error);
+          toast.info(error.response.data.error);
         } else {
           toast.error(
             "An error occurred while adding the product to the cart."
@@ -127,8 +128,8 @@ const CategoryProducts = () => {
     }
   };
 
-   //Clicking a single product
-   const handleProductClick = (id) => {
+  //Clicking a single product
+  const handleProductClick = (id) => {
     let recentProducts =
       JSON.parse(localStorage.getItem("recentlyViewed")) || [];
 
@@ -151,6 +152,12 @@ const CategoryProducts = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        transition={Slide}
+        theme="light"
+      />
       <TopHeader />
       <Header />
 

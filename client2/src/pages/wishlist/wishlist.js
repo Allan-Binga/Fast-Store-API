@@ -7,7 +7,9 @@ import { backendAPI } from "../../endpoint";
 import axios from "axios";
 import { CiTrash, CiShoppingCart } from "react-icons/ci";
 import { FaStar, FaRegStar } from "react-icons/fa";
-import toast from "react-hot-toast";
+import LoadingScreen from "../../components/loadingScreen/LoadingScreen";
+import { ToastContainer, toast, Slide } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const Wishlist = () => {
   // const navigate = useNavigate();
@@ -134,6 +136,12 @@ const Wishlist = () => {
 
   return (
     <div className="flex flex-col min-h-screen">
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        transition={Slide}
+        theme="light"
+      />
       <TopHeader />
       <Header />
       <div className="flex-grow flex flex-col items-start gap-4 relative ml-[150px] mt-[35px]">
@@ -158,9 +166,7 @@ const Wishlist = () => {
           </button>
         </div>
 
-        {loading && (
-          <p className="text-lg text-gray-600">Loading wishlist...</p>
-        )}
+        {loading && <LoadingScreen />}
         {error && <p className="text-lg text-red-500">{error}</p>}
 
         {!loading && wishlistProducts.length === 0 && !error && (

@@ -2,16 +2,17 @@ const express = require("express");
 const productRoute = require("./routes/product.js");
 const usersRoute = require("./routes/users.js");
 const authRoute = require("./routes/auth.js");
-const brandRoute = require("./routes/brand.js")
-const wishlistRoute = require("./routes/wishlist.js")
+const brandRoute = require("./routes/brand.js");
+const wishlistRoute = require("./routes/wishlist.js");
 const checkoutRoute = require("./routes/checkout.js");
 const cartRoute = require("./routes/cart.js");
-const flashSaleRoute = require("./routes/flashsales.js")
-const addressRoute = require("./routes/address.js")
-const webhookRoute = require("./routes/webhook.js")
-const orderRoute = require("./routes/orders.js")
-const categoryRoute = require("./routes/category.js")
-const mailRoute = require("./routes/emailService.js")
+const flashSaleRoute = require("./routes/flashsales.js");
+const addressRoute = require("./routes/address.js");
+const webhookRoute = require("./routes/webhook.js");
+const orderRoute = require("./routes/orders.js");
+const categoryRoute = require("./routes/category.js");
+const mailRoute = require("./routes/emailService.js");
+const phoneRoute = require("./routes/phoneService.js");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const cors = require("cors");
@@ -20,9 +21,8 @@ const cookieParser = require("cookie-parser");
 dotenv.config();
 const app = express();
 
-//Webhook Route 
-app.use("/api/webhook", webhookRoute)
-
+//Webhook Route
+app.use("/api/webhook", webhookRoute);
 
 app.use(express.json());
 
@@ -48,22 +48,25 @@ main().catch((err) => console.log(err));
 app.use("/api/auth", authRoute);
 
 //Mail Route
-app.use("/api/verify", mailRoute)
+app.use("/api/verify", mailRoute);
+
+//PhoneRoute
+app.use("/api/phone", phoneRoute);
 
 //Product Route
 app.use("/api/products", productRoute);
 
 //Category Route
-app.use("/api/categories", categoryRoute)
+app.use("/api/categories", categoryRoute);
 
 //Flashsale Route
-app.use("/api/flashsale", flashSaleRoute)
+app.use("/api/flashsale", flashSaleRoute);
 
 //Brand Route
-app.use("/api/brands", brandRoute)
+app.use("/api/brands", brandRoute);
 
 //Wishlist Route
-app.use("/api/wishlist", wishlistRoute)
+app.use("/api/wishlist", wishlistRoute);
 
 //Cart Route
 app.use("/api/cart", cartRoute);
@@ -75,10 +78,10 @@ app.use("/api/users", usersRoute);
 app.use("/api/checkout", checkoutRoute);
 
 //Orders Route
-app.use("/api/orders", orderRoute)
+app.use("/api/orders", orderRoute);
 
 //Address Route
-app.use("/api/address", addressRoute)
+app.use("/api/address", addressRoute);
 
 app.listen("5500", () => {
   console.log("Backend up and running.");
