@@ -151,6 +151,53 @@ const sendOrderConfirmationEmail = async (email, order) => {
   }
 };
 
+// Password Reset Email
+const sendPasswordResetEmail = async (email) => {
+  try {
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      console.error("❌ Error: User not found");
+      throw new Error("User not found.");
+    }
+
+    // Generate reset token
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    user.passwordResetToken = resetToken;
+    user.passwordResetTokenExpiry = Date.now() + 2 * 60 * 1000; // Token valid for 10 mins
+
+    await user.save();
+
+    // Reset link
+    const resetUrl = `${process.env.CLIENT_URL}/reset-password?token=${resetToken}`;
+
+    // Email options
+    const mailOptions = {
+      from: `"FastStore API" <${process.env.MAIL_USER}>`,
+      to: email,
+      subject: "Password Reset Request",
+      html: `<div style="font-family: Arial, sans-serif; text-align: center; padding: 20px; background-color: #f4f4f4;">
+        <div style="max-width: 600px; margin: auto; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
+          <h2 style="color: #ff9800;">Password Reset Request</h2>
+          <p style="color: #555;">Click the button below to reset your password.</p>
+          <a href="${resetUrl}" 
+            style="display: inline-block; padding: 10px 20px; margin-top: 15px; background-color: #d9534f; color: #fff; text-decoration: none; border-radius: 5px;">
+            Reset My Password
+          </a>
+          <p style="margin-top: 20px; color: #777;">If you did not request a password reset, you can ignore this email.</p>
+        </div>
+      </div>`,
+    };
+
+    // Send email
+    await transporter.sendMail(mailOptions);
+    console.log(`📧 Password reset email sent to ${email}`);
+  } catch (error) {
+    console.error(`❌ Error sending password reset email:`, error);
+    throw error;
+  }
+};
+
 //Function to verify the user
 const verifyUser = async (req, res) => {
   try {
@@ -192,4 +239,5 @@ module.exports = {
   resendVerificationEmail,
   sendOrderConfirmationEmail,
   verifyUser,
+  sendPasswordResetEmail,
 };
