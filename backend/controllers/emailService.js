@@ -181,7 +181,7 @@ const sendPasswordResetEmail = async (email) => {
           <h2 style="color: #ff9800;">Password Reset Request</h2>
           <p style="color: #555;">Click the button below to reset your password.</p>
           <a href="${resetUrl}" 
-            style="display: inline-block; padding: 10px 20px; margin-top: 15px; background-color: #d9534f; color: #fff; text-decoration: none; border-radius: 5px;">
+            style="display: inline-block; padding: 10px 20px; margin-top: 15px; background-color: #2582b8; color: #fff; text-decoration: none; border-radius: 5px;">
             Reset My Password
           </a>
           <p style="margin-top: 20px; color: #777;">If you did not request a password reset, you can ignore this email.</p>
