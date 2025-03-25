@@ -1,8 +1,9 @@
 const User = require("../models/users");
 const bcrypt = require("bcrypt");
 const dotenv = require("dotenv");
-const { sendVerificationEmail } = require("./emailService");
+const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
+const { sendVerificationEmail } = require("./emailService");
 
 dotenv.config();
 
@@ -104,8 +105,13 @@ const loginUser = async (req, res) => {
       return res.status(400).json("Invalid credentials. Please try again.");
     }
 
+    //GENERATE JWT token
+    const token = jwt.sign({ user: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "1d",
+    });
+
     // COOKIE FOR ENABLING LOGOUT
-    res.cookie("storeSession", user._id, {
+    res.cookie("storeSession", token, {
       httpOnly: true,
       maxAge: 1000 * 60 * 60 * 24,
       sameSite: "None",
