@@ -1,8 +1,9 @@
 const nodemailer = require("nodemailer");
 const User = require("../models/users");
 const crypto = require("crypto");
+const dotenv = require("dotenv");
 
-require("dotenv").config();
+dotenv.config();
 
 const transporter = nodemailer.createTransport({
   service: "Gmail",
@@ -163,18 +164,23 @@ const sendPasswordResetEmail = async (email) => {
 
     if (!user) {
       console.error("❌ Error: User not found");
-      throw new Error("User not found.");
+      throw new Error("No user found with this email.");
+    }
+
+    // Check if a reset token already exists and is still valid
+    if (user.passwordResetToken && user.passwordResetTokenExpiry > Date.now()) {
+      throw new Error("Password reset email already sent.");
     }
 
     // Generate reset token
     const resetToken = crypto.randomBytes(32).toString("hex");
     user.passwordResetToken = resetToken;
-    user.passwordResetTokenExpiry = Date.now() + 2 * 60 * 1000; // Token valid for 10 mins
+    user.passwordResetTokenExpiry = Date.now() + 2 * 60 * 1000; // Token valid for 2 mins
 
     await user.save();
 
     // Reset link
-    const resetUrl = `${process.env.CLIENT_URL}/password-reset?token=${resetToken}`;
+    const resetUrl = `${process.env.CLIENT_URL}/password/reset?token=${resetToken}`;
 
     // Email options
     const mailOptions = {

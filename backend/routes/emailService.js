@@ -3,13 +3,13 @@ const {
   verifyUser,
   resendVerificationEmail,
 } = require("../controllers/emailService");
-const { resetPassword } = require("../controllers/password");
+const { resetPasswordEmail } = require("../controllers/password");
 
 const router = express.Router();
 
 //Routes
 router.get("/", verifyUser);
 router.post("/resend-verification", resendVerificationEmail);
-router.post("/reset-password", resetPassword);
+router.post("/reset-password", resetPasswordEmail);
 
 module.exports = router;

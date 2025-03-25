@@ -6,12 +6,16 @@ import { backendAPI } from "../../endpoint";
 import axios from "axios";
 import { ToastContainer, toast, Slide } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import LoadingScreen from "../../components/loadingScreen/LoadingScreen";
 
 const PasswordReset = () => {
+  // const navigate = useNavigate();
   const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
 
   //Reset Password API
   const resetPassword = async () => {
+    setLoading(true);
     try {
       const response = await axios.post(
         `${backendAPI}/api/verify/reset-password`,
@@ -21,7 +25,7 @@ const PasswordReset = () => {
       );
 
       toast.success(
-        response.data.message || "Password reset email sent successfully.",
+        response.data.message || "Password reset email sent.",
         {
           position: "top-right",
           autoClose: 3000,
@@ -30,6 +34,11 @@ const PasswordReset = () => {
           pauseOnHover: true,
         }
       );
+      // toast.onChange((payload) => {
+      //   if (payload.status === "removed" && payload.id === toastId) {
+      //     navigate("/login");
+      //   }
+      // });
     } catch (error) {
       toast.error(error.response?.data?.message || "Something went wrong.", {
         position: "top-right",
@@ -38,6 +47,8 @@ const PasswordReset = () => {
         theme: "light",
         pauseOnHover: true,
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -56,6 +67,7 @@ const PasswordReset = () => {
       />
       <TopHeader />
       <Header />
+      {loading && <LoadingScreen />}
       {/* Main Content */}
       <div className="flex-grow flex items-center justify-center">
         <div className="w-full max-w-lg bg-white p-8 rounded-xl shadow-xl border">
