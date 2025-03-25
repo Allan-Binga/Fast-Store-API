@@ -7,7 +7,7 @@ const router = express.Router();
 
 router.post("/register", registerUser);
 router.post("/login", loginUser);
-router.patch("/reset-password", resetPassword);
 router.post("/logout", logoutUser);
+router.patch("/reset-password", resetPassword);
 
 module.exports = router;

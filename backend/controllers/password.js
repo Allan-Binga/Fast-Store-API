@@ -1,5 +1,6 @@
 const { sendPasswordResetEmail } = require("./emailService");
 const User = require("../models/users");
+const bcrypt = require("bcrypt")
 
 //Reset Password
 const resetPasswordEmail = async (req, res) => {
