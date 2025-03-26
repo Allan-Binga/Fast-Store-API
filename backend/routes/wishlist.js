@@ -6,14 +6,15 @@ const {
   removeProductFromWishlist,
   addWishlistToCart,
 } = require("../controllers/wishlist");
+const { authMiddleware } = require("../middleware/jwt");
 
 const router = express.Router();
 
 //ROUTES
 router.get("/", getWishlists);
-router.post("/add-to-wishlist", addProductToWishlist);
-router.get("/user", getUserWishlist);
-router.delete("/", removeProductFromWishlist);
-router.post("/add-to-cart", addWishlistToCart);
+router.post("/add-to-wishlist", authMiddleware, addProductToWishlist);
+router.get("/user", authMiddleware, getUserWishlist);
+router.delete("/", authMiddleware, removeProductFromWishlist);
+router.post("/add-to-cart", authMiddleware, addWishlistToCart);
 
 module.exports = router;

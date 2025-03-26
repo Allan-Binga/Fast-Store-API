@@ -5,7 +5,7 @@ const Product = require("../models/product");
 const addProductToCart = async (req, res) => {
   try {
     // Parse the cookie to extract userId
-    const userId = req.cookies.storeSession;
+    const userId = req.userId;
 
     // Check if the user is logged in
     if (!userId) {
@@ -77,7 +77,7 @@ const addProductToCart = async (req, res) => {
 // REMOVE PRODUCTS FROM CART
 const removeProductFromCart = async (req, res) => {
   try {
-    const userId = req.cookies.storeSession;
+    const userId = req.userId;
 
     // Check if the user is logged in
     if (!userId) {
@@ -100,7 +100,7 @@ const removeProductFromCart = async (req, res) => {
 
     // Find the index of the product to remove
     const productIndex = cart.products.findIndex(
-      (product) => product._id.toString() === productId.toString()
+      (product) => product.productId.toString() === productId.toString()
     );
 
     if (productIndex === -1) {
@@ -164,8 +164,8 @@ const getCart = async (req, res) => {
 const getCartUser = async (req, res) => {
   try {
     // Get the authenticated user's ID from cookies
-    const loggedInUserId = req.cookies.storeSession;
-    // console.log(loggedInUserId);
+    const loggedInUserId = req.userId;
+
     // Check if the session cookie exists
     if (!loggedInUserId) {
       return res.status(401).json({ error: "Please log in to proceed." });

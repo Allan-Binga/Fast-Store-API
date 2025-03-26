@@ -11,6 +11,7 @@ import { FaStar } from "react-icons/fa";
 import { FaRegStar } from "react-icons/fa";
 import { ToastContainer, toast, Slide } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import LoadingScreen from "../../components/loadingScreen/LoadingScreen";
 
 const CategoryProducts = () => {
   const navigate = useNavigate();
@@ -173,7 +174,7 @@ const CategoryProducts = () => {
         </div>
 
         {loading ? (
-          <p className="text-center text-gray-600">Loading...</p>
+          <LoadingScreen />
         ) : error ? (
           <p className="text-red-500 text-center">{error}</p>
         ) : categoryProducts.length > 0 ? (

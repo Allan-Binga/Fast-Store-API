@@ -14,20 +14,21 @@ const Cart = () => {
   const [cartProducts, setCartProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const fetchProducts = async () => {
+    try {
+      setLoading(true); // Start loading
+      const response = await axios.get(`${backendAPI}/api/cart/user`, {
+        withCredentials: true,
+      });
+      setCartProducts(response.data.products || []);
+    } catch (err) {
+      setCartProducts([]); // Default to an empty cart
+    } finally {
+      setLoading(false); // Stop loading
+    }
+  };
+
   useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        setLoading(true); // Start loading
-        const response = await axios.get(`${backendAPI}/api/cart/user`, {
-          withCredentials: true,
-        });
-        setCartProducts(response.data.products || []);
-      } catch (err) {
-        setCartProducts([]); // Default to an empty cart
-      } finally {
-        setLoading(false); // Stop loading
-      }
-    };
     fetchProducts();
   }, []);
 
@@ -52,6 +53,7 @@ const Cart = () => {
       .toFixed(2);
 
   const handleRemoveProduct = async (productId) => {
+    setLoading(true);
     try {
       const response = await axios.delete(`${backendAPI}/api/cart/remove`, {
         data: { productId },
@@ -67,8 +69,11 @@ const Cart = () => {
         theme: "light",
         pauseOnHover: true,
       });
+      await fetchProducts();
     } catch {
       toast.error("Failed to remove product.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -118,6 +123,7 @@ const Cart = () => {
       />
       <TopHeader />
       <Header />
+      {loading && <LoadingScreen />}
       <div className="flex-grow container mx-auto px-6 py-8">
         <div className="flex items-center gap-4 mb-1">
           <div className="w-6">
@@ -186,7 +192,7 @@ const Cart = () => {
                   <div className="text-right">
                     <FaRegTrashAlt
                       className="text-gray-500 hover:text-red-600 cursor-pointer transition duration-200"
-                      onClick={() => handleRemoveProduct(product._id)}
+                      onClick={() => handleRemoveProduct(product.productId)}
                     />
                   </div>
                 </div>

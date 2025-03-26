@@ -10,12 +10,12 @@ const {
   searchResults,
 } = require("../controllers/product.js");
 const { addProductToCart } = require("../controllers/cart.js");
-
+const { authMiddleware } = require("../middleware/jwt.js");
 
 const router = express.Router();
 
 //New Arrivals route
-router.get("/new-arrivals", getNewArrivals)
+router.get("/new-arrivals", getNewArrivals);
 router.get("/limit", getLimitedProducts);
 //router.get("/sort", sortProducts);
 
@@ -23,13 +23,12 @@ router.get("/limit", getLimitedProducts);
 router.get("/", getAllProducts);
 
 //Search Engine route
-router.get("/search", searchResults)
+router.get("/search", searchResults);
 router.get("/:id", getSingleProduct);
 
 router.post("/", addNewProduct);
 router.put("/:id", updateProduct);
-router.delete("/:id", deleteProduct);
-router.post("/add-to-cart", addProductToCart);
-
+router.delete("/:id", authMiddleware, deleteProduct);
+router.post("/add-to-cart", authMiddleware, addProductToCart);
 
 module.exports = router;

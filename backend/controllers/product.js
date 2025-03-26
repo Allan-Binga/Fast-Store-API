@@ -179,7 +179,7 @@ const deleteProduct = async (req, res) => {
   try {
     const { id } = req.params;
     const product = await Product.findByIdAndDelete(req.params.id);
-    res.status(200).json(`Successfully deleted product ${id}`);
+    res.status(200).json(`Successfully deleted product ${id}`, product);
   } catch (error) {
     res.status(500).json({ error: "Error while deleting product." });
   }

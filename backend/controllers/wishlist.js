@@ -15,7 +15,7 @@ const getWishlists = async (_req, res) => {
 const getUserWishlist = async (req, res) => {
   try {
     // Get the authenticated user's ID from cookies
-    const loggedInUserId = req.cookies.storeSession;
+    const loggedInUserId = req.userId;
 
     // Check if the session cookie exists
     if (!loggedInUserId) {
@@ -56,7 +56,7 @@ const addProductToWishlist = async (req, res) => {
     image,
     reviews,
   } = req.body;
-  const userId = req.cookies.storeSession;
+  const userId = req.userId;
 
   // IF NO LOGIN COOKIE, RETURN WITH STATUS 401
   if (!userId) {
@@ -111,7 +111,7 @@ const addProductToWishlist = async (req, res) => {
 // REMOVE PRODUCT FROM WISHLIST
 const removeProductFromWishlist = async (req, res) => {
   try {
-    const userId = req.cookies.storeSession;
+    const userId = req.userId;
 
     // Check if the user is logged in
     if (!userId) {
@@ -158,8 +158,7 @@ const removeProductFromWishlist = async (req, res) => {
 
 // ADD WISHLIST PRODUCTS TO CART
 const addWishlistToCart = async (req, res) => {
-  // EXTRACT storeSession SESSION COOKIE
-  const userId = req.cookies.storeSession;
+  const userId = req.userId;
 
   // IF THERE'S NO COOKIE, RETURN WITH STATUS 401
   if (!userId) {

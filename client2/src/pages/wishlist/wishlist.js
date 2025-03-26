@@ -5,7 +5,7 @@ import Header from "../../components/header/Header";
 import Footer from "../../components/footer/Footer";
 import { backendAPI } from "../../endpoint";
 import axios from "axios";
-import { CiTrash, CiShoppingCart } from "react-icons/ci";
+import { CiTrash } from "react-icons/ci";
 import { FaStar, FaRegStar } from "react-icons/fa";
 import LoadingScreen from "../../components/loadingScreen/LoadingScreen";
 import { ToastContainer, toast, Slide } from "react-toastify";
@@ -29,6 +29,7 @@ const Wishlist = () => {
   };
 
   const removeFromWishlist = async (productId) => {
+    setLoading(true);
     try {
       const response = await axios.delete(`${backendAPI}/api/wishlist`, {
         data: { productId },
@@ -39,9 +40,11 @@ const Wishlist = () => {
       setWishlistProducts((prev) =>
         prev.filter((product) => product._id !== productId)
       );
-      toast.success(response.data.message); // Keep the toast for successful removal
+      toast.success(response.data.message);
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to remove product.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -87,53 +90,6 @@ const Wishlist = () => {
     );
   };
 
-  //Add products to wishlist
-  const addWishlistProductsToCart = async () => {
-    try {
-      await axios.post(
-        `${backendAPI}/api/wishlist/add-to-cart`,
-        null, // Explicitly pass null to indicate no body
-        { withCredentials: true }
-      );
-      toast.success("Added all wishlist items to cart!");
-    } catch (error) {
-      toast.error(
-        error.response?.data?.error || "Failed to add wishlist items to cart."
-      );
-    }
-  };
-
-  //Adding product to cart
-  const handleAddToCart = async (productId) => {
-    try {
-      const response = await axios.post(
-        `${backendAPI}/api/products/add-to-cart`,
-        {
-          products: [{ productId, quantity: 1 }],
-        },
-        { withCredentials: true }
-      );
-      toast.success(response.data.message);
-    } catch (error) {
-      if (error.response) {
-        if (error.response.status === 401) {
-          toast.error("Please login to add product to cart.");
-        } else if (
-          error.response.status === 400 ||
-          error.response.status === 404
-        ) {
-          toast.error(error.response.data.error);
-        } else {
-          toast.error(
-            "An error occurred while adding the product to the cart."
-          );
-        }
-      } else {
-        toast.error("An unexpected error occurred.");
-      }
-    }
-  };
-
   return (
     <div className="flex flex-col min-h-screen">
       <ToastContainer
@@ -158,12 +114,6 @@ const Wishlist = () => {
           <div className="text-black font-semibold text-lg">
             Wishlist ({wishlistProducts.length})
           </div>
-          <button
-            className="text-black text-m font-medium h-9 px-4 border-2 border-black mr-[150px]"
-            onClick={addWishlistProductsToCart}
-          >
-            Move All To Cart
-          </button>
         </div>
 
         {loading && <LoadingScreen />}
@@ -185,17 +135,6 @@ const Wishlist = () => {
               {/* Discount Badge */}
               <div className="absolute top-4 left-4 bg-red-500 text-white text-xs font-bold py-1 px-2 rounded">
                 -{product.discount}%
-              </div>
-
-              {/* Shopping Cart Icon */}
-              <div
-                className="absolute top-16 right-4 flex items-center justify-center w-10 h-10 rounded-full text-gray-700 hover:bg-gray-200 hover:text-blue-500 cursor-pointer transition"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleAddToCart(product._id);
-                }}
-              >
-                <CiShoppingCart className="text-2xl" />
               </div>
 
               {/*Trash Icon*/}

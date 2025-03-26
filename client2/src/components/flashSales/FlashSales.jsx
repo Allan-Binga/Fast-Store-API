@@ -8,6 +8,7 @@ import axios from "axios";
 import { FaStar, FaRegStar } from "react-icons/fa";
 import { ToastContainer, toast, Slide } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import LoadingScreen from "../loadingScreen/LoadingScreen";
 
 const PRODUCTS_ALLOWED = 4;
 
@@ -15,12 +16,19 @@ const FlashSales = () => {
   const navigate = useNavigate(); // Initialize useNavigate
   const [products, setProducts] = useState([]);
   const [startIndex, setStartIndex] = useState(0);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Fetch flash sale products on component mount
     const fetchProducts = async () => {
-      const data = await getFlashSaleProducts();
-      setProducts(data);
+      try {
+        setLoading(true); // Start loading
+        const data = await getFlashSaleProducts();
+        setProducts(data);
+      } catch (error) {
+        toast.error("Failed to fetch flash sale products.");
+      } finally {
+        setLoading(false); // Stop loading
+      }
     };
     fetchProducts();
   }, []);
@@ -237,67 +245,72 @@ const FlashSales = () => {
 
       {/* Product Card */}
       <div className="grid grid-cols-4 gap-6 mt-6 mr-20">
-        {visibleProducts.map((product) => (
-          <div
-            key={product._id}
-            onClick={() => handleProductClick(product._id)}
-            className="relative flex flex-col bg-white rounded-lg shadow-md hover:shadow-lg transition-all overflow-hidden group cursor-pointer transform hover:scale-105 duration-400"
-          >
-            {/* Discount Badge */}
-            <div className="absolute top-4 left-4 bg-red-500 text-white text-sm font-bold py-1 px-2 rounded">
-              -{product.discount}%
-            </div>
-
-            {/* Heart Icon */}
-            <div className="absolute top-4 right-4 flex items-center justify-center w-10 h-10 rounded-full text-black hover:bg-blue-500 cursor-pointer">
-              <CiHeart
-                className="text-3xl"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleAddToWishlist(product);
-                }}
-              />
-            </div>
-
-            {/* Shopping Cart Icon */}
-            <div className="absolute top-16 right-4 flex items-center justify-center w-10 h-10 rounded-full text-black hover:bg-blue-500 cursor-pointer">
-              <BsCart3
-                className="text-3xl"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleAddToCart(product._id);
-                }}
-              />
-            </div>
-
-            {/* Product Image */}
-            <div className="w-[400px] h-[300px]  flex items-center justify-center overflow-hidden">
-              <img
-                src={product.image}
-                alt={product.name}
-                className="object-contain max-h-full max-w-full"
-              />
-            </div>
-
-            {/* Product Details */}
-            <div className="p-4 flex flex-col gap-2 mt-auto">
-              <h3 className="text-xl font-bold text-gray-800">
-                {product.name}
-              </h3>
-              <div className="text-base text-blue-600 font-bold">
-                ${product.currentPrice}
-                <span className="ml-2 text-m text-gray-500 line-through">
-                  ${product.originalPrice}
-                </span>
+        {loading ? (
+          <LoadingScreen />
+        ) : (
+          visibleProducts.map((product) => (
+            <div
+              key={product._id}
+              onClick={() => handleProductClick(product._id)}
+              className="relative flex flex-col bg-white rounded-lg shadow-md hover:shadow-lg transition-all overflow-hidden group cursor-pointer transform hover:scale-105 duration-400"
+            >
+              {/* Discount Badge */}
+              <div className="absolute top-4 left-4 bg-red-500 text-white text-sm font-bold py-1 px-2 rounded">
+                -{product.discount}%
               </div>
 
-              <p className="flex items-center text-x text-gray-700 mt-1">
-                {renderStars(product.reviews.rate)} ({product.reviews.count}{" "}
-                reviews)
-              </p>
+              {/* Heart Icon */}
+              <div className="absolute top-4 right-4 flex items-center justify-center w-10 h-10 rounded-full text-black hover:bg-blue-500 cursor-pointer">
+                <CiHeart
+                  className="text-3xl"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleAddToWishlist(product);
+                  }}
+                />
+              </div>
+
+              {/* Shopping Cart Icon */}
+              <div className="absolute top-16 right-4 flex items-center justify-center w-10 h-10 rounded-full text-black hover:bg-blue-500 cursor-pointer">
+                <BsCart3
+                  className="text-3xl"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleAddToCart(product._id);
+                  }}
+                />
+              </div>
+
+              {/* Product Image */}
+              <div className="w-[400px] h-[300px]  flex items-center justify-center overflow-hidden">
+                <img
+                  src={product.image}
+                  alt={product.name}
+                  className="object-contain max-h-full max-w-full"
+                />
+              </div>
+
+              {/* Product Details */}
+              <div className="p-4 flex flex-col gap-2 mt-auto">
+                <h3 className="text-xl font-bold text-gray-800">
+                  {product.name}
+                </h3>
+                <div className="text-base text-blue-600 font-bold">
+                  ${product.currentPrice}
+                  <span className="ml-2 text-m text-gray-500 line-through">
+                    ${product.originalPrice}
+                  </span>
+                </div>
+
+                <p className="flex items-center text-x text-gray-700 mt-1">
+                  {renderStars(product.reviews.rate)} ({product.reviews.count}{" "}
+                  reviews)
+                </p>
+              </div>
             </div>
-          </div>
-        ))}
+          ))
+        )}
+        {}
       </div>
     </div>
   );

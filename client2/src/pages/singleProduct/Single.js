@@ -10,6 +10,7 @@ import { TbTruckDelivery } from "react-icons/tb";
 import { CiHeart } from "react-icons/ci";
 import { HiArrowPathRoundedSquare } from "react-icons/hi2";
 import { FaStar, FaRegStar } from "react-icons/fa";
+import LoadingScreen from "../../components/loadingScreen/LoadingScreen";
 
 const Single = () => {
   const { id } = useParams();
@@ -65,9 +66,7 @@ const Single = () => {
 
       <div className="container mx-auto p-6">
         {loading ? (
-          <div className="text-center text-lg font-semibold text-gray-700">
-            Loading product...
-          </div>
+          <LoadingScreen />
         ) : product ? (
           <div className="bg-white shadow-md rounded-lg p-6 grid md:grid-cols-2 gap-8">
             {/* Product Image */}
