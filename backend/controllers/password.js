@@ -25,7 +25,7 @@ const resetPasswordEmail = async (req, res) => {
 //RESET PASSWORD
 const resetPassword = async (req, res) => {
   try {
-    const userId = req.cookies.storeSession;
+    const userId = req.userId;
 
     // CHECK IF THE USER IS LOGGED IN
     if (!userId) {

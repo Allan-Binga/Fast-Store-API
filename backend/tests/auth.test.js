@@ -1,4 +1,4 @@
-const { createUser, loginUser } = require("../controllers/auth");
+const { registerUser, loginUser } = require("../controllers/auth");
 const User = require("../models/users");
 const bcrypt = require("bcrypt");
 const httpMocks = require("node-mocks-http");

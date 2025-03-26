@@ -13,6 +13,7 @@ const orderRoute = require("./routes/orders.js");
 const categoryRoute = require("./routes/category.js");
 const mailRoute = require("./routes/emailService.js");
 const phoneRoute = require("./routes/phoneService.js");
+const passwordRoute = require("./routes/password.js");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const cors = require("cors");
@@ -82,6 +83,9 @@ app.use("/api/orders", orderRoute);
 
 //Address Route
 app.use("/api/address", addressRoute);
+
+//Password Route
+app.use("/api/password", passwordRoute);
 
 app.listen("5500", () => {
   console.log("Backend up and running.");
