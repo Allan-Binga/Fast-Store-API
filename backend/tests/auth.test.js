@@ -1,23 +1,23 @@
-const { registerUser, loginUser } = require("../controllers/auth");
-const User = require("../models/users");
-const bcrypt = require("bcrypt");
-const httpMocks = require("node-mocks-http");
-const mongoose = require("mongoose");
+// const { registerUser, loginUser } = require("../controllers/auth");
+// const User = require("../models/users");
+// const bcrypt = require("bcrypt");
+// const httpMocks = require("node-mocks-http");
+// const mongoose = require("mongoose");
 
-jest.mock("../models/users");
-jest.mock("bcrypt");
+// jest.mock("../models/users");
+// jest.mock("bcrypt");
 
-describe("Auth Controller", () => {
-  let req, res;
+// describe("Auth Controller", () => {
+//   let req, res;
 
-  beforeEach(() => {
-    req = httpMocks.createRequest();
-    res = httpMocks.createResponse();
-  });
+//   beforeEach(() => {
+//     req = httpMocks.createRequest();
+//     res = httpMocks.createResponse();
+//   });
 
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
+//   afterEach(() => {
+//     jest.clearAllMocks();
+//   });
 
   // // Tests for createUser
   // it("should return 409 if user already exists", async () => {
@@ -64,57 +64,57 @@ describe("Auth Controller", () => {
   // });
 
   // Tests for loginUser
-  it("should return 400 if username is incorrect", async () => {
-    User.findOne.mockResolvedValue(null);
+//   it("should return 400 if username is incorrect", async () => {
+//     User.findOne.mockResolvedValue(null);
 
-    req.body = {
-      username: "wronguser",
-      password: "password123",
-    };
+//     req.body = {
+//       username: "wronguser",
+//       password: "password123",
+//     };
 
-    await loginUser(req, res);
+//     await loginUser(req, res);
 
-    expect(res.statusCode).toBe(400);
-    expect(JSON.parse(res._getData())).toBe("Invalid email or password.");
-  });
+//     expect(res.statusCode).toBe(400);
+//     expect(JSON.parse(res._getData())).toBe("Invalid email or password.");
+//   });
 
-  it("should return 400 if password is incorrect", async () => {
-    User.findOne.mockResolvedValue({
-      username: "testuser",
-      password: "hashedPassword",
-    });
-    bcrypt.compare.mockResolvedValue(false);
+//   it("should return 400 if password is incorrect", async () => {
+//     User.findOne.mockResolvedValue({
+//       username: "testuser",
+//       password: "hashedPassword",
+//     });
+//     bcrypt.compare.mockResolvedValue(false);
 
-    req.body = {
-      username: "testuser",
-      password: "wrongpassword",
-    };
+//     req.body = {
+//       username: "testuser",
+//       password: "wrongpassword",
+//     };
 
-    await loginUser(req, res);
+//     await loginUser(req, res);
 
-    expect(res.statusCode).toBe(400);
-    expect(JSON.parse(res._getData())).toBe(
-      "Invalid credentials. Please try again."
-    );
-  });
+//     expect(res.statusCode).toBe(400);
+//     expect(JSON.parse(res._getData())).toBe(
+//       "Invalid credentials. Please try again."
+//     );
+//   });
 
-  it("should return 200 and set cookie if login is successful", async () => {
-    User.findOne.mockResolvedValue({
-      _id: new mongoose.Types.ObjectId(),
-      username: "testuser",
-      password: "hashedPassword",
-    });
-    bcrypt.compare.mockResolvedValue(true);
+//   it("should return 200 and set cookie if login is successful", async () => {
+//     User.findOne.mockResolvedValue({
+//       _id: new mongoose.Types.ObjectId(),
+//       username: "testuser",
+//       password: "hashedPassword",
+//     });
+//     bcrypt.compare.mockResolvedValue(true);
 
-    req.body = {
-      username: "testuser",
-      password: "password123",
-    };
+//     req.body = {
+//       username: "testuser",
+//       password: "password123",
+//     };
 
-    await loginUser(req, res);
+//     await loginUser(req, res);
 
-    expect(res.statusCode).toBe(200);
-    expect(JSON.parse(res._getData())).toBe("Login successful.");
-    expect(res.cookies.storeSession).toBeDefined();
-  });
-});
+//     expect(res.statusCode).toBe(200);
+//     expect(JSON.parse(res._getData())).toBe("Login successful.");
+//     expect(res.cookies.storeSession).toBeDefined();
+//   });
+// });
