@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import TopHeader from "../../components/topHeader/TopHeader";
+import { useSearchParams } from "react-router-dom";
 import Header from "../../components/header/Header";
 import Footer from "../../components/footer/Footer";
 
@@ -7,6 +8,14 @@ const ChangePassword = () => {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [searchParams] = useSearchParams();
+  const token = searchParams.get("token");
+
+  useEffect(() => {
+    if (!token) {
+      console.log("TOken required boss!")
+    }
+  })
 
   const updatePassword = (e) => {
     e.preventDefault();
@@ -26,7 +35,10 @@ const ChangePassword = () => {
 
           <form className="space-y-6" onSubmit={updatePassword}>
             <div>
-              <label htmlFor="currentPassword" className="block text-base font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="currentPassword"
+                className="block text-base font-medium text-gray-700 mb-2"
+              >
                 Current Password
               </label>
               <input
@@ -41,7 +53,10 @@ const ChangePassword = () => {
             </div>
 
             <div>
-              <label htmlFor="newPassword" className="block text-base font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="newPassword"
+                className="block text-base font-medium text-gray-700 mb-2"
+              >
                 New Password
               </label>
               <input
@@ -56,7 +71,10 @@ const ChangePassword = () => {
             </div>
 
             <div>
-              <label htmlFor="confirmPassword" className="block text-base font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="confirmPassword"
+                className="block text-base font-medium text-gray-700 mb-2"
+              >
                 Re-Enter Password
               </label>
               <input
