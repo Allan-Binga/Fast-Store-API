@@ -125,7 +125,7 @@ const removeProductFromCart = async (req, res) => {
 //CLEAR CART
 const clearCart = async (req, res) => {
   try {
-    const userId = req.cookies.storeSession;
+    const userId = req.userId;
 
     //Find user's cart
     const cart = await Cart.findOne({ userId });

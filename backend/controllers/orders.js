@@ -1,7 +1,7 @@
 const Order = require("../models/orders");
 
 //Retrieve all orders
-const getOrders = async (req, res) => {
+const getOrders = async (_req, res) => {
   try {
     const orders = await Order.find();
     if (!orders || orders.length === 0) {
@@ -17,7 +17,7 @@ const getOrders = async (req, res) => {
 const getUserOrder = async (req, res) => {
   try {
     //Get ID storeSession cookie.
-    const loggedInUser = req.cookies.storeSession;
+    const loggedInUser = req.userId;
 
     if(!loggedInUser) {
       return res.status(401).json({error: "Not authenticated to perform this action."})

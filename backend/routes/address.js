@@ -5,12 +5,13 @@ const {
   updateAddress,
   deleteAddress,
 } = require("../controllers/address");
+const { authMiddleware } = require("../middleware/jwt");
 
 const router = express.Router();
 
-router.post("/add/user", addAddress);
-router.get("/user", getAddress);
-router.put("/update", updateAddress);
-router.delete("/delete", deleteAddress);
+router.post("/add/user", authMiddleware, addAddress);
+router.get("/user", authMiddleware, getAddress);
+router.put("/update", authMiddleware, updateAddress);
+router.delete("/delete", authMiddleware, deleteAddress);
 
 module.exports = router;

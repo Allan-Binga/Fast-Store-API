@@ -17,7 +17,7 @@ const addAddress = async (req, res) => {
     } = req.body;
 
     // Get the authenticated user's ID
-    const userId = req.cookies.storeSession;
+    const userId = req.userId;
 
     if (!userId) {
       return res.status(400).json({ error: "Please login to add an address." });
@@ -84,7 +84,7 @@ const getAddress = async (req, res) => {
 // UPDATE ADDRESS
 const updateAddress = async (req, res) => {
   try {
-    const userId = req.cookies.storeSession; // Get authenticated user's ID
+    const userId = req.userId; // Get authenticated user's ID
 
     if (!userId) {
       return res
@@ -166,7 +166,7 @@ const updateAddress = async (req, res) => {
 //DELETE ADDRESS
 const deleteAddress = async (req, res) => {
     try {
-      const userId = req.cookies.storeSession; // Get authenticated user's ID
+      const userId = req.userId; // Get authenticated user's ID
   
       if (!userId) {
         return res.status(400).json({ error: "Please login to delete an address." });

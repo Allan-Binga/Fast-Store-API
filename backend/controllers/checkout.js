@@ -6,7 +6,7 @@ dotenv.config();
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 const createCheckoutSession = async (req, res) => {
-  const userId = req.cookies.storeSession;
+  const userId = req.userId;
 
   try {
     const { items } = req.body;
@@ -15,7 +15,10 @@ const createCheckoutSession = async (req, res) => {
     const newOrder = new Order({
       user: userId,
       items: items,
-      totalAmount: items.reduce((sum, item) => sum + item.price * item.quantity, 0),
+      totalAmount: items.reduce(
+        (sum, item) => sum + item.price * item.quantity,
+        0
+      ),
       currency: "usd",
       paymentStatus: "pending",
     });
