@@ -158,58 +158,37 @@ const sendOrderConfirmationEmail = async (email, order) => {
 };
 
 // Password Reset Email
-const sendPasswordResetEmail = async (email) => {
-  try {
-    const user = await User.findOne({ email });
+const sendPasswordResetEmail = async (email, token) => {
+  const resetUrl = `${process.env.CLIENT_URL}/reset-password?token=${token}`;
 
-    if (!user) {
-      console.error("❌ Error: User not found");
-      throw new Error("No user found with this email.");
-    }
-
-    // Check if a reset token already exists and is still valid
-    if (user.passwordResetToken && user.passwordResetTokenExpiry > Date.now()) {
-      throw new Error("Password reset email already sent.");
-    }
-
-    // Generate reset token
-    const resetToken = crypto.randomBytes(32).toString("hex");
-    user.passwordResetToken = resetToken;
-    user.passwordResetTokenExpiry = Date.now() + 2 * 60 * 1000; // Token valid for 2 mins
-
-    await user.save();
-
-    // Reset link
-    const resetUrl = `${process.env.CLIENT_URL}/password/reset?token=${resetToken}`;
-
-    // Email options
-    const mailOptions = {
-      from: `"FastStore API" <${process.env.MAIL_USER}>`,
-      to: email,
-      subject: "Password Reset Request",
-      html: `<div style="font-family: Arial, sans-serif; text-align: center; padding: 20px; background-color: #f4f4f4;">
+  const mailOptions = {
+    from: `"FastStore API" <${process.env.MAIL_USER}>`,
+    to: email,
+    subject: "Password Reset Request",
+    html: `
+      <div style="font-family: Arial, sans-serif; text-align: center; padding: 20px; background-color: #f4f4f4;">
         <div style="max-width: 600px; margin: auto; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
-          <h2 style="color: #ff9800;">Password Reset Request</h2>
+          <h2 style="color: #333;">Password Reset Request</h2>
           <p style="color: #555;">Click the button below to reset your password.</p>
           <a href="${resetUrl}" 
-            style="display: inline-block; padding: 10px 20px; margin-top: 15px; background-color: #2582b8; color: #fff; text-decoration: none; border-radius: 5px;">
-            Reset My Password
+            style="display: inline-block; padding: 10px 20px; margin-top: 15px; background-color: #ff9800; color: #fff; text-decoration: none; border-radius: 5px;">
+            Reset Password
           </a>
-          <p style="margin-top: 20px; color: #777;">If you did not request a password reset, you can ignore this email.</p>
+          <p style="margin-top: 20px; color: #777;">If you did not request this, ignore this email.</p>
         </div>
       </div>`,
-    };
+  };
 
-    // Send email
+  try {
     await transporter.sendMail(mailOptions);
-    console.log(`📧 Password reset email sent to ${email}`);
+    console.log(`Password reset email sent to ${email}`);
   } catch (error) {
-    console.error(`❌ Error sending password reset email:`, error);
+    console.error(`Error sending password reset email:`, error);
     throw error;
   }
 };
 
-//Function to verify the user
+//Function to verify the user &  verification token
 const verifyUser = async (req, res) => {
   try {
     const { token } = req.query;
@@ -225,7 +204,8 @@ const verifyUser = async (req, res) => {
     //Check if the token has expired
     if (user.verificationTokenExpiry < Date.now()) {
       return res.status(400).json({
-        message: "Token expired. Please request a new verification email.",
+        message:
+          "Token expired. Please request a new verification email.",
         // email: user.email
       });
     }
@@ -241,6 +221,43 @@ const verifyUser = async (req, res) => {
     res.json({ message: "Account verified successfully." });
   } catch (error) {
     res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+//Function thaty verifies the reset-password email token.
+const verifyPasswordResetToken = async (req, res) => {
+  try {
+    const { token } = req.query;
+
+    if (!token) {
+      return res.status(400).json({ message: "Token is required." });
+    }
+
+    // Hash the token to compare it with the stored hashed token
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+
+    const user = await User.findOne({
+      passwordResetToken: hashedToken,
+    });
+
+    if (!user) {
+      return res.status(400).json({ message: "Invalid or expired token." });
+    }
+
+    //Check if the token has expired
+    if (user.passwordResetTokenExpiry < Date.now()) {
+      return res
+        .status(400)
+        .json({
+          message:
+            "Password reset token expired. Please request a new verification email.",
+        });
+    }
+
+    res.json({ message: "Token is valid.", email: user.email });
+  } catch (error) {
+    console.error("Error verifying password reset token:", error);
+    res.status(500).json({ message: "Internal server error." });
   }
 };
 

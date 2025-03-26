@@ -1,6 +1,7 @@
 const { sendPasswordResetEmail } = require("./emailService");
 const User = require("../models/users");
-const bcrypt = require("bcrypt")
+const bcrypt = require("bcrypt");
+const crypto = require("crypto")
 
 //Reset Password
 const resetPasswordEmail = async (req, res) => {
@@ -10,12 +11,28 @@ const resetPasswordEmail = async (req, res) => {
     if (!email) {
       return res.status(400).json({ message: "Email is required." });
     }
-    try {
-      await sendPasswordResetEmail(email);
-      return res.json({ message: "Password reset email sent successfully." });
-    } catch (error) {
-      return res.status(400).json({ message: error.message });
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
     }
+
+    // Generate a password reset token
+    const plainToken = crypto.randomBytes(32).toString("hex");
+    const hashedToken = crypto
+      .createHash("sha256")
+      .update(plainToken)
+      .digest("hex");
+
+    user.passwordResetToken = hashedToken;
+    user.passwordResetTokenExpiry = Date.now() + 2 * 60 * 1000; // 10 mins expiry
+
+    await user.save();
+
+    // Send email with the plain token (not hashed)
+    await sendPasswordResetEmail(user.email, plainToken);
+
+    return res.json({ message: "Password reset email sent successfully." });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Internal server error." });
