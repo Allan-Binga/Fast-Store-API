@@ -27,6 +27,19 @@ services:
     depends_on:
       - backend
 
+  frontend2:
+    build:
+      context: ./client2
+      dockerfile: Dockerfile
+    image: client2storeapi:v1.0.0
+    container_name: storeapi-client2
+    ports:
+      - "3100:3100"
+    networks:
+      - app-network
+    depends_on:
+      - backend
+
   # mongo:
   #   image: mongo:latest
   #   container_name: mongo

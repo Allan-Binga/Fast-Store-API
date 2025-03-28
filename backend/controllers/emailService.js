@@ -204,8 +204,7 @@ const verifyUser = async (req, res) => {
     //Check if the token has expired
     if (user.verificationTokenExpiry < Date.now()) {
       return res.status(400).json({
-        message:
-          "Token expired. Please request a new verification email.",
+        message: "Token expired. Please request a new verification email.",
         // email: user.email
       });
     }
@@ -246,12 +245,10 @@ const verifyPasswordResetToken = async (req, res) => {
 
     //Check if the token has expired
     if (user.passwordResetTokenExpiry < Date.now()) {
-      return res
-        .status(400)
-        .json({
-          message:
-            "Password reset token expired. Please request a new verification email.",
-        });
+      return res.status(400).json({
+        message:
+          "Password reset token expired. Please request a new verification email.",
+      });
     }
 
     res.json({ message: "Token is valid.", email: user.email });
@@ -268,4 +265,5 @@ module.exports = {
   sendOrderConfirmationEmail,
   verifyUser,
   sendPasswordResetEmail,
+  verifyPasswordResetToken,
 };
