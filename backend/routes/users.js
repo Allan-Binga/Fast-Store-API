@@ -4,7 +4,7 @@ const {
   getUsers,
   updatedUser,
 } = require("../controllers/users.js");
-const{ authMiddleware} = require("../middleware/jwt.js");
+const{ authMiddleware} = require("../middleware/jwt.js"); //middleware
 
 const router = express.Router();
 

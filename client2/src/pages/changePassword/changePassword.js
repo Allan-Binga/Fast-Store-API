@@ -13,7 +13,7 @@ const ChangePassword = () => {
 
   useEffect(() => {
     if (!token) {
-      console.log("TOken required boss!")
+      console.log("Token required boss!")
     }
   })
 

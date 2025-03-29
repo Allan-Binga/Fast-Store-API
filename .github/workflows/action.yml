@@ -20,14 +20,15 @@ jobs:
           cd backend
           docker build -t allanbinga/backendstoreapi:v1.0.0 .
           docker push allanbinga/backendstoreapi:v1.0.0
-
+ #image 1
       - name: Build and push client image.
         run: |
           cd client
           docker build -t allanbinga/clientstoreapi:v1.0.0 .
           docker push allanbinga/clientstoreapi:v1.0.0
 
-      - name: Build and push client2 image.
+      #image 2
+      - name: Build and push client2 image. 
         run: |
           cd client2
           docker build -t allanbinga/client2storeapi:v1.0.0 .
