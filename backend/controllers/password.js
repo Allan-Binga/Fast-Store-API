@@ -25,7 +25,7 @@ const resetPasswordEmail = async (req, res) => {
       .digest("hex");
 
     user.passwordResetToken = hashedToken;
-    user.passwordResetTokenExpiry = Date.now() + 2 * 60 * 1000; // 10 mins expiry
+    user.passwordResetTokenExpiry = Date.now() + 2 * 60 * 1000; // 2 mins expiry
 
     await user.save();
 

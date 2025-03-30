@@ -18,22 +18,19 @@ const PasswordReset = () => {
     setLoading(true);
     try {
       const response = await axios.post(
-        `${backendAPI}/api/verify/reset-password`,
+        `${backendAPI}/api/password/send/email`,
         {
           email, // Send email to backend
         }
       );
 
-      toast.success(
-        response.data.message || "Password reset email sent.",
-        {
-          position: "top-right",
-          autoClose: 3000,
-          transition: Slide,
-          theme: "light",
-          pauseOnHover: true,
-        }
-      );
+      toast.success(response.data.message || "Password reset email sent.", {
+        position: "top-right",
+        autoClose: 3000,
+        transition: Slide,
+        theme: "light",
+        pauseOnHover: true,
+      });
       // toast.onChange((payload) => {
       //   if (payload.status === "removed" && payload.id === toastId) {
       //     navigate("/login");
