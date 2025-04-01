@@ -67,11 +67,12 @@ const AccountVerification = () => {
   }, [token]);
 
   const resendVerificationEmail = async () => {
+    setLoading(true);
     if (!email) return;
 
     try {
       const response = await axios.post(
-        `${backendAPI}/api/verify/resend-verification`,
+        `${backendAPI}/api/verify/resend/account/verification`,
         { email }
       );
       setMessage(
@@ -82,6 +83,8 @@ const AccountVerification = () => {
     } catch (error) {
       setMessage("Failed to resend verification email. Please try again.");
       setStatus("error");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -112,7 +115,7 @@ const AccountVerification = () => {
                 placeholder="Enter your email"
                 value={email || ""}
                 onChange={(e) => setEmail(e.target.value)}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className="imt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm text-center focus:outline-none focus:ring-2 focus:ring-blue-400"
               />
               <button
                 onClick={resendVerificationEmail}

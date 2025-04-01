@@ -51,7 +51,7 @@ const Signup = () => {
       await registerUser(formData);
 
       const toastId = toast.success(
-        "Registration successful! Check your email.",
+        "Registration successful. Please check your email for a verification link.",
         {
           position: "top-right",
           autoClose: 3000,
