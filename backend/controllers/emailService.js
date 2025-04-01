@@ -159,7 +159,7 @@ const sendOrderConfirmationEmail = async (email, order) => {
 
 // Password Reset Email
 const sendPasswordResetEmail = async (email, token) => {
-  const resetUrl = `${process.env.CLIENT_URL}/reset-password?token=${token}`;
+  const resetUrl = `${process.env.CLIENT_URL}/password/reset?token=${token}`;
 
   const mailOptions = {
     from: `"FastStore API" <${process.env.MAIL_USER}>`,
@@ -192,34 +192,72 @@ const sendPasswordResetEmail = async (email, token) => {
 const verifyUser = async (req, res) => {
   try {
     const { token } = req.query;
+    console.log(token);
 
     // Hash the incoming token before searching
     const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
 
     const user = await User.findOne({ verificationToken: hashedToken });
+    console.log(user);
 
-    if (!user)
+    if (!user) {
       return res.status(400).json({ message: "Invalid or expired token" });
+    }
 
-    //Check if the token has expired
+    // Check if the token has expired
     if (user.verificationTokenExpiry < Date.now()) {
       return res.status(400).json({
         message: "Token expired. Please request a new verification email.",
-        // email: user.email
+        email: user.email,
       });
     }
 
     user.isVerified = true;
-    // user.verificationToken = undefined; // // Remove token after verification
-    user.verificationTokenExpiry = undefined;
+    // user.verificationToken = undefined; // Remove token after verification
+    // user.verificationTokenExpiry = undefined;
     await user.save();
 
-    //Send Thank you email
+    // Send Thank You email
     await sendAccountConfirmationEmail(user.email);
 
     res.json({ message: "Account verified successfully." });
   } catch (error) {
+    console.error("Error verifying user:", error);
     res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+//Resend the password reset email
+const resendPasswordResetEmail = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Generate a new token and expiration time
+    const plainToken = crypto.randomBytes(32).toString("hex");
+    user.passwordResetToken = crypto
+      .createHash("sha256")
+      .update(plainToken)
+      .digest("hex");
+
+    user.passwordResetTokenExpiry = Date.now() + 2 * 60 * 1000;
+    console.log("New token generated:", user.passwordResetToken);
+
+    await user.save();
+    await sendPasswordResetEmail(user.email, user.passwordResetToken);
+
+    res.json({ message: "New password reset email sent." });
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error." });
   }
 };
 
@@ -247,7 +285,7 @@ const verifyPasswordResetToken = async (req, res) => {
     if (user.passwordResetTokenExpiry < Date.now()) {
       return res.status(400).json({
         message:
-          "Password reset token expired. Please request a new verification email.",
+          "Password reset token expired. Please request a new password reset email.",
       });
     }
 
@@ -264,6 +302,7 @@ module.exports = {
   resendVerificationEmail,
   sendOrderConfirmationEmail,
   verifyUser,
+  resendPasswordResetEmail,
   sendPasswordResetEmail,
   verifyPasswordResetToken,
 };

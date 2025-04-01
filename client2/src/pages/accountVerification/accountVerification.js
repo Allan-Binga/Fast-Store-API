@@ -13,6 +13,7 @@ const AccountVerification = () => {
   const [email, setEmail] = useState(null);
   const [showResend, setShowResend] = useState(false);
   const [searchParams] = useSearchParams();
+  const [loading, setLoading] = useState(false);
   const token = searchParams.get("token");
 
   useEffect(() => {
@@ -22,7 +23,15 @@ const AccountVerification = () => {
       return;
     }
 
+    // Check if this token has already been verified
+    if (localStorage.getItem(`verified_${token}`)) {
+      setMessage("Account has already been verified! You can now log in.");
+      setStatus("success");
+      return;
+    }
+
     const verifyUser = async () => {
+      setLoading(true);
       try {
         const response = await axios.get(
           `${backendAPI}/api/verify?token=${token}`
@@ -31,6 +40,9 @@ const AccountVerification = () => {
         if (response.status === 200) {
           setMessage("Account verified successfully! You can now log in.");
           setStatus("success");
+
+          // Store token in localStorage to prevent re-verification
+          localStorage.setItem(`verified_${token}`, "true");
         } else {
           setMessage(response.data.message || "Verification failed.");
           setStatus("error");
@@ -44,8 +56,10 @@ const AccountVerification = () => {
 
         if (errorMessage.includes("Token expired")) {
           setShowResend(true);
-          setEmail(error.response?.data?.email || null); // Assuming backend sends the user's email
+          setEmail(error.response?.data?.email || null);
         }
+      } finally {
+        setLoading(false);
       }
     };
 

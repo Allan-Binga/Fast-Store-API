@@ -39,7 +39,7 @@ const resetPasswordEmail = async (req, res) => {
   }
 };
 
-//RESET PASSWORD
+//RESET/CHANGE PASSWORD
 const resetPassword = async (req, res) => {
   try {
     const userId = req.userId;
