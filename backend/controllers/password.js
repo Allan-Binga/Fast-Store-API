@@ -1,7 +1,7 @@
 const { sendPasswordResetEmail } = require("./emailService");
 const User = require("../models/users");
 const bcrypt = require("bcrypt");
-const crypto = require("crypto")
+const crypto = require("crypto");
 
 //Reset Password
 const resetPasswordEmail = async (req, res) => {
@@ -42,26 +42,25 @@ const resetPasswordEmail = async (req, res) => {
 //RESET/CHANGE PASSWORD
 const resetPassword = async (req, res) => {
   try {
-    const userId = req.userId;
-
-    // CHECK IF THE USER IS LOGGED IN
-    if (!userId) {
-      return res
-        .status(401)
-        .json({ error: "Please log in to update your password." });
-    }
-
-    const { currentPassword, newPassword } = req.body;
+    const { currentPassword, newPassword, confirmPassword } = req.body;
 
     // VALIDATE INPUT FIELDS
-    if (!currentPassword || !newPassword) {
+    if (!currentPassword || !newPassword || !confirmPassword) {
       return res.status(400).json({
-        message: "Both current and new password fields are required!",
+        message:
+          "Current password, new password, and confirm password are required!",
+      });
+    }
+
+    // ENSURE NEW PASSWORD AND CONFIRM PASSWORD MATCH
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({
+        message: "New password and confirm password do not match.",
       });
     }
 
     // FETCH USER FROM DATABASE
-    const user = await User.findOne({ _id: userId });
+    const user = await User.findOne({ _id: req.userId });
     if (!user) {
       return res.status(404).json({ message: "User not found." });
     }
