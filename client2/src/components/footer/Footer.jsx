@@ -6,6 +6,7 @@ import { IoSendOutline } from "react-icons/io5";
 import AppStore from "./appstore.png";
 import GooglePlay from "./playstore.png";
 import QrCode from "./qrcode.png";
+import { Link } from "react-router-dom";
 
 const Footer = () => {
   return (
@@ -38,19 +39,19 @@ const Footer = () => {
 
         <div className="footer-section account">
           <h3 className="section-title">Account</h3>
-          <p>My Account</p>
-          <p>Login / Register</p>
-          <p>Cart</p>
-          <p>Wishlist</p>
+          <Link to="/signup">Register</Link>
+          <Link to="/login">Login</Link>
+          <Link to="/cart">Cart</Link>
+          <Link to="/wishlist">Wishlist</Link>
           <p>Shop</p>
         </div>
 
         <div className="footer-section quick-link">
           <h3 className="section-title">Quick Links</h3>
-          <p>Privacy Policy</p>
-          <p>Terms Of Use</p>
-          <p>FAQ</p>
-          <p>Contact</p>
+          <Link to="/privacy-policy">Privacy Policy</Link>
+          <Link to="/terms-of-use">Terms Of Use</Link>
+          <Link to="/faq">FAQs</Link>
+          <Link to="/contact"></Link>
         </div>
 
         <div className="footer-section download-app">
@@ -73,7 +74,7 @@ const Footer = () => {
       </div>
       <div className="footer-bottom">
         <FaRegCopyright className="copyright-icon" />
-        <p className="copyright-text">Fast Store 2025. All right reserved.</p>
+        <p className="copyright-text">© 2025 FastStore. All Rights Reserved.</p>
       </div>
     </footer>
   );

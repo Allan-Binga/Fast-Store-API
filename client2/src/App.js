@@ -16,6 +16,10 @@ import CategoryProducts from "./pages/categoryProducts/categoryProducts";
 // import RegistrationSuccess from "./pages/verifyEmail/verifyEmail";
 import AccountVerification from "./pages/accountVerification/accountVerification";
 import ChangePassword from "./pages/changePassword/changePassword";
+import Terms from "./pages/termsOfUse/terms";
+import Contact from "./pages/contact/contact";
+import Policy from "./pages/privacyPolicy/policy";
+import Faq from "./pages/faq/faq";
 
 const App = () => {
   return (
@@ -34,8 +38,12 @@ const App = () => {
         <Route path="/success" element={<Success />} />
         <Route path="/orders" element={<Orders />} />
         <Route path="/password-reset" element={<PasswordReset />} />
-        <Route path="/account-verification" element={<AccountVerification/>} />
-        <Route path="/password/reset" element={<ChangePassword/>}/>
+        <Route path="/account-verification" element={<AccountVerification />} />
+        <Route path="/password/reset" element={<ChangePassword />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/faq" element={<Faq />} />
+        <Route path="/policy" element={<Policy />} />
       </Routes>
     </Router>
   );
