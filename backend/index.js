@@ -14,6 +14,7 @@ const categoryRoute = require("./routes/category.js");
 const mailRoute = require("./routes/emailService.js");
 const phoneRoute = require("./routes/phoneService.js");
 const passwordRoute = require("./routes/password.js");
+const promoRoute = require("./routes/promo.js")
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const cors = require("cors");
@@ -62,6 +63,9 @@ app.use("/api/categories", categoryRoute);
 
 //Flashsale Route
 app.use("/api/flashsale", flashSaleRoute);
+
+//Promo Route
+app.use("/api/promo", promoRoute)
 
 //Brand Route
 app.use("/api/brands", brandRoute);

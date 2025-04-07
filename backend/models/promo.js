@@ -16,8 +16,8 @@ const PromoSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
-    startTime: Date,
-    endTime: Date,
+    // startTime: Date,
+    // endTime: Date,
     priority: {
       type: Number,
       default: 0, // To control order in frontend
