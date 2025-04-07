@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { FaArrowRight } from "react-icons/fa";
 import HeroEnd from "./hero-end.png";
-import HeroEnd2 from "./heroend2.png";
+import HeroEnd2 from "./hero-end4.jpg";
 import AppleLogo from "./apple-logo.png";
 import Line5 from "./line5.png";
 // import Line2 from "./line2.png";
@@ -93,8 +93,8 @@ const SideBarAndPromo = () => {
       {/* <div className="w-px h-96 bg- mx-8">
         <img alt="line2" className="fixed w-px h-96 top-0 left-0" src={Line2} />
       </div> */}
-      <div className="w-[1000px] h-[400px] bg-black p-4 flex flex-col items-center justify-center ml-auto mr-[500px]">
-        <div className="relative w-full h-[344px] bg-black rounded-lg overflow-hidden">
+      <div className="w-[1000px] h-[400px] bg-slate-900 p-4 flex flex-col items-center justify-center ml-auto mr-[500px]">
+        <div className="relative w-full h-[344px] bg-slate-900 rounded-lg overflow-hidden">
           <div className="absolute inset-0">
             <img
               className="absolute w-[539px] h-[328px] right-0 bottom-0 object-cover"
@@ -118,7 +118,7 @@ const SideBarAndPromo = () => {
           </div>
           <div className="inline-flex items-center gap-2 absolute top-[253px] left-[3px]">
             <div className="inline-flex flex-col items-start gap-1 relative flex-[0_0_auto]">
-              <div className="relative w-fit mt-[-1px] font-medium text-black text-[16px] text-center tracking-[0.02em] leading-[1.5] whitespace-nowrap">
+              <div className="relative w-fit mt-[-1px] font-medium text-white text-[16px] text-center tracking-[0.02em] leading-[1.5] whitespace-nowrap">
                 Shop Now
               </div>
               <img
