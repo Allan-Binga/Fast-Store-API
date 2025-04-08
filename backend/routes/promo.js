@@ -1,8 +1,9 @@
 const express = require("express");
-const {getAllPromos }= require("../controllers/promo");
+const {getPromos, addProductToPromo }= require("../controllers/promo");
 
 const router = express.Router();
 
-router.get("/", getAllPromos);
+router.get("/", getPromos);
+router.post("/add", addProductToPromo)
 
 module.exports = router;

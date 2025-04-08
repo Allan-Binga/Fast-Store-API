@@ -70,7 +70,7 @@ const addNewProduct = async (req, res) => {
     }
 
     //Validate if product exists in the DB
-    const existingProduct = await Product.findOne({name})
+    const existingProduct = await Product.findOne({ name });
 
     if (existingProduct) {
       return res.status(400).json({

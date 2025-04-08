@@ -2,8 +2,13 @@ import React, { useState, useEffect } from "react";
 import { CiCamera, CiHeadphones } from "react-icons/ci";
 import { GiSmartphone } from "react-icons/gi";
 import { HiOutlineComputerDesktop } from "react-icons/hi2";
-import { GiLargeDress, GiBookshelf, GiConverseShoe } from "react-icons/gi";
-import { FaArrowRight, FaArrowLeft } from "react-icons/fa";
+import {
+  GiLargeDress,
+  GiBookshelf,
+  GiConverseShoe,
+  GiClothes,
+} from "react-icons/gi";
+import { FaArrowRight, FaArrowLeft, FaRegKeyboard } from "react-icons/fa";
 import { PiShirtFolded } from "react-icons/pi";
 import { IoFastFoodOutline, IoGameControllerOutline } from "react-icons/io5";
 import { GiNecklaceDisplay } from "react-icons/gi";
@@ -16,10 +21,10 @@ import axios from "axios";
 
 const CATEGORIES_ALLOWED = 4; // Number of categories visible at a time
 const categoryIcons = {
-  Accessories: <MdShapeLine size={64}/>,
-  Electronics: <MdDevices size={64}/>,
+  Accessories: <MdShapeLine size={64} />,
+  Electronics: <MdDevices size={64} />,
   Computers: <HiOutlineComputerDesktop size={64} />,
-  Laptops: <MdLaptopMac size={64}/>,
+  Laptops: <MdLaptopMac size={64} />,
   Smartphones: <GiSmartphone size={64} />,
   Headphones: <CiHeadphones size={64} />,
   Cameras: <CiCamera size={64} />,
@@ -30,13 +35,14 @@ const categoryIcons = {
   "Gaming Consoles": <IoGameControllerOutline size={64} />,
   Books: <GiBookshelf size={64} />,
   Sneakers: <GiConverseShoe size={64} />,
+  Keyboards: <FaRegKeyboard size={64} />,
+  Fashion: <GiClothes size={64} />,
 };
 
 const Categories = () => {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const [categories, setCategories] = useState([]);
   const [startIndex, setStartIndex] = React.useState(0);
- 
 
   //Fetch categories
   useEffect(() => {
@@ -53,9 +59,9 @@ const Categories = () => {
 
   //Category click
   const categoryClick = (category) => {
-    const formattedCategory = encodeURIComponent(category.toLowerCase())
-    navigate(`/categories/${formattedCategory}`)
-  }
+    const formattedCategory = encodeURIComponent(category.toLowerCase());
+    navigate(`/categories/${formattedCategory}`);
+  };
 
   // Calculate visible categories
   const visibleCategories = categories.slice(

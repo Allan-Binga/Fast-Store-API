@@ -14,11 +14,12 @@ const categoryRoute = require("./routes/category.js");
 const mailRoute = require("./routes/emailService.js");
 const phoneRoute = require("./routes/phoneService.js");
 const passwordRoute = require("./routes/password.js");
-const promoRoute = require("./routes/promo.js")
+const promoRoute = require("./routes/promo.js");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
+// const path = require("path")
 
 dotenv.config();
 const app = express();
@@ -38,6 +39,9 @@ app.use(
     credentials: true,
   })
 );
+
+// Serve static files from the "imageUploads" directory
+// app.use("/imageUploads", express.static(path.join(__dirname, "imageUploads")));
 
 async function main() {
   await mongoose.connect(process.env.MONGO_URI);
@@ -65,7 +69,7 @@ app.use("/api/categories", categoryRoute);
 app.use("/api/flashsale", flashSaleRoute);
 
 //Promo Route
-app.use("/api/promo", promoRoute)
+app.use("/api/promo", promoRoute);
 
 //Brand Route
 app.use("/api/brands", brandRoute);
