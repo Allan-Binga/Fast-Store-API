@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { PiShoppingCartThin } from "react-icons/pi";
 import { CiSearch, CiHeart } from "react-icons/ci";
 import { VscAccount } from "react-icons/vsc";
@@ -14,6 +14,7 @@ const Header = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Wishlist useEffect
   useEffect(() => {
@@ -81,37 +82,61 @@ const Header = () => {
 
         <nav className="flex gap-7">
           <span
-            className="text-base text-black cursor-pointer hover:font-bold hover:border-b-2 hover:border-black"
+            className={`text-base text-black cursor-pointer hover:font-bold hover:border-b-2 hover:border-black ${
+              location.pathname === "/"
+                ? "font-bold border-b-2 border-black"
+                : ""
+            }`}
             onClick={() => navigate("/")}
           >
             Home
           </span>
           <span
-            className="text-base text-black cursor-pointer hover:font-bold hover:border-b-2 hover:border-black"
+            className={`text-base text-black cursor-pointer hover:font-bold hover:border-b-2 hover:border-black ${
+              location.pathname === "/contact"
+                ? "font-bold border-b-2 border-black"
+                : ""
+            }`}
             onClick={() => navigate("/contact")}
           >
             Contact
           </span>
           <span
-            className="text-base text-black cursor-pointer hover:font-bold hover:border-b-2 hover:border-black"
+            className={`text-base text-black cursor-pointer hover:font-bold hover:border-b-2 hover:border-black ${
+              location.pathname === "/about"
+                ? "font-bold border-b-2 border-black"
+                : ""
+            }`}
             onClick={() => navigate("/about")}
           >
             About
           </span>
           <span
-            className="text-base text-black cursor-pointer hover:font-bold hover:border-b-2 hover:border-black"
+            className={`text-base text-black cursor-pointer hover:font-bold hover:border-b-2 hover:border-black ${
+              location.pathname === "/orders"
+                ? "font-bold border-b-2 border-black"
+                : ""
+            }`}
             onClick={() => navigate("/orders")}
           >
             Orders
           </span>
           <span
-            className="text-base text-black cursor-pointer hover:font-bold hover:border-b-2 hover:border-black"
+            className={`text-base text-black cursor-pointer hover:font-bold hover:border-b-2 hover:border-black ${
+              location.pathname === "/signup"
+                ? "font-bold border-b-2 border-black"
+                : ""
+            }`}
             onClick={() => navigate("/signup")}
           >
             Sign Up
           </span>
           <span
-            className="text-base text-black cursor-pointer hover:font-bold hover:border-b-2 hover:border-black"
+            className={`text-base text-black cursor-pointer hover:font-bold hover:border-b-2 hover:border-black ${
+              location.pathname === "/login"
+                ? "font-bold border-b-2 border-black"
+                : ""
+            }`}
             onClick={() => navigate("/login")}
           >
             Login

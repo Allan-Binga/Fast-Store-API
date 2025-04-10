@@ -9,7 +9,7 @@ import toast from "react-hot-toast";
 const OurProducts = () => {
   const navigate = useNavigate();
   const [products, setProducts] = useState([]);
-  const [visibleProducts, setVisibleProducts] = useState(1);
+  const [visibleProducts, setVisibleProducts] = useState(2); // 8 products
 
   //FETCH OUR PRODUCTS FROM THE BACKEND
   const getProducts = async () => {

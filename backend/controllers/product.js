@@ -134,6 +134,7 @@ const getNewArrivals = async (req, res) => {
 const searchResults = async (req, res) => {
   try {
     const { q } = req.query;
+
     if (!q) {
       return res.status(400).json({ message: "Query parameter is required" });
     }
