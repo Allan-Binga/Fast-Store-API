@@ -1,4 +1,4 @@
-import React, { useState} from "react";
+import React, { useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import TopHeader from "../../components/topHeader/TopHeader";
 import Header from "../../components/header/Header";
@@ -8,7 +8,6 @@ import { backendAPI } from "../../endpoint";
 import { MdCheckCircle, MdErrorOutline } from "react-icons/md";
 
 const ChangePassword = () => {
-  const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [message, setMessage] = useState("");
@@ -25,7 +24,7 @@ const ChangePassword = () => {
       const response = await axios.post(
         `${backendAPI}/api/password/reset/password`,
         userData,
-        { withCredentials: true }
+        // { withCredentials: true }
       );
       setMessage(response.data.message);
       setStatus("success");
@@ -53,10 +52,7 @@ const ChangePassword = () => {
       return;
     }
 
-    resetPassword({
-      currentPassword,
-      newPassword,
-    });
+    resetPassword({ newPassword });
   };
 
   return (
@@ -85,23 +81,6 @@ const ChangePassword = () => {
 
           {/* Password Reset Form */}
           <form className="space-y-4" onSubmit={handleSubmit}>
-            <div>
-              <label
-                htmlFor="currentPassword"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Current Password
-              </label>
-              <input
-                type="password"
-                id="currentPassword"
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-                className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                required
-                disabled={loading}
-              />
-            </div>
             <div>
               <label
                 htmlFor="newPassword"

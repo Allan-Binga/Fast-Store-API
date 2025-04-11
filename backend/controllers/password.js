@@ -42,13 +42,14 @@ const resetPasswordEmail = async (req, res) => {
 //RESET/CHANGE PASSWORD
 const resetPassword = async (req, res) => {
   try {
-    const { currentPassword, newPassword, confirmPassword } = req.body;
+    const { newPassword, confirmPassword } = req.body;
+    console.log(newPassword)
+    console.log(confirmPassword)
 
     // VALIDATE INPUT FIELDS
-    if (!currentPassword || !newPassword || !confirmPassword) {
+    if (!newPassword || !confirmPassword) {
       return res.status(400).json({
-        message:
-          "Current password, new password, and confirm password are required!",
+        message: "All fields are required.",
       });
     }
 
@@ -56,27 +57,6 @@ const resetPassword = async (req, res) => {
     if (newPassword !== confirmPassword) {
       return res.status(400).json({
         message: "New password and confirm password do not match.",
-      });
-    }
-
-    // FETCH USER FROM DATABASE
-    const user = await User.findOne({ _id: req.userId });
-    if (!user) {
-      return res.status(404).json({ message: "User not found." });
-    }
-
-    // VALIDATE OLD PASSWORD
-    const isMatch = await bcrypt.compare(currentPassword, user.password);
-    if (!isMatch) {
-      return res
-        .status(400)
-        .json({ message: "Current password is incorrect." });
-    }
-
-    // ENSURE NEW PASSWORD IS DIFFERENT FROM THE CURRENT PASSWORD
-    if (currentPassword === newPassword) {
-      return res.status(400).json({
-        message: "New password must be different from the current password.",
       });
     }
 
@@ -88,6 +68,12 @@ const resetPassword = async (req, res) => {
         message:
           "Password must be at least 8 characters long, include one uppercase letter, one lowercase letter, one number, and one special character.",
       });
+    }
+
+    // FETCH USER FROM DATABASE
+    const user = await User.findOne({ _id: req.userId });
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
     }
 
     // HASH NEW PASSWORD

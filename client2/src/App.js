@@ -20,7 +20,6 @@ import Terms from "./pages/termsOfUse/terms";
 import Contact from "./pages/contact/contact";
 import Policy from "./pages/privacyPolicy/policy";
 import Faq from "./pages/faq/faq";
-import OtpVerification from "./pages/otp/otpVerification";
 
 const App = () => {
   return (
@@ -45,7 +44,6 @@ const App = () => {
         <Route path="/terms" element={<Terms />} />
         <Route path="/faq" element={<Faq />} />
         <Route path="/policy" element={<Policy />} />
-        <Route path="/otp-verification" element={<OtpVerification />} />
       </Routes>
     </Router>
   );
