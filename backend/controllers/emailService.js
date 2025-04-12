@@ -110,7 +110,7 @@ const resendVerificationEmail = async (req, res) => {
     console.log("✅ User saved with new token");
 
     // Send new verification email
-    await sendVerificationEmail(user.email, user.verificationToken);
+    await sendVerificationEmail(user.email, plainToken);
     console.log("📧 Verification email sent to:", user.email);
 
     res.json({ message: "New verification email sent." });
@@ -188,45 +188,6 @@ const sendPasswordResetEmail = async (email, token) => {
   }
 };
 
-//Function to verify the user &  verification token
-const verifyUser = async (req, res) => {
-  try {
-    const { token } = req.query;
-    console.log(token);
-
-    // Hash the incoming token before searching
-    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
-
-    const user = await User.findOne({ verificationToken: hashedToken });
-    console.log(user);
-
-    if (!user) {
-      return res.status(400).json({ message: "Invalid or expired token" });
-    }
-
-    // Check if the token has expired
-    if (user.verificationTokenExpiry < Date.now()) {
-      return res.status(400).json({
-        message: "Token expired. Please request a new verification email.",
-        email: user.email,
-      });
-    }
-
-    user.isVerified = true;
-    // user.verificationToken = undefined; // Remove token after verification
-    // user.verificationTokenExpiry = undefined;
-    await user.save();
-
-    // Send Thank You email
-    await sendAccountConfirmationEmail(user.email);
-
-    res.json({ message: "Account verified successfully." });
-  } catch (error) {
-    console.error("Error verifying user:", error);
-    res.status(500).json({ message: "Internal server error" });
-  }
-};
-
 //Resend the password reset email
 const resendPasswordResetEmail = async (req, res) => {
   try {
@@ -253,11 +214,51 @@ const resendPasswordResetEmail = async (req, res) => {
     console.log("New token generated:", user.passwordResetToken);
 
     await user.save();
-    await sendPasswordResetEmail(user.email, user.passwordResetToken);
+    await sendPasswordResetEmail(user.email, plainToken);
 
     res.json({ message: "New password reset email sent." });
   } catch (error) {
     res.status(500).json({ message: "Internal server error." });
+  }
+};
+
+//Function to verify the user &  verification token
+const verifyUser = async (req, res) => {
+  try {
+    const { token } = req.query;
+
+    if (!token) {
+      return res.status(400).json({ message: "No token provided" });
+    }
+
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+
+    const user = await User.findOne({ verificationToken: hashedToken });
+
+    if (!user) {
+      return res.status(400).json({ message: "Invalid or expired token" });
+    }
+
+    if (user.verificationTokenExpiry < Date.now()) {
+      return res.status(400).json({
+        message: "Token expired. Please request a new verification email.",
+        email: user.email,
+      });
+    }
+
+    user.isVerified = true;
+
+    // Uncomment this if you want to invalidate the token after use
+    // user.verificationToken = undefined;
+    // user.verificationTokenExpiry = undefined;
+
+    await user.save();
+
+    await sendAccountConfirmationEmail(user.email);
+
+    res.json({ message: "Account verified successfully." });
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 

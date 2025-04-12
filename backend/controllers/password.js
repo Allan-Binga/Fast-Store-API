@@ -39,12 +39,12 @@ const resetPasswordEmail = async (req, res) => {
   }
 };
 
-//RESET/CHANGE PASSWORD
+//RESET/CHANGE PASSWORD (USER LOGGED IN)
 const resetPassword = async (req, res) => {
   try {
     const { newPassword, confirmPassword } = req.body;
-    console.log(newPassword)
-    console.log(confirmPassword)
+    console.log(newPassword);
+    console.log(confirmPassword);
 
     // VALIDATE INPUT FIELDS
     if (!newPassword || !confirmPassword) {
@@ -87,9 +87,7 @@ const resetPassword = async (req, res) => {
     // CLEAR SESSION COOKIE
     res.clearCookie("storeSession");
 
-    res
-      .status(200)
-      .json({ message: "Password updated successfully. Please log in again." });
+    res.status(200).json({ message: "Password updated. Please log in again." });
   } catch (error) {
     console.error("Error updating password:", error);
     res
@@ -98,4 +96,10 @@ const resetPassword = async (req, res) => {
   }
 };
 
-module.exports = { resetPasswordEmail, resetPassword };
+//RESET PASSWORD WITH TOKEN - FORGOT PASSWORD
+const resetPasswordToken = async (req, res) => {
+  try {
+  } catch (error) {}
+};
+
+module.exports = { resetPasswordEmail, resetPasswordToken, resetPassword };
