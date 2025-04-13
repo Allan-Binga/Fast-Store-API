@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { PiShoppingCartThin } from "react-icons/pi";
 import { CiSearch, CiHeart } from "react-icons/ci";
@@ -13,6 +13,7 @@ const Header = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -69,6 +70,27 @@ const Header = () => {
     const debounceTimer = setTimeout(fetchSearchResults, 300);
     return () => clearTimeout(debounceTimer);
   }, [searchQuery]);
+
+  // Handle clicks outside the dropdown
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowDropdown(false);
+      }
+    };
+
+    // Add event listener
+    document.addEventListener("mousedown", handleClickOutside);
+
+    // Cleanup event listener
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const handleAccountClick = () => {
+    setShowDropdown((prev) => !prev); // Toggle dropdown visibility
+  };
 
   return (
     <header className="bg-white border-b border-gray-200 py-2 px-5 font-sans">
@@ -196,10 +218,43 @@ const Header = () => {
             </span>
           </div>
           <div>
-            <VscAccount
-              className="text-3xl text-gray cursor-pointer"
-              onClick={() => navigate("/my-account")}
-            />
+            <div
+              className="relative cursor-pointer"
+              onClick={handleAccountClick}
+              ref={dropdownRef}
+            >
+              <VscAccount className="text-3xl text-gray" />
+              {showDropdown && (
+                <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-gray-200 shadow-md rounded-md">
+                  <ul>
+                    <li
+                      className="py-2 px-4 hover:bg-gray-100 cursor-pointer"
+                      onClick={() => navigate("/my-orders")}
+                    >
+                      My Orders
+                    </li>
+                    <li
+                      className="py-2 px-4 hover:bg-gray-100 cursor-pointer"
+                      onClick={() => navigate("/addresses")}
+                    >
+                      Addresses
+                    </li>
+                    <li
+                      className="py-2 px-4 hover:bg-gray-100 cursor-pointer"
+                      onClick={() => navigate("/addresses")}
+                    >
+                      Account
+                    </li>
+                    <li
+                      className="py-2 px-4 hover:bg-red-300 cursor-pointer"
+                      onClick={() => navigate("/logout")}
+                    >
+                      Logout
+                    </li>
+                  </ul>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
