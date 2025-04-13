@@ -124,6 +124,22 @@ const loginUser = async (req, res) => {
   }
 };
 
+//cHECK IF USER IS LOGGED IN
+const checkLogin = async (req, res) => {
+  try {
+    const token = req.cookies.storeSession;
+    console.log(token)
+    if (!token) {
+      return res.status(401).json({ isLoggedIn: false });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    return res.status(200).json({ isLoggedIn: true, userId: decoded.user });
+  } catch (error) {
+    return res.status(401).json({ isLoggedIn: false });
+  }
+};
+
 //LOGOUT USER
 const logoutUser = async (req, res) => {
   try {
@@ -139,4 +155,4 @@ const logoutUser = async (req, res) => {
   }
 };
 
-module.exports = { registerUser, loginUser, logoutUser };
+module.exports = { registerUser, loginUser, logoutUser, checkLogin };

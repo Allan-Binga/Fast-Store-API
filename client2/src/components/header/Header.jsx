@@ -13,6 +13,7 @@ const Header = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
@@ -88,8 +89,46 @@ const Header = () => {
     };
   }, []);
 
+  //Loggin session useEffect
+  useEffect(() => {
+    const checkLoginStatus = async () => {
+      try {
+        const res = await axios.get(`${backendAPI}/api/auth/check-session`, {
+          withCredentials: true,
+        });
+        setIsLoggedIn(res.data.isLoggedIn);
+      } catch (err) {
+        setIsLoggedIn(false);
+      }
+    };
+
+    checkLoginStatus();
+  }, []);
+
+  //Dropdown menu handling
   const handleAccountClick = () => {
     setShowDropdown((prev) => !prev); // Toggle dropdown visibility
+  };
+
+  //Logout handling
+  const handleLogout = async () => {
+    try {
+      const response = await axios.post(
+        `${backendAPI}/api/auth/logout`,
+        {},
+        { withCredentials: true } // This ensures cookies are sent with the request
+      );
+      if (response.status === 200) {
+        document.cookie = "storeSession=; Max-Age=0; path=/;";
+        toast.success("Successfully logged out.");
+      } else {
+        toast.error("You are not logged in.");
+      }
+      setIsLoggedIn(false);
+    } catch (error) {
+      console.error("Logout error:", error);
+      toast.error("You are not logged in.");
+    }
   };
 
   return (
@@ -143,26 +182,30 @@ const Header = () => {
           >
             Orders
           </span>
-          <span
-            className={`text-base text-black cursor-pointer hover:font-bold hover:border-b-2 hover:border-black ${
-              location.pathname === "/signup"
-                ? "font-bold border-b-2 border-black"
-                : ""
-            }`}
-            onClick={() => navigate("/signup")}
-          >
-            Sign Up
-          </span>
-          <span
-            className={`text-base text-black cursor-pointer hover:font-bold hover:border-b-2 hover:border-black ${
-              location.pathname === "/login"
-                ? "font-bold border-b-2 border-black"
-                : ""
-            }`}
-            onClick={() => navigate("/login")}
-          >
-            Login
-          </span>
+          {!isLoggedIn && (
+            <>
+              <span
+                className={`text-base text-black cursor-pointer hover:font-bold hover:border-b-2 hover:border-black ${
+                  location.pathname === "/signup"
+                    ? "font-bold border-b-2 border-black"
+                    : ""
+                }`}
+                onClick={() => navigate("/signup")}
+              >
+                Sign Up
+              </span>
+              <span
+                className={`text-base text-black cursor-pointer hover:font-bold hover:border-b-2 hover:border-black ${
+                  location.pathname === "/login"
+                    ? "font-bold border-b-2 border-black"
+                    : ""
+                }`}
+                onClick={() => navigate("/login")}
+              >
+                Login
+              </span>
+            </>
+          )}
         </nav>
 
         <div className="flex items-center gap-5 relative">
@@ -247,7 +290,7 @@ const Header = () => {
                     </li>
                     <li
                       className="py-2 px-4 hover:bg-red-300 cursor-pointer"
-                      onClick={() => navigate("/logout")}
+                      onClick={handleLogout}
                     >
                       Logout
                     </li>
