@@ -64,22 +64,26 @@ const ChangePassword = () => {
   };
 
   // Handle password reset submission
-  const resetPassword = async (userData) => {
+  const resetPasswordToken = async () => {
     setLoading(true);
     try {
-      const response = await axios.post(
-        `${backendAPI}/api/password/reset/password`,
-        userData
-        // { withCredentials: true }
+      const response = await axios.put(
+        `${backendAPI}/api/password/reset/password/token`,
+        {
+          token,
+          newPassword,
+          confirmPassword,
+        }
       );
+
       setMessage(response.data.message);
       setStatus("success");
-      // Redirect to login after successful password reset
-      setTimeout(() => navigate("/login"), 2000);
+      // Redirect to login after short delay
+      setTimeout(() => {
+        navigate("/login");
+      }, 2000);
     } catch (error) {
-      setMessage(
-        error.response?.data?.message || "An error occurred. Please try again."
-      );
+      setMessage(error.response?.data?.message || "Failed to reset password.");
       setStatus("error");
     } finally {
       setLoading(false);
@@ -98,7 +102,7 @@ const ChangePassword = () => {
       return;
     }
 
-    resetPassword({ newPassword });
+    resetPasswordToken();
   };
 
   return (

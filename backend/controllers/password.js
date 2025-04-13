@@ -43,8 +43,6 @@ const resetPasswordEmail = async (req, res) => {
 const resetPassword = async (req, res) => {
   try {
     const { newPassword, confirmPassword } = req.body;
-    console.log(newPassword);
-    console.log(confirmPassword);
 
     // VALIDATE INPUT FIELDS
     if (!newPassword || !confirmPassword) {
@@ -56,7 +54,7 @@ const resetPassword = async (req, res) => {
     // ENSURE NEW PASSWORD AND CONFIRM PASSWORD MATCH
     if (newPassword !== confirmPassword) {
       return res.status(400).json({
-        message: "New password and confirm password do not match.",
+        message: "Passwords do not match.",
       });
     }
 
@@ -99,7 +97,64 @@ const resetPassword = async (req, res) => {
 //RESET PASSWORD WITH TOKEN - FORGOT PASSWORD
 const resetPasswordToken = async (req, res) => {
   try {
-  } catch (error) {}
+    const { token, newPassword, confirmPassword } = req.body;
+
+    // VALIDATE REQUIRED FIELDS
+    if (!token || !newPassword || !confirmPassword) {
+      return res.status(400).json({
+        message: "Token, new password, and confirm password are required.",
+      });
+    }
+
+    // ENSURE PASSWORDS MATCH
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({
+        message: "New password and confirm password do not match.",
+      });
+    }
+
+    // VALIDATE PASSWORD STRENGTH
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (!passwordRegex.test(newPassword)) {
+      return res.status(400).json({
+        message:
+          "Password must be at least 8 characters long, include one uppercase letter, one lowercase letter, one number, and one special character.",
+      });
+    }
+
+    // HASH THE TOKEN
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+
+    // FIND USER WITH THIS TOKEN
+    const user = await User.findOne({
+      passwordResetToken: hashedToken,
+      passwordResetTokenExpiry: { $gt: Date.now() }, // Ensure token hasn't expired
+    });
+
+    if (!user) {
+      return res.status(400).json({
+        message: "Invalid or expired token.",
+      });
+    }
+
+    // HASH NEW PASSWORD
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    // UPDATE PASSWORD AND REMOVE RESET FIELDS
+    user.password = hashedPassword;
+    user.passwordResetToken = undefined;
+    user.passwordResetTokenExpiry = undefined;
+    await user.save();
+
+    res.status(200).json({ message: "Password has been reset successfully." });
+  } catch (error) {
+    console.error("Error resetting password with token:", error);
+    res
+      .status(500)
+      .json({ message: "Error resetting password.", error: error.message });
+  }
 };
 
 module.exports = { resetPasswordEmail, resetPasswordToken, resetPassword };
