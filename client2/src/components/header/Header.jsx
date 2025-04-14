@@ -27,6 +27,8 @@ const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  //ookay
+
   // Wishlist useEffect
   useEffect(() => {
     const fetchWishlist = async () => {
