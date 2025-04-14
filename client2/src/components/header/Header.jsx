@@ -360,10 +360,6 @@ const Header = () => {
                       className={`px-4 py-3 border-b border-gray-100 hover:bg-gray-100 cursor-pointer ${
                         note.read ? "text-gray-600" : "font-semibold text-black"
                       }`}
-                      onClick={() => {
-                        // Optional: Mark notification as read, redirect, etc.
-                        console.log("Notification clicked:", note.message);
-                      }}
                     >
                       <p className="text-sm">{note.message}</p>
                       <p className="text-xs text-gray-400">
