@@ -15,6 +15,7 @@ const mailRoute = require("./routes/emailService.js");
 const phoneRoute = require("./routes/phoneService.js");
 const passwordRoute = require("./routes/password.js");
 const promoRoute = require("./routes/promo.js");
+const notificationRoute = require("./routes/notification.js")
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const cors = require("cors");
@@ -94,6 +95,9 @@ app.use("/api/address", addressRoute);
 
 //Password Route
 app.use("/api/password", passwordRoute);
+
+//Notifications
+app.use("/api/notifications", notificationRoute)
 
 app.listen("5500", () => {
   console.log("Backend up and running.");

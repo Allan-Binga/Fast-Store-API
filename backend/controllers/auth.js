@@ -1,4 +1,5 @@
 const User = require("../models/users");
+const Notification = require("../models/notification");
 const bcrypt = require("bcrypt");
 const dotenv = require("dotenv");
 const jwt = require("jsonwebtoken");
@@ -75,6 +76,11 @@ const registerUser = async (req, res) => {
 
     //Send email
     await sendVerificationEmail(email, plainToken);
+    await Notification.create({
+      userId: newUser._id,
+      message: "Thank you for registering.",
+      type: "signup",
+    });
     res.status(201).json({
       message:
         "Registration successful. Please check your email for a verification link.",
