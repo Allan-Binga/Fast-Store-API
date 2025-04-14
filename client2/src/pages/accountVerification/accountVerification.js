@@ -95,18 +95,24 @@ const AccountVerification = () => {
       {/* Main Content */}
       <div className="flex-grow flex items-center justify-center">
         <div className="p-6 bg-white rounded-lg shadow-lg text-center">
-          <h2
-            className={`text-sm font-semibold flex items-center justify-center gap-2 ${
-              status === "success" ? "text-green-600" : "text-orange-500"
-            }`}
-          >
-            {status === "success" ? (
-              <MdCheckCircle className="text-2xl" />
-            ) : (
-              <MdErrorOutline className="text-2xl" />
-            )}
-            {message}
-          </h2>
+          {message && (
+            <div
+              className={`mb-4 p-3 rounded flex items-center gap-2 text-sm ${
+                status === "success"
+                  ? "bg-green-100 text-green-700"
+                  : status === "error"
+                  ? "bg-red-100 text-red-700"
+                  : "bg-yellow-100 text-yellow-700"
+              }`}
+            >
+              {status === "success" ? (
+                <MdCheckCircle className="text-xl" />
+              ) : (
+                <MdErrorOutline className="text-xl" />
+              )}
+              {message}
+            </div>
+          )}
 
           {showResend && (
             <div className="mt-4">
@@ -127,14 +133,7 @@ const AccountVerification = () => {
             </div>
           )}
 
-          {status === "success" && (
-            <a
-              href="/login"
-              className="mt-4 inline-block px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-            >
-              Go to Login
-            </a>
-          )}
+          
         </div>
       </div>
       <Footer />
