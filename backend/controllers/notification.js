@@ -4,7 +4,7 @@ const User = require("../models/users");
 //GET ALL NOTIFICATIONS
 const getNotifications = async (req, res) => {
   try {
-    const userId = req.params.userId;
+    const userId = req.userId;
     console.log(userId)
 
     // Check if user exists
@@ -13,7 +13,7 @@ const getNotifications = async (req, res) => {
       return res.status(404).json({ error: "No user found with this ID." });
     }
 
-    const notifications = await Notification.find({ user: userId }).sort({
+    const notifications = await Notification.find({ userId }).sort({
       createdAt: -1,
     });
 

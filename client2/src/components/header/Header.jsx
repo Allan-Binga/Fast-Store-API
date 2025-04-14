@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { PiShoppingCartThin } from "react-icons/pi";
 import { CiSearch, CiHeart } from "react-icons/ci";
 import { VscAccount } from "react-icons/vsc";
@@ -7,15 +7,23 @@ import { FaRegBell } from "react-icons/fa";
 import { backendAPI } from "../../endpoint";
 import axios from "axios";
 import { toast } from "react-hot-toast";
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
+dayjs.extend(relativeTime);
 
 const Header = () => {
+  const { id } = useParams();
   const [wishlistCount, setWishlistCount] = useState(0);
   const [cartCount, setCartCount] = useState(0);
+  const [notifications, setNotifications] = useState([]);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [notificationCount, setNotificationCount] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const dropdownRef = useRef(null);
+  const notificationDropdownRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -49,6 +57,29 @@ const Header = () => {
     fetchCart();
   }, []);
 
+  //Notification useEffect
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        const response = await axios.get(
+          `${backendAPI}/api/notifications/user`,
+          { withCredentials: true }
+        );
+        if (Array.isArray(response.data)) {
+          setNotifications(response.data);
+          setNotificationCount(response.data.filter((n) => !n.read).length);
+        } else {
+          setNotifications([]);
+          setNotificationCount(0);
+        }
+      } catch (error) {
+        console.error("Failed to fetch notifications", error);
+      }
+    };
+
+    fetchNotifications();
+  }, [id]);
+
   // Search engine useEffect
   useEffect(() => {
     const fetchSearchResults = async () => {
@@ -73,18 +104,25 @@ const Header = () => {
     return () => clearTimeout(debounceTimer);
   }, [searchQuery]);
 
-  // Handle clicks outside the dropdown
+  // Handle clicks outside the notification and profile dropdowns.
   useEffect(() => {
     const handleClickOutside = (event) => {
+      //Profile Icon
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setShowDropdown(false);
       }
+
+      //Notification Bell
+      if (
+        notificationDropdownRef.current &&
+        !notificationDropdownRef.current.contains(event.target)
+      ) {
+        setShowNotifications(false);
+      }
     };
 
-    // Add event listener
     document.addEventListener("mousedown", handleClickOutside);
 
-    // Cleanup event listener
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
@@ -300,8 +338,44 @@ const Header = () => {
               )}
             </div>
           </div>
-          <div className="relative cursor-pointer">
-            <FaRegBell />
+          <div
+            className="relative cursor-pointer"
+            onClick={() => setShowNotifications((prev) => !prev)}
+            ref={notificationDropdownRef}
+          >
+            <FaRegBell className="text-2xl text-black" />
+            {notificationCount > 0 && (
+              <span className="absolute -top-2 -right-2 bg-blue-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                {notificationCount}
+              </span>
+            )}
+            {showNotifications && (
+              <div className="absolute right-0 top-full mt-2 w-80 bg-white border border-gray-200 shadow-lg rounded-md z-20 max-h-80 overflow-y-auto">
+                {notifications.length > 0 ? (
+                  notifications.map((note) => (
+                    <div
+                      key={note._id}
+                      className={`px-4 py-3 border-b border-gray-100 hover:bg-gray-100 cursor-pointer ${
+                        note.read ? "text-gray-600" : "font-semibold text-black"
+                      }`}
+                      onClick={() => {
+                        // Optional: Mark notification as read, redirect, etc.
+                        console.log("Notification clicked:", note.message);
+                      }}
+                    >
+                      <p className="text-sm">{note.message}</p>
+                      <p className="text-xs text-gray-400">
+                        {dayjs(note.createdAt).fromNow()}
+                      </p>
+                    </div>
+                  ))
+                ) : (
+                  <div className="px-4 py-3 text-gray-500 text-sm">
+                    No notifications
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>

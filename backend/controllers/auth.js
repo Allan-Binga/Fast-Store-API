@@ -124,6 +124,13 @@ const loginUser = async (req, res) => {
       secure: true,
       path: "/",
     });
+
+    await Notification.create({
+      userId: user._id,
+      message: `${user.firstName}, you have successfully logged in.`,
+      type: "login",
+    });
+
     res.status(200).json("Login successful.");
   } catch (error) {
     res.status(500).json({ error: "Error logging in." });
