@@ -128,7 +128,6 @@ const loginUser = async (req, res) => {
 const checkLogin = async (req, res) => {
   try {
     const token = req.cookies.storeSession;
-    console.log(token)
     if (!token) {
       return res.status(401).json({ isLoggedIn: false });
     }

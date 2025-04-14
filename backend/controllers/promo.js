@@ -27,7 +27,7 @@ const addProductToPromo = async (req, res) => {
     if (!productId || !type) {
       return res
         .status(400)
-        .json({ error: "Product ID and prom type are required" });
+        .json({ error: "Product ID and promo type are required" });
     }
     //Deal validation
     if (!["deal", "mega-deal"].includes(type)) {

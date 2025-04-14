@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { PiShoppingCartThin } from "react-icons/pi";
 import { CiSearch, CiHeart } from "react-icons/ci";
 import { VscAccount } from "react-icons/vsc";
+import { FaRegBell } from "react-icons/fa";
 import { backendAPI } from "../../endpoint";
 import axios from "axios";
 import { toast } from "react-hot-toast";
@@ -298,6 +299,9 @@ const Header = () => {
                 </div>
               )}
             </div>
+          </div>
+          <div className="relative cursor-pointer">
+            <FaRegBell />
           </div>
         </div>
       </div>

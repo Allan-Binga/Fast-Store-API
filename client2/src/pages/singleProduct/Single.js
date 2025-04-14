@@ -64,56 +64,65 @@ const Single = () => {
       <TopHeader />
       <Header />
 
-      <div className="container mx-auto p-6">
+      <div className="container mx-auto px-4 py-8">
         {loading ? (
           <LoadingScreen />
         ) : product ? (
-          <div className="bg-white shadow-md rounded-lg p-6 grid md:grid-cols-2 gap-8">
+          <div className="bg-white rounded-2xl p-6 grid md:grid-cols-2 gap-5">
             {/* Product Image */}
-            <div className="flex justify-center">
+            <div className="flex justify-center items-center">
               <img
                 src={product.image}
                 alt={product.name}
-                className="w-full md:w-[400px] rounded-lg shadow-lg"
+                className="w-full max-w-md rounded-xl"
               />
             </div>
 
             {/* Product Details */}
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">
-                {product.name}
-              </h1>
-              <div className="flex items-center gap-2 mt-2">
-                <p className="flex items-center text-x text-gray-700 mt-1">
-                  {renderStars(product.reviews.rate)} ({product.reviews.count}{" "}
-                  reviews)
+            <div className="flex flex-col justify-between">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">
+                  {product.name}
+                </h1>
+                <div className="flex items-center gap-3 mt-3">
+                  <div className="flex items-center text-gray-700 text-sm">
+                    {renderStars(product.reviews.rate)}
+                    <span className="ml-2">
+                      ({product.reviews.count} reviews)
+                    </span>
+                  </div>
+                  <span className="text-green-600 font-medium text-sm">
+                    In Stock
+                  </span>
+                </div>
+
+                <div className="mt-5 text-3xl font-semibold text-gray-900">
+                  ${product.currentPrice}
+                  <span className="ml-3 text-base text-gray-500 line-through">
+                    ${product.originalPrice}
+                  </span>
+                </div>
+
+                <p className="text-gray-600 mt-4 leading-relaxed">
+                  {product.description}
                 </p>
-                <span className="text-green-600 font-semibold text-m ">
-                  In Stock
-                </span>
               </div>
 
-              <div className="mt-4 text-3xl font-bold text-gray-900">
-                ${product.currentPrice}
-                <span className="ml-2 text-sm text-gray-500 line-through">
-                  ${product.originalPrice}
-                </span>
-              </div>
-              <p className="text-gray-600 mt-2">{product.description}</p>
-
-              {/* Quantity, Buy Now & Wishlist */}
-              <div className="mt-6 flex flex-row items-center justify-between w-full gap-4">
+              {/* Quantity + Buy + Wishlist */}
+              <div className="mt-6 flex items-center gap-4">
                 {/* Quantity Selector */}
-                <div className="flex items-center border border-white-300 rounded-lg bg-white h-12">
+                <div className="flex items-center bg-white border border-gray-300 rounded-lg h-12">
                   <button
-                    className="bg-white hover:bg-blue-600 hover:text-white px-3 py-1 rounded-l text-lg"
+                    className="px-4 h-full rounded-l hover:bg-blue-600 hover:text-white transition-colors"
                     onClick={() => setQuantity((prev) => Math.max(1, prev - 1))}
                   >
                     -
                   </button>
-                  <span className="px-4 py-1 bg-gray-100">{quantity}</span>
+                  <span className="px-4 h-full flex items-center justify-center">
+                    {quantity}
+                  </span>
                   <button
-                    className="bg-white hover:bg-blue-600 hover:text-white px-3 py-1 rounded-r text-lg w-fit"
+                    className="px-4 h-full rounded-r hover:bg-blue-600 hover:text-white transition-colors"
                     onClick={() => setQuantity((prev) => prev + 1)}
                   >
                     +
@@ -121,35 +130,39 @@ const Single = () => {
                 </div>
 
                 {/* Buy Now Button */}
-                <button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg flex-grow h-12">
+                <button className="flex-grow h-12 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors px-6">
                   Buy Now
                 </button>
 
                 {/* Wishlist Button */}
-                <button className="bg-gray-300 hover:bg-gray-400 text-gray-700 p-3 rounded-lg h-12 flex items-center justify-center">
+                <button className="h-12 w-12 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-lg flex items-center justify-center transition-colors">
                   <CiHeart size={24} />
                 </button>
               </div>
 
-              {/* Free Delivery & Returns */}
-              <div className="mt-6 space-y-3">
-                <div className="border p-4 rounded-lg flex items-center gap-3">
-                  <TbTruckDelivery className="text-gray-800 text-2xl" />
-                  <span className="text-gray-800 font-semibold">
-                    Free Delivery
-                  </span>
-                  <span className="text-gray-500 text-sm ml-auto">
-                    Free delivery for orders above $100.
-                  </span>
+              {/* Delivery + Return */}
+              <div className="mt-6 space-y-4">
+                <div className="flex items-start gap-4 p-4 border rounded-xl">
+                  <TbTruckDelivery className="text-gray-800 text-2xl mt-1" />
+                  <div>
+                    <p className="text-gray-800 font-semibold">
+                      Free Delivery
+                    </p>
+                    <p className="text-gray-500 text-sm">
+                      Free delivery for orders above $100.
+                    </p>
+                  </div>
                 </div>
-                <div className="border p-4 rounded-lg flex items-center gap-3">
-                  <HiArrowPathRoundedSquare className="text-gray-800 text-2xl" />
-                  <span className="text-gray-800 font-semibold">
-                    Free Returns
-                  </span>
-                  <span className="text-gray-500 text-sm ml-auto">
-                    Free 30-day return policy.
-                  </span>
+                <div className="flex items-start gap-4 p-4 border rounded-xl">
+                  <HiArrowPathRoundedSquare className="text-gray-800 text-2xl mt-1" />
+                  <div>
+                    <p className="text-gray-800 font-semibold">
+                      Free Returns
+                    </p>
+                    <p className="text-gray-500 text-sm">
+                      Free 30-day return policy.
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
