@@ -309,7 +309,7 @@ const Header = () => {
             >
               <VscAccount className="text-3xl text-gray" />
               {showDropdown && (
-                <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-gray-200 shadow-md rounded-md">
+                <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-gray-200 shadow-md rounded-md z-20">
                   <ul>
                     <li
                       className="py-2 px-4 hover:bg-gray-100 cursor-pointer"
