@@ -43,6 +43,46 @@ const sendVerificationEmail = async (email, token) => {
   }
 };
 
+//Function to verify the user &  verification token
+const verifyUser = async (req, res) => {
+  try {
+    const { token } = req.query;
+
+    if (!token) {
+      return res.status(400).json({ message: "No token provided" });
+    }
+
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+
+    const user = await User.findOne({ verificationToken: hashedToken });
+
+    if (!user) {
+      return res.status(400).json({ message: "Invalid or expired token" });
+    }
+
+    if (user.verificationTokenExpiry < Date.now()) {
+      return res.status(400).json({
+        message: "Token expired. Please request a new verification email.",
+        email: user.email,
+      });
+    }
+
+    user.isVerified = true;
+
+    // Uncomment this if you want to invalidate the token after use
+    // user.verificationToken = undefined;
+    // user.verificationTokenExpiry = undefined;
+
+    await user.save();
+
+    await sendAccountConfirmationEmail(user.email);
+
+    res.json({ message: "Account verified successfully." });
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 //Confirmation email after verifying account successfsully.
 const sendAccountConfirmationEmail = async (email) => {
   const mailOptions = {
@@ -222,45 +262,7 @@ const resendPasswordResetEmail = async (req, res) => {
   }
 };
 
-//Function to verify the user &  verification token
-const verifyUser = async (req, res) => {
-  try {
-    const { token } = req.query;
 
-    if (!token) {
-      return res.status(400).json({ message: "No token provided" });
-    }
-
-    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
-
-    const user = await User.findOne({ verificationToken: hashedToken });
-
-    if (!user) {
-      return res.status(400).json({ message: "Invalid or expired token" });
-    }
-
-    if (user.verificationTokenExpiry < Date.now()) {
-      return res.status(400).json({
-        message: "Token expired. Please request a new verification email.",
-        email: user.email,
-      });
-    }
-
-    user.isVerified = true;
-
-    // Uncomment this if you want to invalidate the token after use
-    // user.verificationToken = undefined;
-    // user.verificationTokenExpiry = undefined;
-
-    await user.save();
-
-    await sendAccountConfirmationEmail(user.email);
-
-    res.json({ message: "Account verified successfully." });
-  } catch (error) {
-    res.status(500).json({ message: "Internal server error" });
-  }
-};
 
 //Function thaty verifies the reset-password email token.
 const verifyPasswordResetToken = async (req, res) => {
