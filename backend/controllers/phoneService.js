@@ -1,35 +1,13 @@
 const twilio = require("twilio");
-require("dotenv").config();
+const { asyncHandler, fail } = require("../utils/http");
 
-const accountSid = process.env.TWILIO_ACCOUNT_SID;
-const authToken = process.env.TWILIO_AUTH_TOKEN;
-const client = twilio(accountSid, authToken);
-
-const createMessage = async (req, res) => {
-  try {
-    const { body, to } = req.body;
-
-    if (!body || !to) {
-      return res
-        .status(400)
-        .json({ error: "Message body and recipient number are required." });
-    }
-
-    const message = await client.messages.create({
-      body,
-      from: process.env.TWILIO_PHONE_NUMBER, // Make sure to set this in your .env file
-      to,
-    });
-
-    return res
-      .status(200)
-      .json({ message: "Message sent successfully!", sid: message.sid });
-  } catch (error) {
-    console.error("Error sending message:", error);
-    return res
-      .status(500)
-      .json({ error: "Failed to send message", details: error.message });
-  }
-};
-
+// SMS is restricted by the route to administrators and initialized on demand.
+const createMessage = asyncHandler(async (req, res) => {
+  const { body, to } = req.body;
+  if (typeof body !== "string" || !body.trim() || body.length > 1600 || typeof to !== "string" || !/^\+[1-9]\d{7,14}$/.test(to)) throw fail(400, "Provide a valid message and international phone number.");
+  if (!process.env.TWILIO_ACCOUNT_SID || !process.env.TWILIO_AUTH_TOKEN || !process.env.TWILIO_PHONE_NUMBER) throw fail(503, "SMS service is not configured.");
+  const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+  const message = await client.messages.create({ body, to, from: process.env.TWILIO_PHONE_NUMBER });
+  res.json({ message: "Message sent.", sid: message.sid });
+});
 module.exports = { createMessage };

@@ -1,198 +1,52 @@
-const Product = require("../models/product.js");
-const Cart = require("../models/cart");
+const Product = require("../models/product");
+const { asyncHandler, fail, requireId, pagination } = require("../utils/http");
 
-// Getting all products
-const getAllProducts = async (req, res) => {
-  try {
-    const products = await Product.find();
-    res.status(200).json(products);
-  } catch (error) {
-    res.status(500).json("Error fetching products.");
-  }
-};
+// Bound catalog queries and return stable pagination without changing array responses.
+const getAllProducts = asyncHandler(async (req, res) => { const { limit, skip } = pagination(req); res.json(await Product.find().sort({ _id: 1 }).skip(skip).limit(limit)); });
+const getLimitedProducts = getAllProducts;
+const getNewArrivals = asyncHandler(async (req, res) => res.json(await Product.find({ newArrival: true, quantity: { $gt: 0 } }).sort({ createdAt: -1 }).limit(10)));
+const getSingleProduct = asyncHandler(async (req, res) => { const product = await Product.findById(requireId(req.params.id)); if (!product) throw fail(404, "Product not found."); res.json(product); });
+const searchResults = asyncHandler(async (req, res) => {
+  if (typeof req.query.q !== "string" || !req.query.q.trim() || req.query.q.length > 200) throw fail(400, "Provide a search query of 1–200 characters.");
+  const { limit, skip } = pagination(req);
+  res.json(await Product.find({ $text: { $search: req.query.q.trim() } }).skip(skip).limit(limit));
+});
 
-// Getting limited products
-const getLimitedProducts = async (req, res) => {
-  try {
-    const limit = parseInt(req.query.limit) || 10; // Default to 10 if limit is not provided
-    const products = await Product.find().limit(limit);
-    res.status(200).json(products);
-  } catch (error) {
-    res.status(500).json({ error: "Failed to fetch limited products." });
-  }
-};
-
-// Adding a new product.
-const addNewProduct = async (req, res) => {
-  try {
-    const {
-      name,
-      currentPrice,
-      originalPrice,
-      category,
-      quantity,
-      description,
-      image,
-      reviews,
-      newArrival,
-    } = req.body;
-
-    // Validation of required fields
-    if (
-      !name ||
-      currentPrice === undefined ||
-      originalPrice === undefined ||
-      !Array.isArray(category) ||
-      category.length === 0 ||
-      !description ||
-      !quantity ||
-      !image ||
-      !reviews ||
-      reviews.rate === undefined ||
-      reviews.count === undefined
-    ) {
-      return res.status(400).json({ error: "All fields are required." });
-    }
-
-    // Validate `currentPrice` and `originalPrice` are non-negative
-    if (currentPrice < 0 || originalPrice < 0) {
-      return res.status(400).json({
-        error: "Prices must be non-negative values.",
-      });
-    }
-
-    // Validate `reviews.rate` and `reviews.count`
-    if (reviews.rate < 0 || reviews.rate > 5 || reviews.count < 0) {
-      return res.status(400).json({
-        error:
-          "Invalid review data. Rate must be between 0 and 5, and count must be non-negative.",
-      });
-    }
-
-    //Validate if product exists in the DB
-    const existingProduct = await Product.findOne({ name });
-
-    if (existingProduct) {
-      return res.status(400).json({
-        error: "This product already exists, please update quantity.",
-      });
-    }
-    // Create a new product with newArrival field (defaults to false if not provided)
-    const newProduct = new Product({
-      name,
-      currentPrice,
-      originalPrice,
-      discount: Math.round(
-        ((originalPrice - currentPrice) / originalPrice) * 100
-      ),
-      category,
-      description,
-      quantity,
-      image,
-      reviews,
-      newArrival: newArrival ?? true, // Ensure it defaults to true if not specified
-    });
-
-    // Save product to the database
-    const savedProduct = await newProduct.save();
-    res.status(200).json(savedProduct);
-  } catch (error) {
-    console.error("Error occurred while adding product:", error);
-    res.status(500).json({ error: "Error occurred while adding product." });
-  }
-};
-
-// Getting a single product
-const getSingleProduct = async (req, res) => {
-  try {
-    const productId = req.params.id;
-    const product = await Product.findById(productId);
-    if (!product) {
-      return res.status(404).json();
-    }
-    res.status(200).json(product);
-  } catch (error) {
-    res.status(500).json({ message: "Product not found." });
-  }
-};
-
-//Getting new arrivals products
-const getNewArrivals = async (req, res) => {
-  try {
-    const newArrivals = await Product.find({ newArrival: true })
-      .sort({
-        createdAt: -1,
-      })
-      .limit(10);
-    res.status(200).json(newArrivals);
-  } catch (error) {
-    res.status(500).json({ message: "Error fetching new arrivals", error });
-  }
-};
-
-//Searching for a product
-const searchResults = async (req, res) => {
-  try {
-    const { q } = req.query;
-
-    if (!q) {
-      return res.status(400).json({ message: "Query parameter is required" });
-    }
-
-    // Full-Text Search Query
-    const results = await Product.find({
-      $text: { $search: q },
-    });
-    res.json(results);
-  } catch (error) {
-    res.status(500).json({ message: "Internal server error", error });
-  }
-};
-
-//Update a product.
-const updateProduct = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { title, price, description, image, category } = req.body;
-
-    if (!title || !price || !description || !image || !category) {
-      return res.status(400).json({ error: "All fields are required." });
-    }
-    const updatedProduct = await Product.findByIdAndUpdate(
-      id,
-      { title, price, description, image, category },
-      { new: true }
-    );
-
-    if (!updatedProduct) {
-      return res.status(400).json({ error: "Failed to update product" });
-    }
-    res.status(200).json(updatedProduct);
-  } catch (error) {
-    res
-      .status(500)
-      .json({ error: "Error occured while updating the product." });
-  }
-};
-
-//Delete a product
-const deleteProduct = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const product = await Product.findByIdAndDelete(req.params.id);
-    res.status(200).json(`Successfully deleted product ${id}`, product);
-  } catch (error) {
-    res.status(500).json({ error: "Error while deleting product." });
-  }
-};
-
-module.exports = {
-  deleteProduct,
-  updateProduct,
-  getSingleProduct,
-  addNewProduct,
-  getLimitedProducts,
-  getAllProducts,
-  getNewArrivals,
-  searchResults,
-};
+// Creation and updates share the actual schema field names and price rules.
+const fields = ["name", "currentPrice", "originalPrice", "category", "quantity", "description", "image", "reviews", "newArrival"];
+function productData(body, existing = {}) {
+  if (Object.keys(body).some(key => !fields.includes(key))) throw fail(400, "Unknown product field.");
+  const data = { ...existing, ...body };
+  if (![data.name, data.description, data.image].every(v => typeof v === "string" && v.trim()) || !Array.isArray(data.category) || !data.category.length || data.category.some(v => typeof v !== "string" || !v.trim())) throw fail(400, "Valid product name, description, image and categories are required.");
+  if (![data.currentPrice, data.originalPrice].every(v => typeof v === "number" && Number.isFinite(v) && v >= 0) || data.currentPrice > data.originalPrice) throw fail(400, "Invalid product prices.");
+  if (!Number.isInteger(data.quantity) || data.quantity < 0) throw fail(400, "Stock must be a non-negative integer.");
+  data.discount = data.originalPrice === 0 ? 0 : Math.round((1 - data.currentPrice / data.originalPrice) * 100);
+  return data;
+}
+const addNewProduct = asyncHandler(async (req, res) => {
+  const data = productData(req.body);
+  if (await Product.findOne({ name: data.name })) throw fail(409, "Product already exists.");
+  res.status(201).json(await Product.create({ ...data, newArrival: data.newArrival ?? true }));
+});
+const updateProduct = asyncHandler(async (req, res) => {
+  const product = await Product.findById(requireId(req.params.id));
+  if (!product) throw fail(404, "Product not found.");
+  const existing = Object.fromEntries(fields.map(key => [key, product[key]]));
+  Object.assign(product, productData(req.body, existing));
+  await product.save();
+  res.json(product);
+});
+const deleteProduct = asyncHandler(async (req, res) => {
+  const product = await Product.findByIdAndDelete(requireId(req.params.id));
+  if (!product) throw fail(404, "Product not found.");
+  // Remove dependent merchandising references; historical order snapshots remain intact.
+  await Promise.all([
+    require("../models/brand").updateMany({}, { $pull: { products: product._id } }),
+    require("../models/promo").deleteMany({ product: product._id }),
+    require("../models/flashsale").deleteOne({ _id: product._id }),
+    require("../models/cart").updateMany({}, { $pull: { products: { productId: product._id } } }),
+    require("../models/wishlist").updateMany({}, { $pull: { products: { productId: product._id } } }),
+  ]);
+  res.json({ message: "Product deleted." });
+});
+module.exports = { getAllProducts, getLimitedProducts, getNewArrivals, getSingleProduct, searchResults, addNewProduct, updateProduct, deleteProduct };

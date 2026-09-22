@@ -1,170 +1,74 @@
 const User = require("../models/users");
-const Notification = require("../models/notification");
 const bcrypt = require("bcrypt");
-const dotenv = require("dotenv");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
+const { notifyUser } = require("../services/notifications");
 const { sendVerificationEmail } = require("./emailService");
+const { asyncHandler, fail, emailValue, passwordValid, objectId } = require("../utils/http");
+const { hashToken, issueTokens, setCookies, clearCookies } = require("../utils/session");
 
-dotenv.config();
+// Create customer accounts; callers cannot assign roles or verification status.
+const registerUser = asyncHandler(async (req, res) => {
+  const { firstName, lastName, phone, password } = req.body;
+  const email = emailValue(req.body.email);
+  if (![firstName, lastName, phone].every(v => typeof v === "string" && v.trim())) throw fail(400, "Name and phone are required.");
+  if (!passwordValid(password)) throw fail(400, "Use a strong password of at least 8 characters (maximum 72 bytes).");
+  if (await User.findOne({ $or: [{ email }, { phone: phone.trim() }] })) throw fail(409, "Account already exists. Sign in or resend verification.");
+  const token = crypto.randomBytes(32).toString("hex");
+  const newUser = await User.create({ firstName, lastName, email, phone: phone.trim(), password: await bcrypt.hash(password, 12), verificationToken: hashToken(token), verificationTokenExpiry: new Date(Date.now() + 30 * 60 * 1000) });
+  await notifyUser(newUser._id, "Thank you for registering.", "signup");
+  try { await sendVerificationEmail(email, token); }
+  catch { return res.status(201).json({ message: "Account created, but verification email could not be sent. Please resend verification.", verificationEmailSent: false }); }
+  res.status(201).json({ message: "Account created. Please verify your email.", verificationEmailSent: true });
+});
 
-// REGISTER NEW USER
-const registerUser = async (req, res) => {
-  try {
-    const { firstName, lastName, email, phone, password } = req.body;
-
-    // CHECK IF REQUIRED FIELDS EXIST
-    if (!firstName || !lastName || !email || !phone || !password) {
-      return res.status(400).json({
-        message:
-          "All fields are required: firstName, lastName, email, phone, and password.",
-      });
-    }
-
-    // VALIDATE EMAIL FORMAT
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return res.status(400).json({ message: "Invalid email format." });
-    }
-
-    // VALIDATE PASSWORD STRENGTH
-    const passwordRegex =
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-    if (!passwordRegex.test(password)) {
-      return res.status(400).json({
-        message:
-          "Password must be at least 8 characters long, include one uppercase letter, one lowercase letter, one number, and one special character.",
-      });
-    }
-
-    // CHECK IF USER ALREADY EXISTS (EMAIL OR PHONE)
-    const existingUser = await User.findOne({
-      $or: [{ email }, { phone }],
-    });
-
-    if (existingUser) {
-      return res
-        .status(409)
-        .json({ message: "User already exists with this email or phone!" });
-    }
-
-    // HASH PASSWORD
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
-    //GENERATE VERIFICATION TOKEN
-    const plainToken = crypto.randomBytes(32).toString("hex");
-    const hashedToken = crypto
-      .createHash("sha256")
-      .update(plainToken)
-      .digest("hex");
-    const verificationTokenExpiry = Date.now() + 2 * 60 * 1000;
-
-    // CREATE NEW USER
-    const newUser = new User({
-      firstName,
-      lastName,
-      email,
-      phone,
-      password: hashedPassword, //Store Hashed Password
-      isVerified: false,
-      verificationToken: hashedToken, //Store Hashed Token
-      verificationTokenExpiry,
-    });
-
-    await newUser.save();
-
-    //Send email
-    await sendVerificationEmail(email, plainToken);
-    await Notification.create({
-      userId: newUser._id,
-      message: "Thank you for registering.",
-      type: "signup",
-    });
-    res.status(201).json({
-      message:
-        "Registration successful. Please check your email for a verification link.",
-    });
-  } catch (error) {
-    console.error("Error registering user:", error);
-    res
-      .status(500)
-      .json({ message: "Something went wrong!", error: error.message });
+// Issue a one-hour access token and a seven-day, database-backed refresh token.
+const loginUser = asyncHandler(async (req, res) => {
+  const email = emailValue(req.body.email);
+  const { password } = req.body;
+  if (typeof password !== "string" || !password || Buffer.byteLength(password) > 72) throw fail(400, "Password is required and must not exceed 72 bytes.");
+  const user = await User.findOne({ email }).select("+password +sessionId");
+  if (!user || !await bcrypt.compare(password, user.password)) throw fail(401, "Invalid credentials. Please try again.");
+  if (!user.isVerified) throw fail(403, "Please verify your email before signing in.");
+  // Ignore expired cookies, but do not replace an already valid session accidentally.
+  if (req.cookies?.accessToken) {
+    let existing;
+    try { existing = jwt.verify(req.cookies.accessToken, process.env.JWT_SECRET, { algorithms: ["HS256"] }); } catch { /* An expired cookie is safe to replace. */ }
+    if (existing?.id === String(user._id) && existing.sid === user.sessionId) throw fail(400, "You are already logged in.");
   }
-};
+  const tokens = issueTokens(user);
+  await User.updateOne({ _id: user._id }, { $set: { sessionId: tokens.sessionId, refreshTokenHash: hashToken(tokens.refreshToken) } });
+  setCookies(res, tokens);
+  await notifyUser(user._id, "You have successfully logged in.", "login");
+  res.status(200).json({ message: "Sign in successful", user: { id: user._id, email: user.email, role: user.role || "Customer" } });
+});
 
-// LOGIN REGISTERED USER
-const loginUser = async (req, res) => {
-  try {
-    // Check if the user is already logged in by looking for the session cookie
-    if (req.cookies && req.cookies.storeSession) {
-      return res.status(400).json("You are already logged in.");
-    }
+// Rotate refresh tokens atomically so a token cannot be redeemed twice.
+const refreshSession = asyncHandler(async (req, res) => {
+  const token = req.cookies?.refreshToken;
+  let decoded;
+  try { decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET, { algorithms: ["HS256"] }); }
+  catch { clearCookies(res); throw fail(401, "Invalid or expired refresh token."); }
+  if (!objectId(decoded.id) || typeof decoded.sid !== "string") throw fail(401, "Invalid session.");
+  const filter = { _id: decoded.id, sessionId: decoded.sid, refreshTokenHash: hashToken(token), isVerified: true };
+  const user = await User.findOne(filter);
+  if (!user) { clearCookies(res); throw fail(401, "Session has ended."); }
+  const tokens = issueTokens(user, decoded.sid);
+  const result = await User.updateOne(filter, { $set: { refreshTokenHash: hashToken(tokens.refreshToken) } });
+  if (result.modifiedCount !== 1) throw fail(401, "Refresh token already used.");
+  setCookies(res, tokens);
+  res.json({ message: "Session refreshed." });
+});
 
-    const user = await User.findOne({ email: req.body.email });
-    if (!user) {
-      return res.status(400).json("Invalid email or password.");
-    }
-
-    const validate = await bcrypt.compare(req.body.password, user.password);
-    if (!validate) {
-      return res.status(400).json("Invalid credentials. Please try again.");
-    }
-
-    //GENERATE JWT token
-    const token = jwt.sign({ user: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "1d",
-    });
-
-    // COOKIE FOR ENABLING LOGOUT
-    res.cookie("storeSession", token, {
-      httpOnly: true,
-      maxAge: 1000 * 60 * 60 * 24,
-      sameSite: "None",
-      secure: true,
-      path: "/",
-    });
-
-    await Notification.create({
-      userId: user._id,
-      message: `${user.firstName}, you have successfully logged in.`,
-      type: "login",
-    });
-
-    res.status(200).json("Login successful.");
-  } catch (error) {
-    res.status(500).json({ error: "Error logging in." });
+// Revocation affects access tokens as well as refresh tokens through sessionId.
+const logoutUser = asyncHandler(async (req, res) => {
+  for (const [cookie, secret] of [["refreshToken", process.env.JWT_REFRESH_SECRET], ["accessToken", process.env.JWT_SECRET]]) {
+    let decoded;
+    try { decoded = jwt.verify(req.cookies?.[cookie], secret, { algorithms: ["HS256"] }); } catch { continue; }
+    if (objectId(decoded.id) && typeof decoded.sid === "string") await User.updateOne({ _id: decoded.id, sessionId: decoded.sid }, { $unset: { sessionId: 1, refreshTokenHash: 1 } });
   }
-};
-
-//cHECK IF USER IS LOGGED IN
-const checkLogin = async (req, res) => {
-  try {
-    const token = req.cookies.storeSession;
-    if (!token) {
-      return res.status(401).json({ isLoggedIn: false });
-    }
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    return res.status(200).json({ isLoggedIn: true, userId: decoded.user });
-  } catch (error) {
-    return res.status(401).json({ isLoggedIn: false });
-  }
-};
-
-//LOGOUT USER
-const logoutUser = async (req, res) => {
-  try {
-    //CHECK IF COOKIE SESSION EXISTS
-    if (!req.cookies || !req.cookies.storeSession) {
-      return res.status(400).json({ message: "No user is logged in." });
-    }
-    //CLEAR SESSION COOKIE
-    res.clearCookie("storeSession");
-    res.status(200).json({ message: "Logout successful." });
-  } catch (error) {
-    res.status(500).json({ error: "Error logging out." });
-  }
-};
-
-module.exports = { registerUser, loginUser, logoutUser, checkLogin };
+  clearCookies(res);
+  res.json({ message: "Logout successful." });
+});
+const checkLogin = (req, res) => res.json({ isLoggedIn: true, userId: req.userId, user: { id: req.userId, email: req.user.email, role: req.user.role || "Customer" } });
+module.exports = { registerUser, loginUser, refreshSession, logoutUser, checkLogin };

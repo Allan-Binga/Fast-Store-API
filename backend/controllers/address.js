@@ -1,192 +1,40 @@
+const User = require("../models/users");
 const Address = require("../models/address");
+const { asyncHandler, fail, requireId, emailValue } = require("../utils/http");
 
-// ADD ADDRESS
-const addAddress = async (req, res) => {
-  try {
-    // Extract address details from request body
-    const {
-      firstName,
-      lastName,
-      street,
-      email,
-      city,
-      state,
-      postalCode,
-      phone,
-      isDefault,
-    } = req.body;
-
-    // Get the authenticated user's ID
-    const userId = req.userId;
-
-    if (!userId) {
-      return res.status(400).json({ error: "Please login to add an address." });
-    }
-
-    // Validate required fields
-    if (
-      !firstName ||
-      !lastName ||
-      !email ||
-      !street ||
-      !city ||
-      !state ||
-      !postalCode ||
-      !phone
-    ) {
-      return res.status(400).json({ message: "All fields are required." });
-    }
-
-    // If isDefault is true, update other addresses to false
-    if (isDefault) {
-      await Address.updateMany(
-        { user: userId },
-        { $set: { isDefault: false } }
-      );
-    }
-
-    // Create new address
-    const newAddress = new Address({
-      user: userId,
-      firstName,
-      lastName,
-      email,
-      street,
-      city,
-      state,
-      postalCode,
-      phone,
-      isDefault: isDefault || false, // Default to false if not provided
-    });
-
-    // Save to DB
-    await newAddress.save();
-
-    return res
-      .status(201)
-      .json({ message: "Address added successfully.", address: newAddress });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: "Server error." });
-  }
-};
-
-//GET ADDRESSES
-const getAddress = async (req, res) => {
-  try {
-    const addresses = await Address.find();
-    res.status(200).json(addresses);
-  } catch (error) {
-    res.status(500).json({ error: "Failed to fetch addresses." });
-  }
-};
-
-// UPDATE ADDRESS
-const updateAddress = async (req, res) => {
-  try {
-    const userId = req.userId; // Get authenticated user's ID
-
-    if (!userId) {
-      return res
-        .status(400)
-        .json({ error: "Please login to update an address." });
-    }
-
-    // Extract updated address details from request body
-    const {
-      firstName,
-      lastName,
-      email,
-      street,
-      city,
-      state,
-      postalCode,
-      phone,
-      isDefault,
-    } = req.body;
-
-    // Validate required fields
-    if (
-      !firstName ||
-      !lastName ||
-      !email ||
-      !street ||
-      !city ||
-      !state ||
-      !postalCode ||
-      !phone
-    ) {
-      return res.status(400).json({ message: "All fields are required." });
-    }
-
-    // Find the user's address
-    const address = await Address.findOne({ user: userId });
-
-    if (!address) {
-      return res.status(404).json({ message: "Address not found." });
-    }
-
-    // If isDefault is true, update other addresses to false
-    if (isDefault) {
-      await Address.updateMany(
-        { user: userId },
-        { $set: { isDefault: false } }
-      );
-    }
-
-    // Update the user's address
-    const updatedAddress = await Address.findOneAndUpdate(
-      { user: userId }, // Find by user ID
-      {
-        firstName,
-        lastName,
-        email,
-        street,
-        city,
-        state,
-        postalCode,
-        phone,
-        isDefault: isDefault || false, // Default to false if not provided
-      },
-      { new: true } // Return the updated document
-    );
-
-    return res
-      .status(200)
-      .json({
-        message: "Address updated successfully.",
-        address: updatedAddress,
-      });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: "Server error." });
-  }
-};
-
-//DELETE ADDRESS
-const deleteAddress = async (req, res) => {
-    try {
-      const userId = req.userId; // Get authenticated user's ID
-  
-      if (!userId) {
-        return res.status(400).json({ error: "Please login to delete an address." });
-      }
-  
-      // Find the user's address to delete
-      const address = await Address.findOne({ user: userId });
-  
-      if (!address) {
-        return res.status(404).json({ message: "Address not found." });
-      }
-  
-      // Delete the address
-      await Address.findOneAndDelete({ user: userId });
-  
-      return res.status(200).json({ message: "Address deleted successfully." });
-    } catch (error) {
-      console.error(error);
-      return res.status(500).json({ message: "Server error." });
-    }
-  };
-
-module.exports = { addAddress, getAddress, updateAddress , deleteAddress};
+// Address ownership and explicit IDs prevent cross-account reads and ambiguous edits.
+const fields = ["firstName", "lastName", "street", "email", "city", "state", "postalCode", "phone"];
+function addressData(body) {
+  const data = {};
+  for (const field of fields) { if (typeof body[field] !== "string" || !body[field].trim()) throw fail(400, `Valid ${field} is required.`); data[field] = body[field].trim(); }
+  data.email = emailValue(data.email);
+  if (body.isDefault !== undefined && typeof body.isDefault !== "boolean") throw fail(400, "isDefault must be a boolean.");
+  data.isDefault = body.isDefault ?? false;
+  return data;
+}
+const getAddress = asyncHandler(async (req, res) => {
+  const addresses = await Address.find({ user: req.userId });
+  const selected = req.user?.defaultAddressId || addresses.find(address => address.isDefault)?._id;
+  res.json(addresses.map(address => ({ ...address.toObject(), isDefault: Boolean(selected && String(address._id) === String(selected)) })));
+});
+const addAddress = asyncHandler(async (req, res) => {
+  const address = await Address.create({ ...addressData(req.body), user: req.userId });
+  // One atomic owner field selects the default, even with concurrent requests.
+  if (address.isDefault) await User.updateOne({ _id: req.userId }, { $set: { defaultAddressId: address._id } });
+  res.status(201).json({ message: "Address added.", address });
+});
+const updateAddress = asyncHandler(async (req, res) => {
+  const id = requireId(req.params.id || req.body.addressId);
+  const address = await Address.findOneAndUpdate({ _id: id, user: req.userId }, { $set: addressData(req.body) }, { new: true, runValidators: true });
+  if (!address) throw fail(404, "Address not found.");
+  if (address.isDefault) await User.updateOne({ _id: req.userId }, { $set: { defaultAddressId: address._id } });
+  else await User.updateOne({ _id: req.userId, defaultAddressId: address._id }, { $unset: { defaultAddressId: 1 } });
+  res.json({ message: "Address updated.", address });
+});
+const deleteAddress = asyncHandler(async (req, res) => {
+  const address = await Address.findOneAndDelete({ _id: requireId(req.params.id || req.body.addressId), user: req.userId });
+  if (!address) throw fail(404, "Address not found.");
+  await User.updateOne({ _id: req.userId, defaultAddressId: address._id }, { $unset: { defaultAddressId: 1 } });
+  res.json({ message: "Address deleted." });
+});
+module.exports = { getAddress, addAddress, updateAddress, deleteAddress };

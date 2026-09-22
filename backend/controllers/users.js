@@ -1,56 +1,22 @@
-const User = require("../models/users")
+const User = require("../models/users");
+const { asyncHandler, fail, pagination, requireId } = require("../utils/http");
 
-//GET ALL USERS
-const getUsers = async (req, res) => {
-  try {
-    const users = await User.find();
-    if (!users || users.length === 0) {
-      return res.status(404).json({ message: "No users found." });
-    }
-    res.status(200).json(users);
-  } catch (error) {
-    res.status(500).json({ error: "Error getting all users." });
-  }
-};
+// Admin listing and current-user profile never serialize authentication secrets.
+const getUsers = asyncHandler(async (req, res) => {
+  const { limit, skip } = pagination(req);
+  res.json(await User.find().sort({ _id: 1 }).skip(skip).limit(limit));
+});
+const getSingleUser = (req, res) => res.json(req.user);
 
-//GET SINGLE USER
-const getSingleUser = async (req, res) => {
-  try {
-    const userId = req.userId
-    const user = await User.findById(userId);
-
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
-    res.status(200).json(user);
-  } catch (error) {
-    res.status(500).json({ error: "Error occured while getting users." });
-  }
-};
-
-//UPDATE USER
-const updatedUser = async (req, res) => {
-  if (req.body.userId === req.params.id) {
-    if (req.body.password) {
-      const salt = await bcrypt.genSalt(10);
-      req.body.password = await bcrypt.hash(req.body.password, salt);
-    }
-    try {
-      const userUpdated = await User.findByIdAndUpdate(
-        req.params.id,
-        {
-          $set: req.body,
-        },
-        { new: true }
-      );
-      res.status(200).json(userUpdated);
-    } catch (error) {
-      res.status(500).json(error);
-    }
-  } else {
-    res.status(401).json("You can only update your account.");
-  }
-};
-
-
-module.exports = {getUsers, getSingleUser, updatedUser}
+// Profile edits are restricted to the authenticated owner and safe fields.
+const updatedUser = asyncHandler(async (req, res) => {
+  requireId(req.params.id);
+  if (req.params.id !== req.userId) throw fail(403, "You can only update your account.");
+  const allowed = ["firstName", "lastName", "phone"];
+  if (Object.keys(req.body).some(key => !allowed.includes(key))) throw fail(400, "Only firstName, lastName and phone may be updated here.");
+  if (!Object.keys(req.body).length || Object.values(req.body).some(v => typeof v !== "string" || !v.trim())) throw fail(400, "Provide valid profile fields.");
+  const user = await User.findByIdAndUpdate(req.userId, { $set: req.body }, { new: true, runValidators: true });
+  if (!user) throw fail(404, "User not found.");
+  res.json(user);
+});
+module.exports = { getUsers, getSingleUser, updatedUser };

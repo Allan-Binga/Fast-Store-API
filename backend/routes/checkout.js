@@ -1,9 +1,9 @@
 const express = require("express");
 const { createCheckoutSession } = require("../controllers/checkout.js");
-const { authMiddleware } = require("../middleware/jwt");
+const { authUserMiddleware } = require("../middleware/jwt");
 
 const router = express.Router();
 
-router.post("/create-checkout-session", authMiddleware ,createCheckoutSession);
+router.post("/create-checkout-session", authUserMiddleware ,createCheckoutSession);
 
 module.exports = router;

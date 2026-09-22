@@ -1,167 +1,33 @@
-//IMPORTS
-const {
-  getAllProducts,
-  getLimitedProducts,
-  addNewProduct,
-  getSingleProduct,
-  updateProduct,
-  deleteProduct,
-  addProductToCart,
-} = require("../controllers/product");
-const httpMocks = require("node-mocks-http");
 const Product = require("../models/product");
-const mongoose = require("mongoose");
+const controller = require("../controllers/product");
+const { getCategoryProducts } = require("../controllers/category");
+const id = "507f1f77bcf86cd799439011";
+const res = () => ({ status: jest.fn().mockReturnThis(), json: jest.fn().mockReturnThis() });
+beforeEach(() => jest.restoreAllMocks());
 
-//MOCK FUNCTION
-jest.mock("../models/product");
-
-describe("Products test controller", () => {
-  let req, res;
-  beforeEach(() => {
-    //CLEAR MOCKS BEFORE EACH TEST
-    jest.clearAllMocks();
-  });
-
-  //TESTING FOR GETTING ALL PRODUCTS
-  it("should return all products", async () => {
-    const mockProducts = [
-      {
-        rating: {
-          rate: 4.8,
-          count: 400,
-        },
-        _id: "6765610db82c77525e9c7cd7",
-        title: "Mouse Pad",
-        price: 200,
-        category: "Office",
-        description:
-          "Description: White Big Mousepad for Gaming Large Topographic Map Washable Desk Pad with Stitched Edge Office Supplies and Decor",
-      },
-      {
-        rating: {
-          rate: 2.9,
-          count: 470,
-        },
-        _id: "676561db47d90b0ab0dc12e2",
-        title: "SanDisk SSD PLUS 1TB Internal SSD - SATA III 6 Gb/s",
-        price: 109,
-        description:
-          "Easy upgrade for faster boot up, shutdown, application load and response (As compared to 5400 RPM SATA 2.5” hard drive; Based on published specifications and internal benchmarking tests using PCMark vantage scores) Boosts burst write performance, making it ideal for typical PC workloads The perfect balance of performance and reliability Read/write speeds of up to 535MB/s/450MB/s (Based on internal testing; Performance may vary depending upon drive capacity, host device, OS and application.)",
-      },
-    ];
-
-    //MOCK MONGOOSE 'FIND' METHOD
-    Product.find.mockResolvedValue(mockProducts);
-
-    const req = httpMocks.createRequest({
-      method: "GET",
-      url: "/products",
-    });
-    const res = httpMocks.createResponse();
-    const next = jest.fn();
-
-    await getAllProducts(req, res, next);
-
-    expect(Product.find).toHaveBeenCalledTimes(1);
-    expect(res.statusCode).toBe(200);
-    expect(res._getJSONData()).toEqual(mockProducts);
-    expect(next).not.toHaveBeenCalled();
-  });
-
-  //TESTING FOR GETTING A SINGLE PRODUCT
-  it("should return a single product", async () => {
-    const mockProduct = {
-      rating: {
-        rate: 4.8,
-        count: 400,
-      },
-      _id: "12345",
-      title: "Mouse Pad",
-      price: 200,
-      category: "Office",
-      description:
-        "Description: White Big Mousepad for Gaming Large Topographic Map Washable Desk Pad with Stitched Edge Office Supplies and Decor",
-    };
-
-    //MOCK MONGOOSE 'findById' method
-    Product.findById.mockResolvedValue(mockProduct);
-
-    const req = httpMocks.createRequest({
-      method: "GET",
-      url: "/products/12345",
-      params: {
-        id: "12345",
-      },
-    });
-    const res = httpMocks.createResponse();
-    const next = jest.fn();
-
-    await getSingleProduct(req, res, next);
-
-    expect(Product.findById).toHaveBeenCalledWith("12345");
-    expect(res.statusCode).toBe(200);
-    expect(res._getJSONData()).toEqual(mockProduct);
-    expect(next).not.toHaveBeenCalledWith();
-  });
-
-  //TESTING FOR ADDING A PRODUCT
-  it("should add a product", async () => {
-    const mockProduct = {
-      name: "Gaming Chair",
-      currentPrice: 300,
-      originalPrice: 400, // Added this since it's required
-      category: ["Furniture"],
-      quantity: 1,
-      description: "Ergonomic gaming chair with lumbar support",
-      image: "chair.jpg",
-      reviews: {
-        rate: 4.5,
-        count: 120,
-      },
-    };
-
-    req = httpMocks.createRequest({
-      method: "POST",
-      url: "/products",
-      body: mockProduct,
-    });
-    res = httpMocks.createResponse();
-
-    // MOCK THE SAVED DATA
-    Product.prototype.save = jest.fn().mockResolvedValue({
-      ...mockProduct,
-      _id: "mock-id",
-    });
-
-    //CALLING addNewProduct FUNCTION WITH MOCK REQUEST AND RESPONSE OBJECTS.
-    await addNewProduct(req, res);
-
-    //ASSERTIONS
-    expect(Product.prototype.save).toHaveBeenCalledTimes(1);
-    expect(res.statusCode).toBe(200);
-    expect(res._getJSONData()).toEqual({
-      ...mockProduct,
-      _id: "mock-id",
-    });
-  });
-
-  //TESTING FOR DELETING A PRODUCT
-  it("should delete a product", async () => {
-    const req = httpMocks.createRequest({
-      method: "DELETE",
-      url: "/products/:id",
-      params: { id: "123" },
-    });
-
-    const res = httpMocks.createResponse();
-
-    //MOCK MONGOOSE'S 'findByIdAndDelete' METHODS
-    Product.findById.mockResolvedValue({ _id: "123" });
-    Product.findByIdAndDelete.mockResolvedValue(true);
-
-    await deleteProduct(req, res);
-
-    expect(res.statusCode).toBe(200);
-    expect(res._getJSONData()).toEqual(`Successfully deleted product 123`);
-  });
+// Exercise schema field names and edge cases that the legacy fixtures missed.
+test("zero stock and zero prices create a product without division by zero", async () => {
+  jest.spyOn(Product, "findOne").mockResolvedValue(null);
+  const create = jest.spyOn(Product, "create").mockImplementation(async value => value);
+  const next = jest.fn(), response = res();
+  await controller.addNewProduct({ body: { name: "Free", currentPrice: 0, originalPrice: 0, quantity: 0, category: ["Home"], description: "Description", image: "image", reviews: { rate: 0, count: 0 } } }, response, next);
+  expect(next).not.toHaveBeenCalled();
+  expect(create.mock.calls[0][0].discount).toBe(0);
+  expect(response.status).toHaveBeenCalledWith(201);
 });
+test("product updates persist name and currentPrice and recalculate discounts", async () => {
+  const product = { name: "Old", currentPrice: 20, originalPrice: 40, quantity: 5, category: ["Home"], description: "Description", image: "image", save: jest.fn() };
+  jest.spyOn(Product, "findById").mockResolvedValue(product);
+  await controller.updateProduct({ params: { id }, body: { name: "New", currentPrice: 10 } }, res(), jest.fn());
+  expect(product.name).toBe("New"); expect(product.currentPrice).toBe(10); expect(product.discount).toBe(75); expect(product.save).toHaveBeenCalled();
+});
+test("invalid product IDs produce a client error", async () => {
+  const next = jest.fn(); await controller.getSingleProduct({ params: { id: "bad" } }, res(), next); expect(next.mock.calls[0][0].status).toBe(400);
+});
+test("category names are escaped as literal text", async () => {
+  const find = jest.spyOn(Product, "find").mockReturnValue({ sort: () => ({ skip: () => ({ limit: async () => [] }) }) });
+  await getCategoryProducts({ params: { category: "Home (A+B)" }, query: {} }, res(), jest.fn());
+  const regex = find.mock.calls[0][0].category;
+  expect(regex.test("Home (A+B)")).toBe(true); expect(regex.test("Home AAAB")).toBe(false);
+});
+test("search index is declared on the catalog schema", () => { expect(Product.schema.indexes().some(([keys]) => keys.name === "text" && keys.description === "text")).toBe(true); });

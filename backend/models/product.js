@@ -32,6 +32,8 @@ const ProductSchema = new mongoose.Schema(
     quantity: {
       type: Number,
       default: 1,
+      min: 0,
+      validate: Number.isInteger,
     },
     image: {
       type: String,
@@ -57,5 +59,8 @@ const ProductSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Catalog search and duplicate prevention indexes.
+ProductSchema.index({ name: "text", description: "text" });
+ProductSchema.index({ name: 1 }, { unique: true });
 const Product = mongoose.model("Product", ProductSchema);
 module.exports = Product;

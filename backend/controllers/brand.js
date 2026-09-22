@@ -1,87 +1,21 @@
 const Brand = require("../models/brand");
 const Product = require("../models/product");
+const { asyncHandler, fail, requireId, pagination } = require("../utils/http");
 
-//GETTING BRANDS
-const getBrands = async (_req, res) => {
-  try {
-    const brands = await Brand.find();
-    res.status(200).json(brands);
-  } catch (error) {
-    res.status(500).json({ error: "Failed to fetch brands." });
-  }
-};
-
-//GETTING BRANDS WITH PRODUCTS
-const getBrandWithProducts = async (req, res) => {
-  try {
-    const brand = await Brand.findById(req.params.id).populate("products");
-    if (!brand) {
-      return res.status(404).json({ message: "Brand not found" });
-    }
-    res.json(brand);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
-//ADDING BRANDS
-const addBrand = async (req, res) => {
-  try {
-    //BODY ITEMS
-    const { name, logo, slogan } = req.body;
-    //VALIDATE BODY AND CHECK FOR MISSING ITEMS
-    if ((!name, !logo, !slogan)) {
-      return res.status(400).json({ error: "All fields are required." });
-    }
-    const pluggedBrand = new Brand(req.body);
-    const savedBrand = await pluggedBrand.save();
-    res.status(200).json(savedBrand);
-  } catch (error) {
-    res.status(500).json({ error: "Error occured while adding brand." });
-  }
-};
-
-//ADDING PRODUCTS TO BRANDS
-const addProductsToBrands = async (req, res) => {
-  try {
-    const { brandId, productId } = req.body;
-
-    if (!brandId || !productId) {
-      return res.status(400).json({ error: "All fields are required." });
-    }
-
-    // Check if the product exists.
-    const product = await Product.findById(productId);
-    if (!product) {
-      return res.status(404).json({ error: "Product does not exist." });
-    }
-
-    // Check if the product is already in Brand
-    const brand = await Brand.findById(brandId);
-    if (brand && brand.products.includes(productId)) {
-      return res.status(400).json({ error: "Product is already in brand." });
-    }
-
-    // Find the brand associated with this product and add the product to it
-    const updatedBrand = await Brand.findByIdAndUpdate(
-      brandId,
-      { $push: { products: productId } },
-      { new: true, useFindAndModify: false }
-    );
-
-    if (!updatedBrand) {
-      return res.status(404).json({ error: "No eligible brand found." });
-    }
-
-    res
-      .status(200)
-      .json({ message: "Product added to brand.", brand: updatedBrand });
-  } catch (error) {
-    res
-      .status(500)
-      .json({ error: "Error occurred while adding product to brand." });
-  }
-};
-
-//EXPORT FUNCTION
-module.exports = { getBrandWithProducts, addBrand, addProductsToBrands , getBrands};
+// Public brand browsing remains bounded and validates document IDs.
+const getBrands = asyncHandler(async (req, res) => { const { limit, skip } = pagination(req); res.json(await Brand.find().skip(skip).limit(limit)); });
+const getBrandWithProducts = asyncHandler(async (req, res) => { const brand = await Brand.findById(requireId(req.params.id)).populate("products"); if (!brand) throw fail(404, "Brand not found."); res.json(brand); });
+// Only whitelisted brand fields can be created by an administrator.
+const addBrand = asyncHandler(async (req, res) => {
+  const { name, logo, slogan } = req.body;
+  if (![name, logo, slogan].every(v => typeof v === "string" && v.trim())) throw fail(400, "Name, logo and slogan are required.");
+  res.status(201).json(await Brand.create({ name, logo, slogan }));
+});
+const addProductsToBrands = asyncHandler(async (req, res) => {
+  const brandId = requireId(req.body.brandId), productId = requireId(req.body.productId);
+  if (!await Product.exists({ _id: productId })) throw fail(404, "Product not found.");
+  const brand = await Brand.findByIdAndUpdate(brandId, { $addToSet: { products: productId } }, { new: true, runValidators: true });
+  if (!brand) throw fail(404, "Brand not found.");
+  res.json({ message: "Product added to brand.", brand });
+});
+module.exports = { getBrands, getBrandWithProducts, addBrand, addProductsToBrands };

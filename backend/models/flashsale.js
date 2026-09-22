@@ -26,7 +26,7 @@ const FlashSaleSchema = new mongoose.Schema(
       default: 0,
     },
     category: {
-      type: String,
+      type: [String],
       required: true,
     },
     description: {

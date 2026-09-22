@@ -26,5 +26,7 @@ const PromoSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Prevent duplicate offers during simultaneous management requests.
+PromoSchema.index({ product: 1, type: 1 }, { unique: true });
 const Promo = mongoose.model("Promo", PromoSchema);
 module.exports = Promo;

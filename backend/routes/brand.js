@@ -1,3 +1,5 @@
+// Protect customer data and reserve management actions for administrators.
+const { authUserMiddleware, authAdminMiddleware } = require("../middleware/jwt");
 const express = require("express");
 const {
   getBrands,
@@ -11,7 +13,7 @@ const router = express.Router();
 //ROUTES
 router.get("/", getBrands);
 router.get("/:id", getBrandWithProducts);
-router.post("/add", addBrand);
-router.post("/add-product-to-brand", addProductsToBrands);
+router.post("/add", authUserMiddleware, authAdminMiddleware, addBrand);
+router.post("/add-product-to-brand", authUserMiddleware, authAdminMiddleware, addProductsToBrands);
 
 module.exports = router;

@@ -1,311 +1,47 @@
 const nodemailer = require("nodemailer");
-const User = require("../models/users");
 const crypto = require("crypto");
-const dotenv = require("dotenv");
+const User = require("../models/users");
+const { asyncHandler, fail, emailValue } = require("../utils/http");
+const { hashToken } = require("../utils/session");
 
-dotenv.config();
+// Initialize integrations only when used; importing the API needs no mail credentials.
+const escapeHtml = value => String(value).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const sendMail = async (to, subject, html) => {
+  if (!process.env.MAIL_USER || !process.env.MAIL_PASS || !process.env.CLIENT_URL) throw fail(503, "Email service is not configured.");
+  const transporter = nodemailer.createTransport({ service: "Gmail", auth: { user: process.env.MAIL_USER, pass: process.env.MAIL_PASS } });
+  return transporter.sendMail({ from: `"FastStore" <${process.env.MAIL_USER}>`, to, subject, html });
+};
+const linkMail = (email, token, path, subject) => sendMail(email, subject, `<p>${subject}</p><a href="${escapeHtml(process.env.CLIENT_URL + path + '?token=' + encodeURIComponent(token))}">Continue</a><p>This link expires in 30 minutes.</p>`);
+const sendVerificationEmail = (email, token) => linkMail(email, token, "/account-verification", "Verify your FastStore account");
+const sendPasswordResetEmail = (email, token) => linkMail(email, token, "/password/reset", "Reset your FastStore password");
+const sendAccountConfirmationEmail = email => sendMail(email, "Account verified", `<p>Your account is verified.</p><a href="${escapeHtml(process.env.CLIENT_URL)}">Start shopping</a>`);
+const sendOrderConfirmationEmail = (email, order) => sendMail(email, "Order confirmation", `<p>Order ${escapeHtml(order._id)}</p><ul>${order.items.map(item => `<li>${escapeHtml(item.name)} — ${item.quantity} × $${item.price.toFixed(2)}</li>`).join("")}</ul><p>Total: $${order.totalAmount.toFixed(2)}</p>`);
 
-const transporter = nodemailer.createTransport({
-  service: "Gmail",
-  auth: {
-    user: process.env.MAIL_USER,
-    pass: process.env.MAIL_PASS,
-  },
+// Verification tokens are single-use and consumed before sending optional confirmation.
+const verifyUser = asyncHandler(async (req, res) => {
+  if (typeof req.query.token !== "string" || !/^[a-f\d]{64}$/i.test(req.query.token)) throw fail(400, "Invalid or expired token.");
+  const user = await User.findOneAndUpdate({ verificationToken: hashToken(req.query.token), verificationTokenExpiry: { $gt: new Date() } }, { $set: { isVerified: true }, $unset: { verificationToken: 1, verificationTokenExpiry: 1 } }, { new: true });
+  if (!user) throw fail(400, "Invalid or expired token. Request a new verification email.");
+  try { await sendAccountConfirmationEmail(user.email); } catch { console.error("Account confirmation email could not be delivered."); }
+  res.json({ message: "Account verified successfully." });
+});
+const resendVerificationEmail = asyncHandler(async (req, res) => {
+  const email = emailValue(req.body.email);
+  const user = await User.findOne({ email, isVerified: false });
+  if (user) {
+    const token = crypto.randomBytes(32).toString("hex");
+    await User.updateOne({ _id: user._id, isVerified: false }, { $set: { verificationToken: hashToken(token), verificationTokenExpiry: new Date(Date.now() + 30 * 60 * 1000) } });
+    try { await sendVerificationEmail(email, token); } catch { console.error("Verification email could not be delivered."); }
+  }
+  res.json({ message: "If verification is needed, an email will be sent. You can request another link if needed." });
 });
 
-//Send verification email
-const sendVerificationEmail = async (email, token) => {
-  const verificationUrl = `${process.env.CLIENT_URL}/account-verification?token=${token}`;
-
-  const mailOptions = {
-    from: `"FastStore API" <${process.env.MAIL_USER}>`, //Name and Email
-    to: email,
-    subject: "Account verification.",
-    html: `  <div style="font-family: Arial, sans-serif; text-align: center; padding: 20px; background-color: #f4f4f4;">
-        <div style="max-width: 600px; margin: auto; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
-          <h2 style="color: #333;">Verify Your Account</h2>
-          <p style="color: #555;">Click the button below to verify your account.</p>
-          <a href="${verificationUrl}" 
-            style="display: inline-block; padding: 10px 20px; margin-top: 15px; background-color: #2582b8; color: #fff; text-decoration: none; border-radius: 5px;">
-            Verify My Account
-          </a>
-          <p style="margin-top: 20px; color: #777;">If you did not create an account, you can ignore this email.</p>
-        </div>
-      </div>`,
-  };
-
-  try {
-    await transporter.sendMail(mailOptions);
-    console.log(`Verification email sent to ${email}`);
-  } catch (error) {
-    console.error(`Error sending email to ${email}:`, error);
-    throw error; // Re-throw to handle in the calling function
-  }
-};
-
-//Function to verify the user &  verification token
-const verifyUser = async (req, res) => {
-  try {
-    const { token } = req.query;
-
-    if (!token) {
-      return res.status(400).json({ message: "No token provided" });
-    }
-
-    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
-
-    const user = await User.findOne({ verificationToken: hashedToken });
-
-    if (!user) {
-      return res.status(400).json({ message: "Invalid or expired token" });
-    }
-
-    if (user.verificationTokenExpiry < Date.now()) {
-      return res.status(400).json({
-        message: "Token expired. Please request a new verification email.",
-        email: user.email,
-      });
-    }
-
-    user.isVerified = true;
-
-    // Uncomment this if you want to invalidate the token after use
-    // user.verificationToken = undefined;
-    // user.verificationTokenExpiry = undefined;
-
-    await user.save();
-
-    await sendAccountConfirmationEmail(user.email);
-
-    res.json({ message: "Account verified successfully." });
-  } catch (error) {
-    res.status(500).json({ message: "Internal server error" });
-  }
-};
-
-//Confirmation email after verifying account successfsully.
-const sendAccountConfirmationEmail = async (email) => {
-  const mailOptions = {
-    from: `"FastStore API" <${process.env.MAIL_USER}>`,
-    to: email,
-    subject: "Account Verified Successfully!",
-    html: `<div style="font-family: Arial, sans-serif; text-align: center; padding: 20px; background-color: #f4f4f4;">
-        <div style="max-width: 600px; margin: auto; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
-          <h2 style="color: #28a745;"> Account verification successful.</h2>
-          <p style="color: #555;">Thank you for verifying your account. You can now start shopping.</p>
-          <a href="http://localhost:3100" 
-            style="display: inline-block; padding: 10px 20px; margin-top: 15px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 5px;">
-            Start Shopping 🛒
-          </a>
-          <p style="margin-top: 20px; color: #777;">Happy Shopping! 🛍️</p>
-        </div>
-      </div>`,
-  };
-
-  try {
-    await transporter.sendMail(mailOptions);
-    console.log(`Thank you email sent to ${email}`);
-  } catch (error) {
-    console.error(`Error sending thank you email to ${email}:`, error);
-    throw error;
-  }
-};
-
-//Resends the verification link expires.
-const resendVerificationEmail = async (req, res) => {
-  try {
-    console.log("Request received:", req.body); // Log incoming request data
-
-    const { email } = req.body;
-
-    if (!email) {
-      console.error("❌ Error: No email provided");
-      return res.status(400).json({ message: "Email is required." });
-    }
-
-    const user = await User.findOne({ email });
-    console.log("User found:", user); // Log the user object
-
-    if (!user) {
-      console.error("❌ Error: User not found");
-      return res.status(404).json({ message: "User not found." });
-    }
-
-    if (user.isVerified) {
-      console.error("⚠️ Warning: User already verified");
-      return res.status(400).json({ message: "User is already verified." });
-    }
-
-    // Generate a new token and expiration time
-    const plainToken = crypto.randomBytes(32).toString("hex");
-    user.verificationToken = crypto
-      .createHash("sha256")
-      .update(plainToken)
-      .digest("hex");
-
-    user.verificationTokenExpiry = Date.now() + 2 * 60 * 1000;
-    console.log("New token generated:", user.verificationToken);
-
-    await user.save();
-    console.log("✅ User saved with new token");
-
-    // Send new verification email
-    await sendVerificationEmail(user.email, plainToken);
-    console.log("📧 Verification email sent to:", user.email);
-
-    res.json({ message: "New verification email sent." });
-  } catch (error) {
-    console.error("🔥 Internal Server Error:", error); // Log the actual error
-    res.status(500).json({ message: "Internal server error" });
-  }
-};
-
-//Order confirmation email
-const sendOrderConfirmationEmail = async (email, order) => {
-  const mailOptions = {
-    from: `"FastStore" <${process.env.MAIL_USER}>`,
-    to: email,
-    subject: "Order Confirmation - FastStore",
-    html: `
-      <div style="font-family: Arial, sans-serif; text-align: center; padding: 20px; background-color: #f4f4f4;">
-        <div style="max-width: 600px; margin: auto; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
-          <h2 style="color: #28a745;">Your Order is Confirmed! ✅</h2>
-          <p>Thank you for shopping with us! Your order <b>#${
-            order._id
-          }</b> has been successfully placed.</p>
-          <h3>Order Summary:</h3>
-          <ul style="text-align: left;">
-            ${order.items
-              .map(
-                (item) =>
-                  `<li>${item.name} - ${item.quantity} x $${item.price}</li>`
-              )
-              .join("")}
-          </ul>
-          <p><b>Total Amount:</b> $${order.totalAmount.toFixed(2)}</p>
-          <p style="margin-top: 20px;">We will notify you when your order is shipped. 🚀</p>
-        </div>
-      </div>`,
-  };
-
-  try {
-    await transporter.sendMail(mailOptions);
-    console.log(`Order confirmation email sent to ${email}`);
-  } catch (error) {
-    console.error(`Error sending order confirmation email:`, error);
-    throw error;
-  }
-};
-
-// Password Reset Email
-const sendPasswordResetEmail = async (email, token) => {
-  const resetUrl = `${process.env.CLIENT_URL}/password/reset?token=${token}`;
-
-  const mailOptions = {
-    from: `"FastStore API" <${process.env.MAIL_USER}>`,
-    to: email,
-    subject: "Password Reset Request",
-    html: `
-      <div style="font-family: Arial, sans-serif; text-align: center; padding: 20px; background-color: #f4f4f4;">
-        <div style="max-width: 600px; margin: auto; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
-          <h2 style="color: #333;">Password Reset Request</h2>
-          <p style="color: #555;">Click the button below to reset your password.</p>
-          <a href="${resetUrl}" 
-            style="display: inline-block; padding: 10px 20px; margin-top: 15px; background-color: #ff9800; color: #fff; text-decoration: none; border-radius: 5px;">
-            Reset Password
-          </a>
-          <p style="margin-top: 20px; color: #777;">If you did not request this, ignore this email.</p>
-        </div>
-      </div>`,
-  };
-
-  try {
-    await transporter.sendMail(mailOptions);
-    console.log(`Password reset email sent to ${email}`);
-  } catch (error) {
-    console.error(`Error sending password reset email:`, error);
-    throw error;
-  }
-};
-
-//Resend the password reset email
-const resendPasswordResetEmail = async (req, res) => {
-  try {
-    const { email } = req.body;
-
-    if (!email) {
-      return res.status(400).json({ message: "Email is required" });
-    }
-
-    const user = await User.findOne({ email });
-
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    // Generate a new token and expiration time
-    const plainToken = crypto.randomBytes(32).toString("hex");
-    user.passwordResetToken = crypto
-      .createHash("sha256")
-      .update(plainToken)
-      .digest("hex");
-
-    user.passwordResetTokenExpiry = Date.now() + 2 * 60 * 1000;
-    console.log("New token generated:", user.passwordResetToken);
-
-    await user.save();
-    await sendPasswordResetEmail(user.email, plainToken);
-
-    res.json({ message: "New password reset email sent." });
-  } catch (error) {
-    res.status(500).json({ message: "Internal server error." });
-  }
-};
-
-
-
-//Function thaty verifies the reset-password email token.
-const verifyPasswordResetToken = async (req, res) => {
-  try {
-    const { token } = req.query;
-
-    if (!token) {
-      return res.status(400).json({ message: "Token is required." });
-    }
-
-    // Hash the token to compare it with the stored hashed token
-    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
-
-    const user = await User.findOne({
-      passwordResetToken: hashedToken,
-    });
-
-    if (!user) {
-      return res.status(400).json({ message: "Invalid or expired token." });
-    }
-
-    //Check if the token has expired
-    if (user.passwordResetTokenExpiry < Date.now()) {
-      return res.status(400).json({
-        message:
-          "Password reset token expired. Please request a new password reset email.",
-      });
-    }
-
-    res.json({ message: "Token is valid.", email: user.email });
-  } catch (error) {
-    console.error("Error verifying password reset token:", error);
-    res.status(500).json({ message: "Internal server error." });
-  }
-};
-
-module.exports = {
-  sendVerificationEmail,
-  sendAccountConfirmationEmail,
-  resendVerificationEmail,
-  sendOrderConfirmationEmail,
-  verifyUser,
-  resendPasswordResetEmail,
-  sendPasswordResetEmail,
-  verifyPasswordResetToken,
-};
+// Reuse the recovery controller lazily to avoid a circular module dependency.
+const resendPasswordResetEmail = (req, res, next) => require("./password").resetPasswordEmail(req, res, next);
+const verifyPasswordResetToken = asyncHandler(async (req, res) => {
+  if (typeof req.query.token !== "string" || !/^[a-f\d]{64}$/i.test(req.query.token)) throw fail(400, "Invalid or expired token.");
+  const user = await User.findOne({ passwordResetToken: hashToken(req.query.token), passwordResetTokenExpiry: { $gt: new Date() } });
+  if (!user) throw fail(400, "Invalid or expired token.");
+  res.json({ message: "Token is valid." });
+});
+module.exports = { sendVerificationEmail, sendPasswordResetEmail, sendAccountConfirmationEmail, sendOrderConfirmationEmail, verifyUser, resendVerificationEmail, resendPasswordResetEmail, verifyPasswordResetToken };
