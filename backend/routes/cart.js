@@ -2,6 +2,7 @@
 const { authUserMiddleware, authAdminMiddleware } = require("../middleware/jwt");
 const express = require("express");
 const {
+  addProductToCart,
   getCart,
   getCartUser,
   removeProductFromCart,
@@ -11,6 +12,7 @@ const {
 
 const router = express.Router();
 
+router.post("/add", authUserMiddleware, addProductToCart)
 router.get("/", authUserMiddleware, authAdminMiddleware, getCart);
 router.get("/user", authUserMiddleware, getCartUser);
 router.delete("/remove", authUserMiddleware, removeProductFromCart);
@@ -18,4 +20,5 @@ router.delete("/clear", authUserMiddleware, clearCart);
 
 // Persist quantity edits for the authenticated customer.
 router.patch("/quantity", authUserMiddleware, updateQuantity);
+
 module.exports = router;

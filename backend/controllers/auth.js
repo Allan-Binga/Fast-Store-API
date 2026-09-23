@@ -71,4 +71,5 @@ const logoutUser = asyncHandler(async (req, res) => {
   res.json({ message: "Logout successful." });
 });
 const checkLogin = (req, res) => res.json({ isLoggedIn: true, userId: req.userId, user: { id: req.userId, email: req.user.email, role: req.user.role || "Customer" } });
+
 module.exports = { registerUser, loginUser, refreshSession, logoutUser, checkLogin };

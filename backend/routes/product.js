@@ -11,7 +11,6 @@ const {
   getNewArrivals,
   searchResults,
 } = require("../controllers/product.js");
-const { addProductToCart } = require("../controllers/cart.js");
 // const uploadPhoto = require("../middleware/imageUpload.js");
 
 const router = express.Router();
@@ -31,6 +30,5 @@ router.get("/:id", getSingleProduct);
 router.post("/add-new", authUserMiddleware, authAdminMiddleware, addNewProduct);
 router.put("/:id", authUserMiddleware, authAdminMiddleware, updateProduct);
 router.delete("/:id", authUserMiddleware, authAdminMiddleware, deleteProduct);
-router.post("/add-to-cart", authUserMiddleware, addProductToCart);
 
 module.exports = router;

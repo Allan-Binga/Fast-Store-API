@@ -25,6 +25,8 @@ const verifyUser = asyncHandler(async (req, res) => {
   try { await sendAccountConfirmationEmail(user.email); } catch { console.error("Account confirmation email could not be delivered."); }
   res.json({ message: "Account verified successfully." });
 });
+
+
 const resendVerificationEmail = asyncHandler(async (req, res) => {
   const email = emailValue(req.body.email);
   const user = await User.findOne({ email, isVerified: false });
@@ -38,10 +40,13 @@ const resendVerificationEmail = asyncHandler(async (req, res) => {
 
 // Reuse the recovery controller lazily to avoid a circular module dependency.
 const resendPasswordResetEmail = (req, res, next) => require("./password").resetPasswordEmail(req, res, next);
+
+//Verify Password reset token
 const verifyPasswordResetToken = asyncHandler(async (req, res) => {
   if (typeof req.query.token !== "string" || !/^[a-f\d]{64}$/i.test(req.query.token)) throw fail(400, "Invalid or expired token.");
   const user = await User.findOne({ passwordResetToken: hashToken(req.query.token), passwordResetTokenExpiry: { $gt: new Date() } });
   if (!user) throw fail(400, "Invalid or expired token.");
   res.json({ message: "Token is valid." });
 });
+
 module.exports = { sendVerificationEmail, sendPasswordResetEmail, sendAccountConfirmationEmail, sendOrderConfirmationEmail, verifyUser, resendVerificationEmail, resendPasswordResetEmail, verifyPasswordResetToken };
