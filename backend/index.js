@@ -10,7 +10,7 @@ const rateLimit = require("./middleware/rateLimit");
 const app = express();
 
 // Preserve the Vite origin and allow explicitly configured deployment origins.
-const allowedOrigins = new Set(["http://localhost:5173", ...(process.env.CORS_ORIGINS || "").split(","), process.env.CLIENT_URL].filter(Boolean).map(v => v.trim()));
+const allowedOrigins = new Set(["http://localhost:5173", "https://customer.storeap.skirill.org", ...(process.env.CORS_ORIGINS || "").split(","), process.env.CLIENT_URL].filter(Boolean).map(v => v.trim()));
 const corsOptions = {
   origin(origin, callback) { callback(!origin || allowedOrigins.has(origin) ? null : fail(403, "Origin is not allowed."), true); },
   credentials: true,
