@@ -23,6 +23,7 @@ dist-ssr
 *.sln
 *.sw?
 
-/frontend/stitch
+/stitch
 /docs
 /dist
+/stitch
