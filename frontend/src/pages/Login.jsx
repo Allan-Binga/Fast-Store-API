@@ -11,7 +11,6 @@ export default function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [visible, setVisible] = useState(false)
-  const [forgot, setForgot] = useState(false)
   const [errors, setErrors] = useState({})
   const [failure, setFailure] = useState(null)
   const [message, setMessage] = useState('')
@@ -37,23 +36,18 @@ export default function Login() {
     const normalizedEmail = email.trim().toLowerCase()
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) nextErrors.email = 'Enter a valid email address.'
     // Login accepts existing passwords; registration's strength rules do not apply here.
-    if (!forgot && (!password || new TextEncoder().encode(password).length > 72)) nextErrors.password = 'Enter your password (maximum 72 bytes).'
+    if (!password || new TextEncoder().encode(password).length > 72) nextErrors.password = 'Enter your password (maximum 72 bytes).'
     resetFeedback()
     setErrors(nextErrors)
     if (Object.keys(nextErrors).length) { document.getElementById(`login-${Object.keys(nextErrors)[0]}`)?.focus(); return }
     locked.current = true
     setPending(true)
     try {
-      if (forgot) {
-        const { data } = await api.post('/password/send/email', { email: normalizedEmail })
-        setMessage(data.message || 'If an account exists, a password reset email will be sent.')
-      } else {
-        await login({ email: normalizedEmail, password })
-        setPassword('')
-        navigate('/', { replace: true })
-      }
+      await login({ email: normalizedEmail, password })
+      setPassword('')
+      navigate('/', { replace: true })
     } catch (error) {
-      setFailure({ message: errorMessage(error), unverified: !forgot && error.response?.status === 403 && /verify your email/i.test(error.response?.data?.message || '') })
+      setFailure({ message: errorMessage(error), unverified: error.response?.status === 403 && /verify your email/i.test(error.response?.data?.message || '') })
     } finally { locked.current = false; setPending(false) }
   }
   async function resend() {
@@ -77,15 +71,15 @@ export default function Login() {
         </div>}
         {message && <p role="status" className="rounded-xl border border-outline-variant bg-surface-container-lowest p-4 text-sm">{message}</p>}
         <div className="rounded-2xl border border-outline-variant bg-surface-container-lowest p-6 shadow-sm sm:p-8">
-          <div className="mb-6 text-center"><h1 className="font-headline-md text-headline-md font-semibold tracking-tight">{forgot ? 'Reset your password' : 'Sign in to FastStore'}</h1><p className="mt-1.5 text-body-md text-on-surface-variant">{forgot ? 'Enter your email to request a password reset link.' : 'Access your orders, saved wishlist, and faster checkout.'}</p></div>
+          <div className="mb-6 text-center"><h1 className="font-headline-md text-headline-md font-semibold tracking-tight">Sign in to FastStore</h1><p className="mt-1.5 text-body-md text-on-surface-variant">Access your orders, saved wishlist, and faster checkout.</p></div>
           <form onSubmit={submit} noValidate aria-busy={pending}>
-            <fieldset disabled={disabled} className="min-w-0 space-y-4"><legend className="sr-only">{forgot ? 'Password recovery' : 'Sign-in details'}</legend>
+            <fieldset disabled={disabled} className="min-w-0 space-y-4"><legend className="sr-only">Sign-in details</legend>
               <div className="space-y-1.5"><label htmlFor="login-email" className="block text-label-md font-medium">Email address</label><input id="login-email" type="email" name="email" value={email} onChange={event => { setEmail(event.target.value); resetFeedback() }} autoComplete="email" autoCapitalize="none" spellCheck={false} required placeholder="name@example.com" aria-invalid={Boolean(errors.email)} aria-describedby={errors.email ? 'login-email-error' : undefined} className={`${inputClass} ${errors.email ? 'border-error' : 'border-outline-variant'}`} />{errors.email && <p id="login-email-error" className="text-sm text-error">{errors.email}</p>}</div>
-              {!forgot && <div className="space-y-1.5"><div className="flex items-center justify-between"><label htmlFor="login-password" className="text-label-md font-medium">Password</label><button type="button" onClick={() => { setForgot(true); setPassword(''); resetFeedback() }} className="text-label-sm font-medium text-primary hover:underline">Forgot password?</button></div><div className="relative"><input id="login-password" name="password" type={visible ? 'text' : 'password'} autoComplete="current-password" required value={password} onChange={event => { setPassword(event.target.value); resetFeedback() }} placeholder="Enter your password" aria-invalid={Boolean(errors.password)} aria-describedby={errors.password ? 'login-password-error' : undefined} className={`${inputClass} pr-12 ${errors.password ? 'border-error' : 'border-outline-variant'}`} /><button type="button" onClick={() => setVisible(value => !value)} aria-label={visible ? 'Hide password' : 'Show password'} aria-pressed={visible} className="absolute right-0 top-0 flex h-11 w-11 items-center justify-center text-outline"><span aria-hidden="true" className="material-symbols-outlined text-[20px]">{visible ? 'visibility_off' : 'visibility'}</span></button></div>{errors.password && <p id="login-password-error" className="text-sm text-error">{errors.password}</p>}</div>}
-              <button type="submit" className="flex min-h-11 w-full items-center justify-center gap-2 rounded-lg bg-primary-container px-4 py-2 font-semibold text-white shadow-sm hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-60">{pending && <span aria-hidden="true" className="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>}{session.status === 'checking' ? 'Checking session…' : pending ? (forgot ? 'Requesting reset link…' : 'Signing in…') : forgot ? 'Send reset link' : 'Sign in'}</button>
+              <div className="space-y-1.5"><div className="flex items-center justify-between"><label htmlFor="login-password" className="text-label-md font-medium">Password</label><Link to="/password-reset" className="text-label-sm font-medium text-primary hover:underline">Forgot password?</Link></div><div className="relative"><input id="login-password" name="password" type={visible ? 'text' : 'password'} autoComplete="current-password" required value={password} onChange={event => { setPassword(event.target.value); resetFeedback() }} placeholder="Enter your password" aria-invalid={Boolean(errors.password)} aria-describedby={errors.password ? 'login-password-error' : undefined} className={`${inputClass} pr-12 ${errors.password ? 'border-error' : 'border-outline-variant'}`} /><button type="button" onClick={() => setVisible(value => !value)} aria-label={visible ? 'Hide password' : 'Show password'} aria-pressed={visible} className="absolute right-0 top-0 flex h-11 w-11 items-center justify-center text-outline"><span aria-hidden="true" className="material-symbols-outlined text-[20px]">{visible ? 'visibility_off' : 'visibility'}</span></button></div>{errors.password && <p id="login-password-error" className="text-sm text-error">{errors.password}</p>}</div>
+              <button type="submit" className="flex min-h-11 w-full items-center justify-center gap-2 rounded-lg bg-primary-container px-4 py-2 font-semibold text-white shadow-sm hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-60">{pending && <span aria-hidden="true" className="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>}{session.status === 'checking' ? 'Checking session…' : pending ? 'Signing in…' : 'Sign in'}</button>
             </fieldset>
           </form>
-          {forgot ? <button type="button" disabled={pending || resending} onClick={() => { setForgot(false); resetFeedback() }} className="mt-5 w-full text-center text-primary hover:underline">Back to sign in</button> : <><div className="my-6 flex items-center gap-3 text-label-sm text-outline"><span className="flex-1 border-t border-outline-variant" />New to FastStore?<span className="flex-1 border-t border-outline-variant" /></div><p className="text-center text-body-md text-on-surface-variant">Don’t have an account? <Link to="/register" className="font-semibold text-primary hover:underline">Create account</Link></p></>}
+          <><div className="my-6 flex items-center gap-3 text-label-sm text-outline"><span className="flex-1 border-t border-outline-variant" />New to FastStore?<span className="flex-1 border-t border-outline-variant" /></div><p className="text-center text-body-md text-on-surface-variant">Don’t have an account? <Link to="/register" className="font-semibold text-primary hover:underline">Create account</Link></p></>
         </div>
         <p className="text-center text-caption text-outline">After signing in, you’ll return to the homepage.</p>
       </div>

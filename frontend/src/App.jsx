@@ -12,6 +12,8 @@ import ShoppingCart from "./pages/ShoppingCart";
 import Signup from "./pages/SignUp";
 import Login from "./pages/Login";
 import AccountVerification from "./pages/AccountVerification";
+import PasswordReset from "./pages/PasswordReset";
+import PasswordChange from "./pages/PasswordChange"
 
 function App() {
   return (
@@ -25,6 +27,10 @@ function App() {
           <Route path="/signup" element={<Signup />} />
           <Route path="/login" element={<Login />} />
           <Route path="/account-verification" element={<AccountVerification />} />
+          <Route path="/password-reset" element={<PasswordReset />} />
+          <Route path="/forgot-password" element={<PasswordReset />} />
+          <Route path="/password/reset" element={<PasswordChange />} />
+          <Route path="/password-change" element={<PasswordChange />} />
           <Route path="/products/:id" element={<ProductDetails />} />
           <Route path="/cart" element={<ShoppingCart />} />
         </Routes>

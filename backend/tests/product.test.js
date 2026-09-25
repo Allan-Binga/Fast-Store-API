@@ -31,3 +31,22 @@ test("category names are escaped as literal text", async () => {
   expect(regex.test("Home (A+B)")).toBe(true); expect(regex.test("Home AAAB")).toBe(false);
 });
 test("search index is declared on the catalog schema", () => { expect(Product.schema.indexes().some(([keys]) => keys.name === "text" && keys.description === "text")).toBe(true); });
+
+test("suggestions match partial names literally and cap the returned results", async () => {
+  const limit = jest.fn().mockResolvedValue([]);
+  const find = jest.spyOn(Product, "find").mockReturnValue({ sort: () => ({ limit }) });
+  const next = jest.fn();
+  await controller.searchResults({ query: { q: "head", suggest: "true", limit: "100" } }, res(), next);
+  expect(next).not.toHaveBeenCalled();
+  expect(find.mock.calls[0][0].name.test("Studio Headphones")).toBe(true);
+  expect(limit).toHaveBeenCalledWith(5);
+  await controller.searchResults({ query: { q: "A+B (Pro)", suggest: "true" } }, res(), next);
+  const pattern = find.mock.calls[1][0].name;
+  expect(pattern.test("New A+B (Pro) headset")).toBe(true);
+  expect(pattern.test("AAAB Pro")).toBe(false);
+});
+test("ordinary search retains full-text matching", async () => {
+  const find = jest.spyOn(Product, "find").mockReturnValue({ skip: () => ({ limit: async () => [] }) });
+  await controller.searchResults({ query: { q: "headphones" } }, res(), jest.fn());
+  expect(find).toHaveBeenCalledWith({ $text: { $search: "headphones" } });
+});

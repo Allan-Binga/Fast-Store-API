@@ -11,10 +11,10 @@ export default function useResource(url) {
     api.get(url, { signal: controller.signal }).then(({ data }) => {
       setResult({ url, attempt, data, error: '' })
     }).catch(error => {
-      if (!controller.signal.aborted) setResult({ url, attempt, data: null, error: errorMessage(error) })
+      if (!controller.signal.aborted) setResult({ url, attempt, data: null, status: error.response?.status, error: errorMessage(error) })
     })
     return () => controller.abort()
   }, [url, attempt])
   const current = result?.url === url && result?.attempt === attempt ? result : null
-  return { data: current?.data, error: current?.error, loading: Boolean(url) && !current, retry: () => setAttempt(value => value + 1) }
+  return { data: current?.data, status: current?.status, error: current?.error, loading: Boolean(url) && !current, retry: () => setAttempt(value => value + 1) }
 }

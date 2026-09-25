@@ -12,14 +12,17 @@ export default function StoreProvider({ children }) {
   const [loading, setLoading] = useState(false)
   const [busy, setBusy] = useState(false)
   const locked = useRef(false)
+  const sessionVersion = useRef(0)
   const [notice, setNotice] = useState('')
   const [panel, setPanel] = useState(null)
 
   const refreshShopping = useCallback(async () => {
+    const version = sessionVersion.current
     setLoading(true)
     const results = await Promise.allSettled([
       customerRequest({ url: '/cart/user' }), customerRequest({ url: '/wishlist/user' }),
     ])
+    if (version !== sessionVersion.current) return
     const nextErrors = {}
     results.forEach((result, index) => {
       const key = index === 0 ? 'cart' : 'wishlist'
@@ -37,11 +40,14 @@ export default function StoreProvider({ children }) {
   }, [])
 
   const checkSession = useCallback(async () => {
+    const version = sessionVersion.current
     try {
       const { data } = await customerRequest({ url: '/auth/check-session' })
+      if (version !== sessionVersion.current) return
       setSession({ status: 'authenticated', user: data.user })
       await refreshShopping()
     } catch (error) {
+      if (version !== sessionVersion.current) return
       setCart([])
       setWishlist([])
       setSession({ status: [401, 403].includes(error.response?.status) ? 'guest' : 'error', user: null })
@@ -50,12 +56,13 @@ export default function StoreProvider({ children }) {
 
   useEffect(() => {
     let active = true
+    const version = sessionVersion.current
     customerRequest({ url: '/auth/check-session' }).then(({ data }) => {
-      if (!active) return
+      if (!active || version !== sessionVersion.current) return
       setSession({ status: 'authenticated', user: data.user })
       void refreshShopping()
     }).catch(error => {
-      if (active) setSession({ status: [401, 403].includes(error.response?.status) ? 'guest' : 'error', user: null })
+      if (active && version === sessionVersion.current) setSession({ status: [401, 403].includes(error.response?.status) ? 'guest' : 'error', user: null })
     })
     return () => { active = false }
   }, [refreshShopping])
@@ -82,13 +89,24 @@ export default function StoreProvider({ children }) {
     } finally { locked.current = false; setBusy(false) }
   }
 
-  const addToCart = product => mutate(product.endTime
-    ? { method: 'post', url: '/flashsale/add-to-cart', data: { productId: product._id, quantity: 1 } }
-    : { method: 'post', url: '/products/add-to-cart', data: { products: [{ productId: product._id, quantity: 1 }] } }, 'Added to your cart.')
+  const addToCart = (product, quantity = 1) => mutate(product.endTime
+    ? { method: 'post', url: '/flashsale/add-to-cart', data: { productId: product._id, quantity } }
+    : { method: 'post', url: '/cart/add', data: { products: [{ productId: product._id, quantity }] } }, 'Added to your cart.')
   const toggleWishlist = product => {
     const saved = wishlist.some(item => item._id === product._id)
     return mutate({ method: saved ? 'delete' : 'post', url: saved ? '/wishlist' : '/wishlist/add-to-wishlist', data: { productId: product._id } }, saved ? 'Removed from your wishlist.' : 'Saved to your wishlist.')
   }
+  function invalidateSession() {
+    sessionVersion.current += 1
+    setSession({ status: 'guest', user: null })
+    setCart([])
+    setWishlist([])
+    setErrors({})
+    setLoading(false)
+    setPanel(null)
+    setNotice('')
+  }
+
   async function login(credentials) {
     // Login must send/accept HttpOnly cookies without treating bad credentials as token expiry.
     const { data } = await api.post('/auth/login', credentials, { withCredentials: true })
@@ -106,14 +124,11 @@ export default function StoreProvider({ children }) {
     setBusy(true)
     try {
       await api.post('/auth/logout', {}, { withCredentials: true })
-      setSession({ status: 'guest', user: null })
-      setCart([])
-      setWishlist([])
-      setPanel(null)
+      invalidateSession()
       setNotice('You have signed out.')
     } catch (error) { setNotice(errorMessage(error)) }
     finally { locked.current = false; setBusy(false) }
   }
 
-  return <StoreContext.Provider value={{ categories, session, cart, wishlist, errors, loading, busy, notice, setNotice, panel, setPanel, checkSession, refreshShopping, addToCart, toggleWishlist, mutate, login, logout }}>{children}</StoreContext.Provider>
+  return <StoreContext.Provider value={{ categories, session, cart, wishlist, errors, loading, busy, notice, setNotice, panel, setPanel, checkSession, refreshShopping, addToCart, toggleWishlist, mutate, login, logout, invalidateSession }}>{children}</StoreContext.Provider>
 }

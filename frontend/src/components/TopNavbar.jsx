@@ -1,23 +1,10 @@
-import { useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useStore } from '../store/context'
 import { available, money } from '../store/catalog'
 import Modal from './Modal'
 import ProductImage from './ProductImage'
-
-function SearchForm({ query }) {
-  const [value, setValue] = useState(query)
-  const navigate = useNavigate()
-  return <form role="search" className="flex min-w-0 flex-1 gap-2" onSubmit={event => {
-    event.preventDefault()
-    const q = value.trim()
-    navigate(q ? `/?${new URLSearchParams({ q })}#featured` : '/#featured')
-  }}>
-    <label htmlFor="store-search" className="sr-only">Search products</label>
-    <input id="store-search" type="search" value={value} maxLength={200} onChange={event => setValue(event.target.value)} placeholder="Search products…" className="min-w-0 w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2" />
-    <button className="rounded-lg bg-primary px-4 py-2 text-white" type="submit">Search</button>
-  </form>
-}
+import LiveSearch from './LiveSearch'
 
 function CustomerPanel() {
   const store = useStore()
@@ -28,16 +15,16 @@ function CustomerPanel() {
   return <Modal title={title} onClose={() => setPanel(null)}>
     {session.status === 'checking' ? <p role="status">Checking your session…</p> : session.status !== 'authenticated' ? <div className="space-y-4">
       <p>{session.status === 'error' ? 'We could not check your account. You can still browse the store.' : 'Sign in to save products and manage your cart. You can browse all products without an account.'}</p>
-      <Link to="/register" onClick={() => setPanel(null)} className="inline-block rounded-lg bg-primary px-4 py-2 text-white">Create account</Link>
+      <Link to="/register" onClick={() => setPanel(null)} className="inline-block rounded-sm bg-primary px-4 py-2 text-white">Create account</Link>
       <Link to="/login" onClick={() => setPanel(null)} className="ml-3 inline-block text-primary underline">Sign in</Link>
-      <button className="rounded-lg bg-primary px-4 py-2 text-white" onClick={checkSession}>Check session again</button>
+      <button className="rounded-sm bg-primary px-4 py-2 text-white" onClick={checkSession}>Check session again</button>
       <button className="ml-3 underline" onClick={() => setPanel(null)}>Continue browsing</button>
-    </div> : panel === 'account' ? <div className="space-y-4"><p>Signed in as {session.user.email}</p><button disabled={busy} onClick={logout} className="rounded-lg border border-outline-variant px-4 py-2">Sign out</button></div> : <div className="space-y-4">
+    </div> : panel === 'account' ? <div className="space-y-4"><p>Signed in as {session.user.email}</p><button disabled={busy} onClick={logout} className="rounded-sm border border-outline-variant px-4 py-2">Sign out</button></div> : <div className="space-y-4">
       {loading && <p role="status">Updating your {panel}…</p>}
       {errors[panel] && <div role="alert"><p className="text-error">{errors[panel]}</p><button onClick={refreshShopping} disabled={loading} className="underline">Try again</button></div>}
       {!loading && !errors[panel] && items.length === 0 && <p>Your {panel} is empty. Explore the store to find something you like.</p>}
       {items.map(item => <div key={isCart ? item.productId : item._id} className="flex items-start gap-4 border-b border-outline-variant pb-4">
-        <ProductImage src={item.image} alt={item.name} className="h-20 w-20 shrink-0 rounded-lg object-contain bg-surface-container-low" />
+        <ProductImage src={item.image} alt={item.name} className="h-20 w-20 shrink-0 rounded-sm object-contain bg-surface-container-low" />
         <div className="min-w-0 flex-1 space-y-2">
           <h3 className="font-semibold">{item.name}</h3>
           <p>{money(isCart ? item.price : item.currentPrice)}{isCart && ` each · ${money(item.price * item.quantity)} total`}</p>
@@ -55,38 +42,72 @@ function CustomerPanel() {
       </div>)}
       {items.length > 0 && !errors[panel] && (isCart ? <div className="space-y-3">
         <p className="flex justify-between font-semibold"><span>Subtotal</span><span>{money(cart.reduce((total, item) => total + item.price * item.quantity, 0))}</span></p>
-        <p className="text-sm text-outline">Prices and availability are checked again at checkout. Checkout is not yet available on this storefront.</p>
+        <Link to="/cart" onClick={() => setPanel(null)} className="block rounded-sm bg-primary px-4 py-2 text-center text-white">View full cart</Link>
+        <p className="text-sm text-outline">Prices and availability are checked again at checkout.</p>
         <button disabled={busy || loading} onClick={() => mutate({ method: 'delete', url: '/cart/clear' }, 'Cart cleared.')} className="text-error underline">Clear cart</button>
-      </div> : <button disabled={busy || loading} onClick={() => mutate({ method: 'post', url: '/wishlist/add-to-cart' }, 'Wishlist added to your cart.', 'cart')} className="rounded-lg bg-primary px-4 py-2 text-white disabled:opacity-40">Add wishlist to cart</button>)}
+      </div> : <button disabled={busy || loading} onClick={() => mutate({ method: 'post', url: '/wishlist/add-to-cart' }, 'Wishlist added to your cart.', 'cart')} className="rounded-sm bg-primary px-4 py-2 text-white disabled:opacity-40">Add wishlist to cart</button>)}
     </div>}
-    {store.notice && <p role="status" className="mt-4 rounded-lg bg-surface-container-low p-3">{store.notice}</p>}
+    {store.notice && <p role="status" className="mt-4 rounded-sm bg-surface-container-low p-3">{store.notice}</p>}
   </Modal>
 }
 
 export default function TopNavbar() {
-  const { categories, session, cart, wishlist, errors, loading, panel, setPanel, notice, setNotice } = useStore()
+  const { categories, session, cart, wishlist, errors, loading, panel, setPanel, notice, setNotice, busy, logout } = useStore()
   const [params] = useSearchParams()
+  const navigate = useNavigate()
+  const header = useRef(null)
   const category = params.get('category') || ''
   const cartCount = cart.reduce((total, item) => total + item.quantity, 0)
+  const names = categories.data || []
+  const primary = names.slice(0, 4)
+  const signedIn = session.status === 'authenticated'
+  const cartReady = signedIn && !errors.cart && !loading
+  const wishlistReady = signedIn && !errors.wishlist && !loading
+  useEffect(() => {
+    function dismiss(event) {
+      header.current?.querySelectorAll('details[open]').forEach(menu => {
+        if (event.type === 'keydown' && event.key === 'Escape') { menu.open = false; menu.querySelector('summary')?.focus() }
+        else if (event.type === 'pointerdown' && !menu.contains(event.target)) menu.open = false
+      })
+    }
+    document.addEventListener('pointerdown', dismiss)
+    document.addEventListener('keydown', dismiss)
+    return () => { document.removeEventListener('pointerdown', dismiss); document.removeEventListener('keydown', dismiss) }
+  }, [])
+  function closeMenu(event) { const menu = event.currentTarget.closest('details'); if (menu) menu.open = false }
   return <>
-    <header className="sticky top-0 z-30 border-b border-outline-variant bg-surface-container-lowest shadow-sm">
-      <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-4 px-4 py-4 sm:px-8">
-        <Link to="/" className="text-headline-md font-headline-md font-extrabold text-primary">FastStore</Link>
-        <div className="order-3 w-full md:order-none md:w-auto md:flex-1"><SearchForm key={params.get('q') || ''} query={params.get('q') || ''} /></div>
-        <div className="ml-auto flex items-center gap-2">
-          <button onClick={() => setPanel('wishlist')} aria-label="Open wishlist" className="flex items-center gap-1 rounded-lg p-2 hover:bg-surface-container-low"><span className="material-symbols-outlined" aria-hidden="true">favorite</span><span className="text-xs">{session.status === 'authenticated' && !errors.wishlist && !loading ? wishlist.length : '—'}</span></button>
-          <button onClick={() => setPanel('cart')} aria-label="Open cart" className="flex items-center gap-1 rounded-lg p-2 hover:bg-surface-container-low"><span className="material-symbols-outlined" aria-hidden="true">shopping_bag</span><span className="text-xs">{session.status === 'authenticated' && !errors.cart && !loading ? cartCount : '—'}</span></button>
-          <button onClick={() => setPanel('account')} className="rounded-lg border border-outline-variant px-3 py-2 text-sm">{session.status === 'authenticated' ? 'Account' : 'Sign in'}</button>
+    <header ref={header} className="sticky top-0 z-30 border-b border-outline-variant bg-surface-container-lowest shadow-sm">
+      <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-4 gap-y-3 px-4 py-3 sm:px-8 xl:flex-nowrap">
+        <Link to="/" className="shrink-0 font-headline-md text-headline-md font-extrabold tracking-tight text-primary">FastStore</Link>
+        <nav aria-label="Product categories" className="order-3 flex w-full min-w-0 items-center gap-3 xl:order-none xl:w-auto xl:max-w-[390px]">
+          {categories.loading && <span role="status" className="text-xs text-outline">Loading categories…</span>}
+          {categories.error && <button className="text-xs text-error underline" onClick={categories.retry}>Retry categories</button>}
+          <div className="flex min-w-0 flex-1 items-center justify-between gap-3 xl:justify-start">
+            {primary.map(name => <Link key={name} title={name} aria-current={category === name ? 'page' : undefined} className={`min-w-0 truncate py-1 text-xs font-semibold text-primary hover:text-secondary sm:text-sm xl:max-w-24 ${category === name ? 'border-b-2 border-primary' : ''}`} to={`/?${new URLSearchParams({ category: name })}#featured`}>{name}</Link>)}
+          </div>
+          <details className="relative shrink-0" onBlur={event => { if (!event.currentTarget.contains(event.relatedTarget)) event.currentTarget.open = false }}>
+            <summary className="flex cursor-pointer list-none items-center gap-1 rounded-sm px-2 py-1.5 text-xs font-semibold text-primary hover:bg-surface-container-low [&::-webkit-details-marker]:hidden" aria-label="More categories">More<span aria-hidden="true" className="material-symbols-outlined text-[18px]">expand_more</span></summary>
+            <div className="absolute right-0 top-full z-50 mt-2 w-64 max-w-[calc(100vw-2rem)] rounded-md border border-outline-variant bg-white p-2 shadow-xl">
+              <p className="px-3 py-2 text-[11px] font-semibold uppercase tracking-wider text-outline">Shop by category</p>
+              <Link onClick={closeMenu} to="/#featured" className="block rounded-sm px-3 py-2 text-sm font-semibold text-primary hover:bg-surface-container-low">All products</Link>
+              <div className="max-h-72 overflow-y-auto">{names.map(name => <Link key={name} onClick={closeMenu} aria-current={category === name ? 'page' : undefined} to={`/?${new URLSearchParams({ category: name })}#featured`} className={`block break-words rounded-sm px-3 py-2 text-sm text-primary hover:bg-surface-container-low ${category === name ? 'bg-surface-container-low font-semibold' : ''}`}>{name}</Link>)}</div>
+            </div>
+          </details>
+        </nav>
+        <div className="order-2 w-full min-w-0 md:order-none md:w-auto md:flex-1 xl:min-w-48"><LiveSearch key={params.get('q') || ''} query={params.get('q') || ''} onView={id => navigate(`/products/${id}`)} /></div>
+        <div className="ml-auto flex shrink-0 items-center gap-1">
+          <button onClick={() => setPanel('wishlist')} aria-label="Open wishlist" className="relative rounded-sm p-2.5 text-on-surface-variant transition-colors hover:bg-surface-container-low"><span className="material-symbols-outlined text-[22px]" aria-hidden="true">favorite</span>{wishlistReady && wishlist.length > 0 && <span className="absolute right-0.5 top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-0.5 text-[10px] font-bold text-white">{wishlist.length}</span>}</button>
+          <details className="relative" onBlur={event => { if (!event.currentTarget.contains(event.relatedTarget)) event.currentTarget.open = false }}>
+            <summary aria-label="Account" className="flex cursor-pointer list-none items-center gap-1.5 rounded-sm p-2 text-on-surface-variant hover:bg-surface-container-low [&::-webkit-details-marker]:hidden"><span className="material-symbols-outlined" aria-hidden="true">account_circle</span><span className="hidden text-sm font-medium sm:inline">{signedIn ? 'Account' : 'Sign in'}</span></summary>
+            <div className="absolute right-0 top-full z-50 mt-2 w-60 max-w-[calc(100vw-2rem)] space-y-1 rounded-md border border-outline-variant bg-white p-2 shadow-xl">
+              {session.status === 'checking' ? <p role="status" className="p-3 text-sm text-outline">Checking session…</p> : signedIn ? <><p className="break-all border-b border-outline-variant/60 px-3 py-3 text-xs text-outline">Signed in as<br /><span className="font-medium text-on-surface">{session.user.email}</span></p><button onClick={event => { closeMenu(event); setPanel('wishlist') }} className="block w-full rounded-sm px-3 py-2 text-left text-sm hover:bg-surface-container-low">Your wishlist</button><button onClick={event => { closeMenu(event); navigate('/cart') }} className="block w-full rounded-sm px-3 py-2 text-left text-sm hover:bg-surface-container-low">Your cart</button><button disabled={busy} onClick={event => { closeMenu(event); void logout() }} className="flex w-full items-center gap-2 rounded-sm px-3 py-2 text-left text-sm font-semibold text-error hover:bg-error-container/30 disabled:opacity-50"><span aria-hidden="true" className="material-symbols-outlined text-[18px]">logout</span>{busy ? 'Please wait…' : 'Log out'}</button></> : <><Link onClick={closeMenu} to="/login" className="block rounded-sm px-3 py-2 text-sm font-semibold text-primary hover:bg-surface-container-low">Sign in</Link><Link onClick={closeMenu} to="/register" className="block rounded-sm px-3 py-2 text-sm hover:bg-surface-container-low">Create account</Link></>}
+            </div>
+          </details>
+          <button onClick={() => navigate('/cart')} aria-label="Open cart" className="flex items-center gap-1.5 rounded-sm border border-outline-variant/60 bg-surface-container-low px-2.5 py-2 text-primary hover:bg-surface-container-high"><span className="material-symbols-outlined text-[22px]" aria-hidden="true">shopping_bag</span><span className="hidden text-sm font-semibold sm:inline">Bag</span>{cartReady && <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[11px] font-bold text-white">{cartCount}</span>}</button>
         </div>
       </div>
-      <nav aria-label="Product categories" className="mx-auto flex max-w-7xl gap-5 overflow-x-auto px-4 pb-3 text-sm sm:px-8">
-        <Link to="/#featured" className="shrink-0 text-primary font-semibold">All products</Link>
-        {categories.loading && <span role="status">Loading categories…</span>}
-        {categories.error && <button className="shrink-0 text-error underline" onClick={categories.retry}>Retry categories</button>}
-        {(categories.data || []).map(name => <Link key={name} aria-current={category === name ? 'page' : undefined} className={`shrink-0 hover:text-primary ${category === name ? 'text-primary font-semibold' : ''}`} to={`/?${new URLSearchParams({ category: name })}#featured`}>{name}</Link>)}
-      </nav>
     </header>
-    {notice && !panel && <div role="status" className="fixed bottom-5 left-4 right-4 z-40 mx-auto flex max-w-lg items-center justify-between gap-4 rounded-xl border border-outline-variant bg-white p-4 shadow-xl"><p>{notice}</p><button aria-label="Dismiss message" onClick={() => setNotice('')} className="p-2">×</button></div>}
+    {notice && !panel && <div role="status" className="fixed bottom-5 left-4 right-4 z-40 mx-auto flex max-w-lg items-center justify-between gap-4 rounded-md border border-outline-variant bg-white p-4 shadow-xl"><p>{notice}</p><button aria-label="Dismiss message" onClick={() => setNotice('')} className="p-2">×</button></div>}
     {panel && <CustomerPanel />}
   </>
 }

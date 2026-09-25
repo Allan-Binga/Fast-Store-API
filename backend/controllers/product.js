@@ -9,6 +9,11 @@ const getSingleProduct = asyncHandler(async (req, res) => { const product = awai
 const searchResults = asyncHandler(async (req, res) => {
   if (typeof req.query.q !== "string" || !req.query.q.trim() || req.query.q.length > 200) throw fail(400, "Provide a search query of 1–200 characters.");
   const { limit, skip } = pagination(req);
+  // Autocomplete treats input as literal text and returns at most five name matches.
+  if (req.query.suggest === "true") {
+    const escaped = req.query.q.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    return res.json(await Product.find({ name: new RegExp(escaped, "i") }).sort({ name: 1, _id: 1 }).limit(Math.min(limit, 5)));
+  }
   res.json(await Product.find({ $text: { $search: req.query.q.trim() } }).skip(skip).limit(limit));
 });
 
