@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import TopNavbar from "../TopNavbar";
 import Footer from "../Footer";
+import SignInLink from "../SignInLink";
 import { useStore } from "../../store/context";
 
 export const panelClass =
@@ -34,9 +35,9 @@ export function AccountRequired({ children }) {
         <>
           <h1 className="text-2xl font-semibold">Sign in to continue</h1>
           <p>Your checkout and payment details are linked to your account.</p>
-          <Link className={primaryClass} to="/login">
+          <SignInLink className={primaryClass}>
             Sign in
-          </Link>
+          </SignInLink>
         </>
       )}
     </section>

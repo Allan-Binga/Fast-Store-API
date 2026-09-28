@@ -5,6 +5,7 @@ import { available, money } from "../store/catalog";
 import Modal from "./Modal";
 import ProductImage from "./ProductImage";
 import LiveSearch from "./LiveSearch";
+import SignInLink from "./SignInLink";
 
 function Icon({ children, className = "" }) {
   return (
@@ -231,13 +232,12 @@ function SignedInAccountMenu({ session, logoutPending, openWishlist, navigate, l
 function SignedOutAccountMenu() {
   return (
     <>
-      <Link
+      <SignInLink
         onClick={closeDetailsMenu}
-        to="/login"
         className="block rounded-sm px-3 py-2 text-sm font-semibold text-primary hover:bg-surface-container-low"
       >
         Sign in
-      </Link>
+      </SignInLink>
       <Link
         onClick={closeDetailsMenu}
         to="/register"
@@ -326,9 +326,9 @@ function GuestPanel({ session, checkSession, closePanel }) {
       <Link to="/register" onClick={closePanel} className="inline-block rounded-sm bg-primary px-4 py-2 text-white">
         Create account
       </Link>
-      <Link to="/login" onClick={closePanel} className="ml-3 inline-block text-primary underline">
+      <SignInLink onClick={closePanel} className="ml-3 inline-block text-primary underline">
         Sign in
-      </Link>
+      </SignInLink>
       <button className="rounded-sm bg-primary px-4 py-2 text-white" onClick={checkSession}>
         Check session again
       </button>

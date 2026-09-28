@@ -1,14 +1,18 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link, Navigate, useNavigate } from 'react-router-dom'
+import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { api, errorMessage } from '../api'
 import Footer from '../components/Footer'
+import { safeReturnPath } from '../components/SignInLink'
 import { useStore } from '../store/context'
 
 const inputClass = 'h-11 w-full rounded-sm border bg-surface-container-lowest px-3.5 text-on-surface placeholder:text-outline focus:border-primary-container focus:ring-2 focus:ring-primary-container/20 disabled:opacity-60'
 
 export default function Login() {
   const { session, login } = useStore()
+  const location = useLocation()
   const navigate = useNavigate()
+  const requestedReturnTo = location.state?.returnTo
+  const returnTo = safeReturnPath(requestedReturnTo)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [visible, setVisible] = useState(false)
@@ -27,7 +31,7 @@ export default function Login() {
   }, [])
   useEffect(() => { if (failure) alertRef.current?.focus() }, [failure])
 
-  if (session.status === 'authenticated') return <Navigate to="/" replace />
+  if (session.status === 'authenticated') return <Navigate to={returnTo} replace />
 
   function resetFeedback() { setFailure(null); setMessage(''); setErrors({}) }
   async function submit(event) {
@@ -46,7 +50,7 @@ export default function Login() {
     try {
       await login({ email: normalizedEmail, password })
       setPassword('')
-      navigate('/', { replace: true })
+      navigate(returnTo, { replace: true })
     } catch (error) {
       setFailure({ message: errorMessage(error), unverified: error.response?.status === 403 && /verify your email/i.test(error.response?.data?.message || '') })
     } finally { locked.current = false; setPending(false) }
@@ -82,7 +86,11 @@ export default function Login() {
           </form>
           <><div className="my-6 flex items-center gap-3 text-label-sm text-outline"><span className="flex-1 border-t border-outline-variant" />New to FastStore?<span className="flex-1 border-t border-outline-variant" /></div><p className="text-center text-body-md text-on-surface-variant">Don’t have an account? <Link to="/register" className="font-semibold text-primary hover:underline">Signup</Link></p></>
         </div>
-        <p className="text-center text-caption text-outline">After signing in, you’ll return to the homepage.</p>
+        <p className="text-center text-caption text-outline">
+          {requestedReturnTo
+            ? "After signing in, you’ll return to the page you were viewing."
+            : "After signing in, you’ll return to the homepage."}
+        </p>
       </div>
     </main>
     <Footer />

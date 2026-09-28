@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import TopNavbar from "../components/TopNavbar";
 import Footer from "../components/Footer";
+import SignInLink from "../components/SignInLink";
 import ProductImage from "../components/ProductImage";
 import ProductCard from "../components/ProductCard";
 import Modal from "../components/Modal";
@@ -275,12 +276,9 @@ export default function ShoppingCart() {
                 Try again
               </button>
             )}
-            <Link
-              to="/login"
-              className="block rounded-sm bg-primary-container px-5 py-3 font-semibold text-white"
-            >
+            <SignInLink className="block rounded-sm bg-primary-container px-5 py-3 font-semibold text-white">
               Sign in
-            </Link>
+            </SignInLink>
             <Link to="/" className="inline-block text-primary hover:underline">
               Continue shopping
             </Link>

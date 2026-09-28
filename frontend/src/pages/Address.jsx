@@ -4,6 +4,7 @@ import { customerRequest, errorMessage } from "../api";
 import Modal from "../components/Modal";
 import TopNavbar from "../components/TopNavbar";
 import Footer from "../components/Footer";
+import SignInLink from "../components/SignInLink";
 import { useStore } from "../store/context";
 
 const fields = [
@@ -451,9 +452,9 @@ export default function Address() {
                 <p className="mb-6">
                   Sign in to manage your shipping addresses.
                 </p>
-                <Link to="/login" className={`${primaryButton} inline-block`}>
+                <SignInLink className={`${primaryButton} inline-block`}>
                   Sign in
-                </Link>
+                </SignInLink>
                 <Link to="/register" className="ml-4 text-primary underline">
                   Create account
                 </Link>

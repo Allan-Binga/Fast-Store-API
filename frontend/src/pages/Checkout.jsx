@@ -345,8 +345,23 @@ function MpesaPaymentForm({ phone, setPhone, blocked, phase, onSubmit }) {
   );
 }
 
+function paypalEnvironment() {
+  const configured = String(
+    import.meta.env.VITE_PAYPAL_ENVIRONMENT || "sandbox",
+  )
+    .trim()
+    .toLowerCase();
+
+  if (configured === "live") return "production";
+  if (["sandbox", "production"].includes(configured)) return configured;
+  return null;
+}
+
 function PayPalButtons({ blocked, createOrder, captureOrder, onCancel, onError }) {
-  if (!import.meta.env.VITE_PAYPAL_CLIENT_ID) {
+  const clientId = import.meta.env.VITE_PAYPAL_CLIENT_ID;
+  const environment = paypalEnvironment();
+
+  if (!clientId || !environment) {
     return (
       <p role="alert" className="rounded-md bg-error-container/40 p-3 text-error">
         PayPal is not configured for this storefront.
@@ -356,8 +371,8 @@ function PayPalButtons({ blocked, createOrder, captureOrder, onCancel, onError }
 
   return (
     <PayPalProvider
-      clientId={import.meta.env.VITE_PAYPAL_CLIENT_ID}
-      environment={import.meta.env.DEV ? "sandbox" : "production"}
+      clientId={clientId}
+      environment={environment}
       components={["paypal-payments"]}
       pageType="checkout"
     >
