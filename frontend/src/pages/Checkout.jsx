@@ -101,7 +101,7 @@ function SavedAttemptNotice({ attempt }) {
     <div className="mb-6 space-y-2 rounded-md border border-primary/30 bg-surface-container-low p-4">
       <p>
         A checkout attempt is saved for this purchase. Continue it to reuse the
-        same payment session.
+        same payment session, or select a different payment method below.
       </p>
       <Link
         to={`/payment-result?checkout_key=${encodeURIComponent(attempt.key)}`}
@@ -110,7 +110,8 @@ function SavedAttemptNotice({ attempt }) {
         Check payment status
       </Link>
       <p className="text-sm text-outline">
-        The saved items and address stay attached to this attempt.
+        The saved items and address stay attached to this attempt. Other payment
+        sessions may still be pending; complete payment with only one method.
       </p>
     </div>
   );
@@ -257,7 +258,7 @@ function PaymentMethodCard({ method, selected, onSelect }) {
   );
 }
 
-function PaymentMethodSection({ provider, setProvider, busy, attempt }) {
+function PaymentMethodSection({ provider, setProvider, busy }) {
   return (
     <section className={panelClass} aria-labelledby="payment-title">
       <h2
@@ -266,7 +267,7 @@ function PaymentMethodSection({ provider, setProvider, busy, attempt }) {
       >
         2. Payment Method
       </h2>
-      <fieldset className="space-y-4" disabled={busy || Boolean(attempt)}>
+      <fieldset className="space-y-4" disabled={busy}>
         <legend className="sr-only">Choose a payment method</legend>
         {PAYMENT_METHODS.map((method) => (
           <PaymentMethodCard
@@ -485,7 +486,15 @@ function CheckoutForm() {
 
   useEffect(() => {
     active.current = true;
+    function restorePage(event) {
+      if (event.persisted) {
+        locked.current = false;
+        setPhase("idle");
+      }
+    }
+    window.addEventListener("pageshow", restorePage);
     return () => {
+      window.removeEventListener("pageshow", restorePage);
       active.current = false;
     };
   }, []);
@@ -528,6 +537,28 @@ function CheckoutForm() {
     setError(failure.response || failure.isAxiosError ? errorMessage(failure) : failure.message);
     setPhase("idle");
     resetPaymentLock();
+  }
+
+  function selectProvider(nextProvider) {
+    if (locked.current || busy || nextProvider === provider) return;
+    if (attempt) {
+      const { alternatives = {}, ...current } = attempt;
+      const saved = { ...alternatives, [current.provider || "stripe"]: current };
+      const next = saved[nextProvider] || {
+        ...checkoutAttempt(nextProvider, addressId, items),
+        body: attempt.body,
+      };
+      const purchase = { ...next, alternatives: saved };
+      try {
+        saveCheckoutAttempt(session.user, purchase);
+      } catch {
+        setError("Unable to save your payment selection. Please try again.");
+        return;
+      }
+      setAttempt(purchase);
+    }
+    setProvider(nextProvider);
+    setError("");
   }
 
   function getOrCreateAttempt(nextProvider) {
@@ -655,9 +686,8 @@ function CheckoutForm() {
           />
           <PaymentMethodSection
             provider={provider}
-            setProvider={setProvider}
+            setProvider={selectProvider}
             busy={busy}
-            attempt={attempt}
           />
           <ReviewSection
             attempt={attempt}

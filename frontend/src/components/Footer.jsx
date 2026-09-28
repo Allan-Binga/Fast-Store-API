@@ -28,7 +28,7 @@ function FooterLinkGroup({ title, links }) {
       <ul className="space-y-2 font-body-md text-body-md text-on-surface-variant dark:text-outline-variant">
         {links.map((link) => (
           <li key={link.label}>
-            <Link className={linkClass} to={link.to}>
+            <Link className={linkClass} to={link.to} state={{ scrollToTop: true }}>
               {link.label}
             </Link>
           </li>
@@ -49,7 +49,8 @@ function ShopLinks() {
           <li key={category}>
             <Link
               className={linkClass}
-              to={`/?${new URLSearchParams({ category })}#featured`}
+              to={`/?${new URLSearchParams({ category })}`}
+              state={{ scrollToTop: true }}
             >
               {category}
             </Link>
@@ -100,6 +101,7 @@ export default function Footer() {
             <Link
               className="font-headline-md text-headline-md font-bold text-primary dark:text-inverse-primary"
               to="/"
+              state={{ scrollToTop: true }}
             >
               FastStore
             </Link>

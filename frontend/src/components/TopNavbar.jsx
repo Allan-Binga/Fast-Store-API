@@ -132,7 +132,7 @@ function WishlistButton({ wishlistReady, wishlistCount, openWishlist }) {
     <button
       onClick={openWishlist}
       aria-label="Open wishlist"
-      className="relative rounded-sm p-2.5 text-on-surface-variant transition-colors hover:bg-surface-container-low"
+      className="relative flex min-h-11 min-w-11 items-center justify-center rounded-sm p-2.5 text-on-surface-variant transition-colors hover:bg-surface-container-low"
     >
       <Icon className="text-[22px]">favorite</Icon>
       {wishlistReady && wishlistCount > 0 && (
@@ -256,9 +256,9 @@ function AccountMenu({ session, logoutPending, openWishlist, navigate, logout })
     <details className="relative" onBlur={closeOnBlur}>
       <summary
         aria-label="Account"
-        className="flex cursor-pointer list-none items-center gap-1.5 rounded-sm p-2 text-on-surface-variant hover:bg-surface-container-low [&::-webkit-details-marker]:hidden"
+        className="flex min-h-11 min-w-11 cursor-pointer list-none items-center justify-center gap-1.5 rounded-sm p-2 text-on-surface-variant hover:bg-surface-container-low [&::-webkit-details-marker]:hidden"
       >
-        <Icon>account_circle</Icon>
+        <Icon className="text-[22px]">account_circle</Icon>
         <span className="hidden text-sm font-medium sm:inline">
           {signedIn ? "Account" : "Sign in"}
         </span>

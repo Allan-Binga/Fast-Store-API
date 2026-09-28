@@ -1,5 +1,6 @@
+import { useLayoutEffect } from "react";
 import StoreProvider from "./store/StoreProvider";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { BrowserRouter as Router, Route, Routes, useLocation } from "react-router-dom";
 
 // Storefront pages.
 import Home from "./pages/Home";
@@ -23,10 +24,21 @@ import SecurityOverview from "./pages/SecurityOverview";
 import CookieSettings from "./pages/CookieSettings";
 import NotFound from "./pages/NotFound";
 
+function FooterScrollReset() {
+  const location = useLocation();
+  useLayoutEffect(() => {
+    if (location.state?.scrollToTop) {
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    }
+  }, [location]);
+  return null;
+}
+
 function App() {
   return (
     <Router>
       <StoreProvider>
+        <FooterScrollReset />
         {/* Shopper page routes. */}
         <Routes>
           <Route path="/" element={<Home />} />
