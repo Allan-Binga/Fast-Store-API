@@ -3,7 +3,11 @@ const Order = require("../models/orders");
 const Product = require("../models/product");
 const FlashSale = require("../models/flashsale");
 const Cart = require("../models/cart");
-const { reserveOrder, settleOrder } = require("../services/orders");
+const {
+  reserveOrder,
+  settleOrder,
+  settlePayPalOrder,
+} = require("../services/orders");
 const id = "507f1f77bcf86cd799439011";
 const session = {};
 beforeEach(() => {
@@ -47,4 +51,98 @@ test("reservation checks stock atomically and stops before creating an order", a
   const create = jest.spyOn(Order, "create");
   await expect(reserveOrder({ user: id, checkoutKey: "key", items: [{ productId: id, quantity: 2 }] })).rejects.toMatchObject({ status: 409 });
   expect(create).not.toHaveBeenCalled();
+});
+
+
+test("completed PayPal capture settles the reserved order", async () => {
+  const order = {
+    user: id,
+    currency: "usd",
+    totalAmount: 10,
+    stockReserved: true,
+    paymentStatus: "pending",
+    cartItems: [],
+    save: jest.fn(),
+  };
+  jest.spyOn(Order, "findOne").mockReturnValue({ session: async () => order });
+
+  await settlePayPalOrder({
+    id: "PAYPAL-ORDER",
+    status: "COMPLETED",
+    purchaseUnits: [{
+      payments: {
+        captures: [{
+          id: "PAYPAL-CAPTURE",
+          status: "COMPLETED",
+          amount: { currencyCode: "USD", value: "10.00" },
+        }],
+      },
+    }],
+  });
+
+  expect(order.paymentStatus).toBe("paid");
+  expect(order.stockReserved).toBe(false);
+  expect(order.paypalCaptureId).toBe("PAYPAL-CAPTURE");
+});
+
+test("PayPal settlement refuses a mismatched capture amount", async () => {
+  const order = {
+    currency: "usd",
+    totalAmount: 10,
+    stockReserved: true,
+    paymentStatus: "pending",
+  };
+  jest.spyOn(Order, "findOne").mockReturnValue({ session: async () => order });
+
+  await expect(settlePayPalOrder({
+    id: "PAYPAL-ORDER",
+    status: "COMPLETED",
+    purchaseUnits: [{
+      payments: {
+        captures: [{
+          status: "COMPLETED",
+          amount: { currencyCode: "USD", value: "1.00" },
+        }],
+      },
+    }],
+  })).rejects.toMatchObject({ status: 409 });
+});
+
+test("successful M-Pesa callback settles the reserved order", async () => {
+  const order = {
+    user: id,
+    currency: "kes",
+    totalAmount: 1500,
+    stockReserved: true,
+    paymentStatus: "pending",
+    cartItems: [],
+    save: jest.fn(),
+  };
+  jest.spyOn(Order, "findOne").mockReturnValue({ session: async () => order });
+
+  await require("../services/orders").settleMpesaOrder({
+    checkoutRequestId: "ws_CO_123",
+    merchantRequestId: "merchant-123",
+    amount: 1500,
+    receiptNumber: "MPESA123",
+  });
+
+  expect(order.paymentStatus).toBe("paid");
+  expect(order.stockReserved).toBe(false);
+  expect(order.mpesaReceiptNumber).toBe("MPESA123");
+});
+
+test("M-Pesa settlement refuses a mismatched callback amount", async () => {
+  const order = {
+    currency: "kes",
+    totalAmount: 1500,
+    stockReserved: true,
+    paymentStatus: "pending",
+  };
+  jest.spyOn(Order, "findOne").mockReturnValue({ session: async () => order });
+
+  await expect(require("../services/orders").settleMpesaOrder({
+    checkoutRequestId: "ws_CO_123",
+    amount: 1,
+  })).rejects.toMatchObject({ status: 409 });
 });

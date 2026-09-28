@@ -1,19 +1,19 @@
 import StoreProvider from "./store/StoreProvider";
-import {
-  BrowserRouter as Router,
-  Route,
-  Routes,
-} from "react-router-dom";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 
 // Storefront pages.
 import Home from "./pages/Home";
 import ProductDetails from "./pages/ProductDetails";
 import ShoppingCart from "./pages/ShoppingCart";
+import Address from "./pages/Address";
+import Checkout from "./pages/Checkout";
+import PaymentResult from "./pages/PaymentResult";
+import Orders from "./pages/Orders";
 import Signup from "./pages/SignUp";
 import Login from "./pages/Login";
 import AccountVerification from "./pages/AccountVerification";
 import PasswordReset from "./pages/PasswordReset";
-import PasswordChange from "./pages/PasswordChange"
+import PasswordChange from "./pages/PasswordChange";
 
 function App() {
   return (
@@ -26,13 +26,21 @@ function App() {
           <Route path="/register" element={<Signup />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/account-verification" element={<AccountVerification />} />
+          <Route
+            path="/account-verification"
+            element={<AccountVerification />}
+          />
           <Route path="/password-reset" element={<PasswordReset />} />
           <Route path="/forgot-password" element={<PasswordReset />} />
           <Route path="/password/reset" element={<PasswordChange />} />
           <Route path="/password-change" element={<PasswordChange />} />
           <Route path="/products/:id" element={<ProductDetails />} />
           <Route path="/cart" element={<ShoppingCart />} />
+          <Route path="/checkout" element={<Checkout />} />
+          <Route path="/success" element={<PaymentResult />} />
+          <Route path="/payment-result" element={<PaymentResult />} />
+          <Route path="/orders" element={<Orders />} />
+          <Route path="/account/addresses" element={<Address />} />
         </Routes>
       </StoreProvider>
     </Router>

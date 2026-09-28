@@ -1,20 +1,129 @@
 const { asyncHandler, fail } = require("../utils/http");
-const { settleOrder } = require("../services/orders");
+const { settleOrder, settlePayPalOrder } = require("../services/orders");
 const { confirmOrder } = require("../services/confirmation");
 const getStripe = require("../services/stripe");
+const getPayPal = require("../services/paypal");
 
-// Verify raw payloads and acknowledge only after durable order processing.
+function queueConfirmation(orderId) {
+  setImmediate(async () => {
+    try {
+      await confirmOrder(orderId);
+    } catch (error) {
+      // The reconciliation worker retries paid orders whose email is unsent.
+      console.error(
+        "Order confirmation delivery deferred:",
+        String(orderId),
+        error.message,
+      );
+    }
+  });
+}
+
+// Verify raw payloads and acknowledge as soon as durable payment processing finishes.
 const handleWebhook = asyncHandler(async (req, res) => {
-  if (!process.env.WEBHOOK_SECRET) throw fail(503, "Webhook is not configured.");
+  if (!process.env.WEBHOOK_SECRET) {
+    throw fail(503, "Webhook is not configured.");
+  }
+
   let event;
-  try { event = getStripe().webhooks.constructEvent(req.body, req.headers["stripe-signature"], process.env.WEBHOOK_SECRET); }
-  catch { throw fail(400, "Invalid webhook signature."); }
-  if (!["checkout.session.completed", "checkout.session.expired"].includes(event.type)) return res.json({ received: true });
+  try {
+    event = getStripe().webhooks.constructEvent(
+      req.body,
+      req.headers["stripe-signature"],
+      process.env.WEBHOOK_SECRET,
+    );
+  } catch {
+    throw fail(400, "Invalid webhook signature.");
+  }
+
+  if (
+    !["checkout.session.completed", "checkout.session.expired"].includes(
+      event.type,
+    )
+  ) {
+    return res.json({ received: true });
+  }
+
   const data = event.data.object;
-  if (!data.metadata?.orderId || !data.metadata?.user) return res.json({ received: true });
+  if (!data.metadata?.orderId || !data.metadata?.user) {
+    return res.json({ received: true });
+  }
+
   const order = await settleOrder(data);
-  // Mail failure retries the event without repeating stock or cart mutations.
-  if (order.paymentStatus === "paid" && !order.confirmationSent) await confirmOrder(order._id);
+
+  // Stripe only waits for durable payment and inventory processing.
   res.json({ received: true });
+
+  if (order.paymentStatus === "paid" && !order.confirmationSent) {
+    queueConfirmation(order._id);
+  }
 });
-module.exports = { handleWebhook };
+
+async function verifyPayPalSignature(req) {
+  if (!process.env.PAYPAL_WEBHOOK_ID) {
+    throw fail(503, "PayPal webhook verification is not configured.");
+  }
+
+  const transmissionId = req.get("paypal-transmission-id");
+  const transmissionTime = req.get("paypal-transmission-time");
+  const certificateUrl = req.get("paypal-cert-url");
+  const algorithm = req.get("paypal-auth-algo");
+  const signature = req.get("paypal-transmission-sig");
+  if (!transmissionId || !transmissionTime || !certificateUrl || !algorithm || !signature) {
+    throw fail(400, "Missing PayPal webhook signature headers.");
+  }
+
+  const { client, apiBaseUrl } = getPayPal();
+  const token = await client.clientCredentialsAuthManager.fetchToken();
+  const response = await fetch(`${apiBaseUrl}/v1/notifications/verify-webhook-signature`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token.accessToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      transmission_id: transmissionId,
+      transmission_time: transmissionTime,
+      cert_url: certificateUrl,
+      auth_algo: algorithm,
+      transmission_sig: signature,
+      webhook_id: process.env.PAYPAL_WEBHOOK_ID,
+      webhook_event: req.body,
+    }),
+  });
+  if (!response.ok) throw fail(503, "PayPal webhook verification is unavailable.");
+  const result = await response.json();
+  if (result.verification_status !== "SUCCESS") {
+    throw fail(400, "Invalid PayPal webhook signature.");
+  }
+}
+
+const handlePayPalWebhook = asyncHandler(async (req, res) => {
+  await verifyPayPalSignature(req);
+  const event = req.body;
+  if (!event || typeof event.event_type !== "string") {
+    throw fail(400, "Invalid PayPal webhook payload.");
+  }
+
+  const supported = [
+    "CHECKOUT.ORDER.COMPLETED",
+    "PAYMENT.CAPTURE.COMPLETED",
+  ];
+  if (!supported.includes(event.event_type)) {
+    return res.json({ received: true });
+  }
+
+  const paypalOrderId =
+    event.event_type === "CHECKOUT.ORDER.COMPLETED"
+      ? event.resource?.id
+      : event.resource?.supplementary_data?.related_ids?.order_id;
+  if (!paypalOrderId) return res.json({ received: true });
+
+  const response = await getPayPal().orders.getOrder({ id: paypalOrderId });
+  const order = await settlePayPalOrder(response.result);
+  res.json({ received: true });
+
+  if (!order.confirmationSent) queueConfirmation(order._id);
+});
+
+module.exports = { handleWebhook, handlePayPalWebhook };

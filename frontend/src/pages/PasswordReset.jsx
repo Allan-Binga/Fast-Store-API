@@ -47,20 +47,20 @@ export default function PasswordReset() {
     } finally { locked.current = false; setPending(false) }
   }
   return <PasswordLayout title="Reset your password">
-    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-surface-container text-primary"><span aria-hidden="true" className="material-symbols-outlined">{sent ? 'mark_email_read' : 'key'}</span></div>
+    <div className="flex h-12 w-12 items-center justify-center rounded-sm bg-surface-container text-primary"><span aria-hidden="true" className="material-symbols-outlined">{sent ? 'mark_email_read' : 'key'}</span></div>
     <h1 ref={heading} tabIndex={-1} className="font-headline-md text-headline-md">{sent ? 'Check your email' : 'Reset your password'}</h1>
-    {error && <p role="alert" className="rounded-lg border border-error/20 bg-error-container/30 p-3 text-sm text-error">{error}</p>}
+    {error && <p role="alert" className="rounded-sm border border-error/20 bg-error-container/30 p-3 text-sm text-error">{error}</p>}
     {sent ? <>
-      <p role="status" className="rounded-lg border border-outline-variant/60 bg-surface-container-low p-3.5 text-on-surface-variant">{message}</p>
+      <p role="status" className="rounded-sm border border-outline-variant/60 bg-surface-container-low p-3.5 text-on-surface-variant">{message}</p>
       <p className="text-sm text-on-surface-variant">Check your inbox and spam folder. Only the newest reset link will work.</p>
-      <Link to="/login" className="block rounded-lg bg-primary-container px-5 py-3 text-center font-semibold text-white hover:bg-secondary">Return to sign in</Link>
+      <Link to="/login" className="block rounded-sm bg-primary-container px-5 py-3 text-center font-semibold text-white hover:bg-secondary">Return to sign in</Link>
       <button type="button" onClick={send} disabled={pending || remaining > 0} className="w-full text-center font-semibold text-primary hover:underline disabled:opacity-50">{pending ? 'Requesting link…' : 'Resend link'}</button>
       <button type="button" disabled={pending} onClick={() => { setSent(false); setError(''); setMessage('') }} className="w-full text-center text-sm text-primary hover:underline">Use a different email</button>
     </> : <>
       <p className="text-body-md text-on-surface-variant">Enter the email address associated with your FastStore account to request a password reset link.</p>
       <form onSubmit={send} noValidate aria-busy={pending} className="space-y-5">
-        <div><label htmlFor="reset-email" className="mb-1.5 block text-label-md font-medium">Email address</label><div className="relative"><span aria-hidden="true" className="material-symbols-outlined absolute left-3 top-3 text-[20px] text-outline">mail</span><input id="reset-email" type="email" autoComplete="email" autoCapitalize="none" spellCheck={false} required disabled={pending} value={email} onChange={event => { setEmail(event.target.value); setFieldError(''); setError('') }} placeholder="name@example.com" aria-invalid={Boolean(fieldError)} aria-describedby={fieldError ? 'reset-email-error' : undefined} className={`h-11 w-full rounded-lg border bg-white pl-10 pr-4 disabled:opacity-60 ${fieldError ? 'border-error' : 'border-outline-variant'}`} /></div>{fieldError && <p id="reset-email-error" className="mt-1 text-sm text-error">{fieldError}</p>}</div>
-        <button type="submit" disabled={pending || remaining > 0} className="min-h-11 w-full rounded-lg bg-primary-container px-5 py-2 font-semibold text-white hover:bg-secondary disabled:opacity-60">{pending ? 'Requesting reset link…' : 'Send reset link'}</button>
+        <div><label htmlFor="reset-email" className="mb-1.5 block text-label-md font-medium">Email address</label><div className="relative"><span aria-hidden="true" className="material-symbols-outlined absolute left-3 top-3 text-[20px] text-outline">mail</span><input id="reset-email" type="email" autoComplete="email" autoCapitalize="none" spellCheck={false} required disabled={pending} value={email} onChange={event => { setEmail(event.target.value); setFieldError(''); setError('') }} placeholder="name@example.com" aria-invalid={Boolean(fieldError)} aria-describedby={fieldError ? 'reset-email-error' : undefined} className={`h-11 w-full rounded-sm border bg-white pl-10 pr-4 disabled:opacity-60 ${fieldError ? 'border-error' : 'border-outline-variant'}`} /></div>{fieldError && <p id="reset-email-error" className="mt-1 text-sm text-error">{fieldError}</p>}</div>
+        <button type="submit" disabled={pending || remaining > 0} className="min-h-11 w-full rounded-sm bg-primary-container px-5 py-2 font-semibold text-white hover:bg-secondary disabled:opacity-60">{pending ? 'Requesting reset link…' : 'Send reset link'}</button>
       </form>
       <div className="space-y-3 border-t border-outline-variant/60 pt-5 text-center text-sm"><p>Remember your password? <Link to="/login" className="font-semibold text-primary hover:underline">Sign in</Link></p><p>Don’t have an account? <Link to="/register" className="font-semibold text-primary hover:underline">Create account</Link></p></div>
     </>}

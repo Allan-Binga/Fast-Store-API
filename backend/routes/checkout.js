@@ -1,9 +1,34 @@
 const express = require("express");
-const { createCheckoutSession } = require("../controllers/checkout.js");
+const {
+  createCheckoutSession,
+  resumeCheckoutSession,
+} = require("../controllers/checkout.js");
 const { authUserMiddleware } = require("../middleware/jwt");
+const {
+  createPayPalOrder,
+  capturePayPalOrder,
+} = require("../controllers/paypalCheckout");
+const { createMpesaStkPush } = require("../controllers/daraja");
 
 const router = express.Router();
 
-router.post("/create-checkout-session", authUserMiddleware ,createCheckoutSession);
+router.post(
+  "/create-checkout-session",
+  authUserMiddleware,
+  createCheckoutSession,
+);
+router.post(
+  "/resume-checkout-session",
+  authUserMiddleware,
+  resumeCheckoutSession,
+);
+
+router.post("/paypal/orders", authUserMiddleware, createPayPalOrder);
+router.post(
+  "/paypal/orders/:paypalOrderId/capture",
+  authUserMiddleware,
+  capturePayPalOrder,
+);
+router.post("/mpesa/stk-push", authUserMiddleware, createMpesaStkPush);
 
 module.exports = router;
