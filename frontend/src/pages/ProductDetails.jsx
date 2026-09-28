@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import TopNavbar from '../components/TopNavbar'
+import Footer from '../components/Footer'
 import ProductImage from '../components/ProductImage'
 import ProductCard from '../components/ProductCard'
 import ResourceState from '../components/ResourceState'
@@ -18,14 +19,16 @@ function RelatedProducts({ product }) {
 }
 
 function ProductContent({ product }) {
-  const { cart, wishlist, addToCart, toggleWishlist, setPanel, busy, session } = useStore()
+  const { cart, wishlist, addToCart, toggleWishlist, setPanel, isPending, session } = useStore()
   const [quantity, setQuantity] = useState(1)
   const [quantityError, setQuantityError] = useState('')
   const max = Math.min(product.quantity, 999)
   const inStock = max > 0
   const inCart = cart.some(item => item.productId === product._id)
   const saved = wishlist.some(item => item._id === product._id)
-  const disabled = busy || session.status === 'checking'
+  const cartPending = isPending('cart:add:' + product._id)
+  const wishlistPending = isPending('wishlist:' + product._id)
+  const sessionChecking = session.status === 'checking'
   useEffect(() => {
     const previous = document.title
     document.title = `${product.name} — FastStore`
@@ -57,9 +60,9 @@ function ProductContent({ product }) {
         <p className={`text-sm font-semibold ${inStock ? 'text-green-700' : 'text-error'}`}>{inStock ? `In stock · ${product.quantity} available` : 'Out of stock'}</p>
         <p className="whitespace-pre-line break-words text-body-md leading-relaxed text-on-surface-variant">{product.description}</p>
         <form onSubmit={add} noValidate className="mt-auto space-y-4 border-t border-outline-variant/60 pt-5">
-          {!inCart && inStock && <div><label htmlFor="product-quantity" className="mb-2 block text-sm font-medium">Quantity</label><div className="inline-flex h-11 items-center rounded-sm border border-outline-variant"><button type="button" aria-label="Decrease quantity" disabled={disabled || Number(quantity) <= 1} onClick={() => { setQuantity(value => Math.max(1, (Number(value) || 1) - 1)); setQuantityError('') }} className="h-full px-4 disabled:opacity-40">−</button><input id="product-quantity" type="number" inputMode="numeric" min={1} max={max} step={1} value={quantity} disabled={disabled} onChange={event => { setQuantity(event.target.value); setQuantityError('') }} aria-invalid={Boolean(quantityError)} aria-describedby={quantityError ? 'quantity-error' : undefined} className="w-16 bg-white text-center font-semibold" /><button type="button" aria-label="Increase quantity" disabled={disabled || Number(quantity) >= max} onClick={() => { setQuantity(value => Math.min(max, (Number(value) || 0) + 1)); setQuantityError('') }} className="h-full px-4 disabled:opacity-40">+</button></div>{quantityError && <p id="quantity-error" role="alert" className="mt-2 text-sm text-error">{quantityError}</p>}</div>}
-          <button type="submit" disabled={disabled || (!inStock && !inCart)} className="min-h-11 w-full rounded-sm bg-primary-container px-5 py-3 font-semibold text-white hover:bg-secondary disabled:opacity-50">{inCart ? 'View in cart' : !inStock ? 'Out of stock' : busy ? 'Updating…' : 'Add to cart'}</button>
-          <button type="button" aria-pressed={saved} disabled={disabled} onClick={() => toggleWishlist(product)} className="flex min-h-11 w-full items-center justify-center gap-2 rounded-sm border border-outline-variant px-5 py-3 text-primary hover:bg-surface-container-low disabled:opacity-50"><span aria-hidden="true" className={`material-symbols-outlined text-[20px] ${saved ? 'fill-icon' : ''}`}>favorite</span>{saved ? 'Remove from wishlist' : 'Save to wishlist'}</button>
+          {!inCart && inStock && <div><label htmlFor="product-quantity" className="mb-2 block text-sm font-medium">Quantity</label><div className="inline-flex h-11 items-center rounded-sm border border-outline-variant"><button type="button" aria-label="Decrease quantity" disabled={cartPending || sessionChecking || Number(quantity) <= 1} onClick={() => { setQuantity(value => Math.max(1, (Number(value) || 1) - 1)); setQuantityError('') }} className="h-full px-4 disabled:opacity-40">−</button><input id="product-quantity" type="number" inputMode="numeric" min={1} max={max} step={1} value={quantity} disabled={cartPending || sessionChecking} onChange={event => { setQuantity(event.target.value); setQuantityError('') }} aria-invalid={Boolean(quantityError)} aria-describedby={quantityError ? 'quantity-error' : undefined} className="w-16 bg-white text-center font-semibold" /><button type="button" aria-label="Increase quantity" disabled={cartPending || sessionChecking || Number(quantity) >= max} onClick={() => { setQuantity(value => Math.min(max, (Number(value) || 0) + 1)); setQuantityError('') }} className="h-full px-4 disabled:opacity-40">+</button></div>{quantityError && <p id="quantity-error" role="alert" className="mt-2 text-sm text-error">{quantityError}</p>}</div>}
+          <button type="submit" disabled={cartPending || sessionChecking || (!inStock && !inCart)} className="min-h-11 w-full rounded-sm bg-primary-container px-5 py-3 font-semibold text-white hover:bg-secondary disabled:opacity-50">{inCart ? 'View in cart' : !inStock ? 'Out of stock' : cartPending ? 'Adding...' : 'Add to cart'}</button>
+          <button type="button" aria-pressed={saved} disabled={wishlistPending || sessionChecking} onClick={() => toggleWishlist(product)} className="flex min-h-11 w-full items-center justify-center gap-2 rounded-sm border border-outline-variant px-5 py-3 text-primary hover:bg-surface-container-low disabled:opacity-50"><span aria-hidden="true" className={`material-symbols-outlined text-[20px] ${saved ? 'fill-icon' : ''}`}>favorite</span>{saved ? 'Remove from wishlist' : 'Save to wishlist'}</button>
           <p className="text-caption text-outline">Eligible flash-sale prices are applied in your cart. Prices and stock are checked again at checkout.</p>
         </form>
       </section>
@@ -78,6 +81,6 @@ export default function ProductDetails() {
     <main className="mx-auto w-full max-w-7xl flex-1 space-y-8 px-4 py-8 sm:px-8">
       {missing ? <section className="rounded-md border border-outline-variant bg-white p-8 text-center"><h1 className="font-headline-md text-headline-md">Product not found</h1><p className="my-4 text-on-surface-variant">This product may have been removed or the link may be incorrect.</p><Link to="/" className="text-primary underline">Browse products</Link></section> : <ResourceState resource={resource}>{resource.data && <ProductContent key={id} product={resource.data} />}</ResourceState>}
     </main>
-    <footer className="border-t border-outline-variant bg-white px-4 py-8 text-center text-sm text-outline"><Link to="/" className="font-semibold text-primary">FastStore</Link><p className="mt-2">© {new Date().getFullYear()} FastStore. All rights reserved.</p></footer>
+    <Footer />
   </div>
 }

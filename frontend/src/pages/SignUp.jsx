@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { api, errorMessage } from "../api";
+import Footer from "../components/Footer";
 import {
   passwordRules,
   registrationData,
@@ -112,21 +113,7 @@ function PageHeader() {
 }
 
 function PageFooter() {
-  return (
-    <footer className="mt-auto w-full border-t border-outline-variant bg-surface-container-lowest">
-      <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 py-space-xl text-label-sm sm:flex-row sm:px-8">
-        <Link to="/" className="font-headline-sm text-headline-sm font-bold text-primary">
-          FastStore
-        </Link>
-        <p className="text-on-surface-variant">
-          © {new Date().getFullYear()} FastStore. All rights reserved.
-        </p>
-        <Link to="/" className="text-primary hover:underline">
-          Continue browsing
-        </Link>
-      </div>
-    </footer>
-  );
+  return <Footer />;
 }
 
 function FailureAlert({ failure, pending, resending, onResend, feedbackRef }) {

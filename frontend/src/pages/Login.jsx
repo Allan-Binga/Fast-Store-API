@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { api, errorMessage } from '../api'
+import Footer from '../components/Footer'
 import { useStore } from '../store/context'
 
 const inputClass = 'h-11 w-full rounded-sm border bg-surface-container-lowest px-3.5 text-on-surface placeholder:text-outline focus:border-primary-container focus:ring-2 focus:ring-primary-container/20 disabled:opacity-60'
@@ -84,6 +85,6 @@ export default function Login() {
         <p className="text-center text-caption text-outline">After signing in, you’ll return to the homepage.</p>
       </div>
     </main>
-    <footer className="border-t border-outline-variant bg-surface-container-lowest"><div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-6 text-label-sm sm:px-8"><p className="text-on-surface-variant">© {new Date().getFullYear()} FastStore. All rights reserved.</p><Link to="/" className="text-primary hover:underline">Continue browsing</Link></div></footer>
+    <Footer />
   </div>
 }

@@ -10,20 +10,33 @@ export default function StoreProvider({ children }) {
   const [wishlist, setWishlist] = useState([]);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const locked = useRef(false);
+  const [pendingActions, setPendingActions] = useState([]);
+  const pendingActionsRef = useRef(new Set());
+  const shoppingLoaded = useRef(false);
+  const shoppingRequestVersion = useRef(0);
   const sessionVersion = useRef(0);
   const [notice, setNotice] = useState("");
   const [panel, setPanel] = useState(null);
 
   const refreshShopping = useCallback(async () => {
     const version = sessionVersion.current;
-    setLoading(true);
+    const requestVersion = ++shoppingRequestVersion.current;
+    const isInitialLoad = !shoppingLoaded.current;
+
+    if (isInitialLoad) setLoading(true);
+
     const results = await Promise.allSettled([
       customerRequest({ url: "/cart/user" }),
       customerRequest({ url: "/wishlist/user" }),
     ]);
-    if (version !== sessionVersion.current) return;
+
+    if (
+      version !== sessionVersion.current ||
+      requestVersion !== shoppingRequestVersion.current
+    ) {
+      return;
+    }
+
     const nextErrors = {};
     results.forEach((result, index) => {
       const key = index === 0 ? "cart" : "wishlist";
@@ -47,8 +60,27 @@ export default function StoreProvider({ children }) {
       setCart([]);
       setWishlist([]);
     }
-    setLoading(false);
+    shoppingLoaded.current = true;
+    if (isInitialLoad) setLoading(false);
   }, []);
+
+  const isPending = useCallback(
+    (actionKey) => pendingActions.includes(actionKey),
+    [pendingActions],
+  );
+
+  function beginAction(actionKey) {
+    if (pendingActionsRef.current.has(actionKey)) return false;
+
+    pendingActionsRef.current.add(actionKey);
+    setPendingActions(Array.from(pendingActionsRef.current));
+    return true;
+  }
+
+  function endAction(actionKey) {
+    pendingActionsRef.current.delete(actionKey);
+    setPendingActions(Array.from(pendingActionsRef.current));
+  }
 
   const checkSession = useCallback(async () => {
     const version = sessionVersion.current;
@@ -91,18 +123,31 @@ export default function StoreProvider({ children }) {
     };
   }, [refreshShopping]);
 
-  async function mutate(config, message, after) {
+  useEffect(() => {
+    if (!notice) return undefined;
+
+    const timeout = window.setTimeout(() => setNotice(""), 5000);
+    return () => window.clearTimeout(timeout);
+  }, [notice]);
+
+  async function mutate(config, message, after, actionKey = "shopping:update") {
     if (session.status !== "authenticated") {
       setPanel("account");
       return;
     }
-    if (locked.current) return;
-    locked.current = true;
-    setBusy(true);
+
+    if (!beginAction(actionKey)) return;
+
+    const version = sessionVersion.current;
     setNotice("");
+
     try {
       await customerRequest(config);
+      if (version !== sessionVersion.current) return;
+
       await refreshShopping();
+      if (version !== sessionVersion.current) return;
+
       setNotice(message);
       if (after) setPanel(after);
     } catch (error) {
@@ -114,8 +159,7 @@ export default function StoreProvider({ children }) {
       }
       setNotice(errorMessage(error));
     } finally {
-      locked.current = false;
-      setBusy(false);
+      endAction(actionKey);
     }
   }
 
@@ -133,6 +177,8 @@ export default function StoreProvider({ children }) {
             data: { products: [{ productId: product._id, quantity }] },
           },
       "Added to your cart.",
+      undefined,
+      "cart:add:" + product._id,
     );
   const toggleWishlist = (product) => {
     const saved = wishlist.some((item) => item._id === product._id);
@@ -143,6 +189,8 @@ export default function StoreProvider({ children }) {
         data: { productId: product._id },
       },
       saved ? "Removed from your wishlist." : "Saved to your wishlist.",
+      undefined,
+      "wishlist:" + product._id,
     );
   };
   const invalidateSession = useCallback(() => {
@@ -151,7 +199,11 @@ export default function StoreProvider({ children }) {
     setCart([]);
     setWishlist([]);
     setErrors({});
+    shoppingLoaded.current = false;
+    shoppingRequestVersion.current += 1;
     setLoading(false);
+    pendingActionsRef.current.clear();
+    setPendingActions([]);
     setPanel(null);
     setNotice("");
   }, []);
@@ -166,13 +218,14 @@ export default function StoreProvider({ children }) {
     setNotice("");
     setCart([]);
     setWishlist([]);
+    shoppingLoaded.current = false;
     void refreshShopping();
   }
 
   async function logout() {
-    if (locked.current) return;
-    locked.current = true;
-    setBusy(true);
+    const actionKey = "account:logout";
+    if (!beginAction(actionKey)) return;
+
     try {
       await api.post("/auth/logout", {}, { withCredentials: true });
       invalidateSession();
@@ -180,8 +233,7 @@ export default function StoreProvider({ children }) {
     } catch (error) {
       setNotice(errorMessage(error));
     } finally {
-      locked.current = false;
-      setBusy(false);
+      endAction(actionKey);
     }
   }
 
@@ -194,7 +246,7 @@ export default function StoreProvider({ children }) {
         wishlist,
         errors,
         loading,
-        busy,
+        isPending,
         notice,
         setNotice,
         panel,

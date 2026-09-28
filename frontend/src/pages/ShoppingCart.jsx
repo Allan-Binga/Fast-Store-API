@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import TopNavbar from "../components/TopNavbar";
+import Footer from "../components/Footer";
 import ProductImage from "../components/ProductImage";
 import ProductCard from "../components/ProductCard";
 import Modal from "../components/Modal";
@@ -20,8 +21,13 @@ function RecentProduct({ id }) {
 }
 
 function CartItem({ item }) {
-  const { mutate, wishlist, busy, loading } = useStore();
-  const disabled = busy || loading;
+  const { mutate, wishlist, isPending } = useStore();
+  const quantityActionKey = "cart:quantity:" + item.productId;
+  const removeActionKey = "cart:remove:" + item.productId;
+  const wishlistActionKey = "wishlist:" + item.productId;
+  const quantityPending = isPending(quantityActionKey);
+  const removePending = isPending(removeActionKey);
+  const wishlistPending = isPending(wishlistActionKey);
   const saved = wishlist.some((product) => product._id === item.productId);
   function quantity(value) {
     void mutate(
@@ -31,6 +37,8 @@ function CartItem({ item }) {
         data: { productId: item.productId, quantity: value },
       },
       "Quantity updated.",
+      undefined,
+      quantityActionKey,
     );
   }
   return (
@@ -41,7 +49,7 @@ function CartItem({ item }) {
       <div className="col-span-2 flex min-w-0 items-start gap-4 md:col-span-5">
         <Link
           to={`/products/${item.productId}`}
-          className="h-20 w-20 shrink-0 overflow-hidden rounded-lg border border-outline-variant/50 bg-surface-container-low"
+          className="h-20 w-20 shrink-0 overflow-hidden rounded-sm border border-outline-variant/50 bg-surface-container-low"
         >
           <ProductImage
             src={item.image}
@@ -68,7 +76,7 @@ function CartItem({ item }) {
           <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-label-sm">
             <button
               type="button"
-              disabled={disabled || saved}
+              disabled={wishlistPending || saved}
               onClick={() =>
                 mutate(
                   {
@@ -77,6 +85,8 @@ function CartItem({ item }) {
                     data: { productId: item.productId },
                   },
                   "Saved to your wishlist. The item is still in your cart.",
+                  undefined,
+                  wishlistActionKey,
                 )
               }
               className="text-primary hover:underline disabled:opacity-50"
@@ -85,7 +95,7 @@ function CartItem({ item }) {
             </button>
             <button
               type="button"
-              disabled={disabled}
+              disabled={removePending}
               onClick={() =>
                 mutate(
                   {
@@ -94,11 +104,13 @@ function CartItem({ item }) {
                     data: { productId: item.productId },
                   },
                   "Product removed from your cart.",
+                  undefined,
+                  removeActionKey,
                 )
               }
               className="text-error hover:underline disabled:opacity-50"
             >
-              Remove
+              {removePending ? "Removing..." : "Remove"}
             </button>
           </div>
         </div>
@@ -110,13 +122,13 @@ function CartItem({ item }) {
         {money(item.price)}
       </div>
       <div className="flex justify-end md:col-span-3 md:justify-center">
-        <div className="inline-flex h-9 items-center rounded-lg border border-outline-variant bg-white">
+        <div className="inline-flex h-9 items-center rounded-sm border border-outline-variant bg-white">
           <button
             type="button"
             aria-label={`Decrease quantity of ${item.name}`}
-            disabled={disabled || item.quantity <= 1}
+            disabled={quantityPending || item.quantity <= 1}
             onClick={() => quantity(item.quantity - 1)}
-            className="h-full w-8 rounded-l-lg text-outline hover:bg-surface-container-low disabled:opacity-40"
+            className="h-full w-8 rounded-l-sm text-outline hover:bg-surface-container-low disabled:opacity-40"
           >
             −
           </button>
@@ -130,10 +142,10 @@ function CartItem({ item }) {
             type="button"
             aria-label={`Increase quantity of ${item.name}`}
             disabled={
-              disabled || item.quantity >= 999 || item.available === false
+              quantityPending || item.quantity >= 999 || item.available === false
             }
             onClick={() => quantity(item.quantity + 1)}
-            className="h-full w-8 rounded-r-lg text-outline hover:bg-surface-container-low disabled:opacity-40"
+            className="h-full w-8 rounded-r-sm text-outline hover:bg-surface-container-low disabled:opacity-40"
           >
             +
           </button>
@@ -156,14 +168,15 @@ export default function ShoppingCart() {
     session,
     cart,
     errors,
-    busy,
     loading,
     refreshShopping,
+    isPending,
     checkSession,
     mutate,
   } = useStore();
   const navigate = useNavigate();
   const [confirmClear, setConfirmClear] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [recent] = useState(() => {
     try {
       const ids = JSON.parse(localStorage.getItem("faststore.recent") || "[]");
@@ -187,17 +200,19 @@ export default function ShoppingCart() {
       document.title = previous;
     };
   }, []);
-  useEffect(() => {
-    if (session.status !== "authenticated") return;
-    // Recheck prices/stock when the customer comes back from another browser tab.
-    const refresh = () => {
-      void refreshShopping();
-    };
-    window.addEventListener("focus", refresh);
-    return () => window.removeEventListener("focus", refresh);
-  }, [session.status, refreshShopping]);
+  async function refreshCart() {
+    if (refreshing) return;
+
+    setRefreshing(true);
+    try {
+      await refreshShopping();
+    } finally {
+      setRefreshing(false);
+    }
+  }
+
   const authenticated = session.status === "authenticated";
-  const disabled = busy || loading;
+  const clearPending = isPending("cart:clear");
   const count = cart.reduce((total, item) => total + item.quantity, 0);
   const subtotal =
     cart.reduce(
@@ -223,23 +238,23 @@ export default function ShoppingCart() {
           </div>
           {authenticated && (
             <button
-              disabled={disabled}
-              onClick={refreshShopping}
-              className="rounded-lg border border-outline-variant bg-white px-4 py-2 text-sm text-primary disabled:opacity-50"
+              disabled={refreshing}
+              onClick={refreshCart}
+              className="rounded-sm border border-outline-variant bg-white px-4 py-2 text-sm text-primary disabled:opacity-50"
             >
-              Refresh cart
+              {refreshing ? "Refreshing..." : "Refresh cart"}
             </button>
           )}
         </div>
         {session.status === "checking" ? (
           <p
             role="status"
-            className="rounded-xl border border-outline-variant bg-white p-6"
+            className="rounded-md border border-outline-variant bg-white p-6"
           >
             Loading your cart…
           </p>
         ) : !authenticated ? (
-          <section className="mx-auto max-w-md space-y-4 rounded-2xl border border-outline-variant bg-white p-8 text-center shadow-sm">
+          <section className="mx-auto max-w-md space-y-4 rounded-sm border border-outline-variant bg-white p-8 text-center shadow-sm">
             <span
               aria-hidden="true"
               className="material-symbols-outlined text-[40px] text-primary"
@@ -262,7 +277,7 @@ export default function ShoppingCart() {
             )}
             <Link
               to="/login"
-              className="block rounded-lg bg-primary-container px-5 py-3 font-semibold text-white"
+              className="block rounded-sm bg-primary-container px-5 py-3 font-semibold text-white"
             >
               Sign in
             </Link>
@@ -272,24 +287,26 @@ export default function ShoppingCart() {
           </section>
         ) : (
           <>
-            {loading && (
-              <p role="status" className="mb-4 text-sm text-outline">
-                Updating prices and availability…
+            {loading && !cart.length ? (
+              <p
+                role="status"
+                className="rounded-md border border-outline-variant bg-white p-6"
+              >
+                Loading your cart...
               </p>
-            )}
-            {errors.cart ? (
+            ) : errors.cart ? (
               <div
                 role="alert"
-                className="space-y-3 rounded-xl border border-error/20 bg-error-container/40 p-5"
+                className="space-y-3 rounded-md border border-error/20 bg-error-container/40 p-5"
               >
                 <h2 className="font-semibold text-error">
                   Could not load your cart
                 </h2>
                 <p>{errors.cart}</p>
                 <button
-                  onClick={refreshShopping}
-                  disabled={loading}
-                  className="rounded-lg border border-outline-variant bg-white px-4 py-2 text-primary disabled:opacity-50"
+                  onClick={refreshCart}
+                  disabled={refreshing}
+                  className="rounded-sm border border-outline-variant bg-white px-4 py-2 text-primary disabled:opacity-50"
                 >
                   Try again
                 </button>
@@ -298,8 +315,7 @@ export default function ShoppingCart() {
               <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
                 <div className="space-y-4 lg:col-span-8">
                   <div
-                    aria-busy={disabled}
-                    className="overflow-hidden rounded-xl border border-outline-variant bg-white shadow-sm"
+                    className="overflow-hidden rounded-md border border-outline-variant bg-white shadow-sm"
                   >
                     <div className="hidden grid-cols-12 gap-4 border-b border-outline-variant bg-surface-container-low px-6 py-3.5 text-label-sm font-semibold uppercase tracking-wider text-outline md:grid">
                       <div className="col-span-5">Product</div>
@@ -321,14 +337,13 @@ export default function ShoppingCart() {
                       ← Continue shopping
                     </Link>
                     <button
-                      disabled={disabled}
                       onClick={() => setConfirmClear(true)}
                       className="text-sm text-error hover:underline disabled:opacity-50"
                     >
                       Clear cart
                     </button>
                   </div>
-                  <div className="flex items-start gap-2 rounded-xl border border-outline-variant/60 bg-surface-container-low p-4 text-caption text-on-surface-variant">
+                  <div className="flex items-start gap-2 rounded-md border border-outline-variant/60 bg-surface-container-low p-4 text-caption text-on-surface-variant">
                     <span
                       aria-hidden="true"
                       className="material-symbols-outlined text-[18px] text-primary"
@@ -343,7 +358,7 @@ export default function ShoppingCart() {
                 </div>
                 <aside
                   aria-labelledby="summary-title"
-                  className="rounded-xl border border-outline-variant bg-white p-6 shadow-sm lg:sticky lg:top-28 lg:col-span-4"
+                  className="rounded-md border border-outline-variant bg-white p-6 shadow-sm lg:sticky lg:top-28 lg:col-span-4"
                 >
                   <h2
                     id="summary-title"
@@ -370,7 +385,7 @@ export default function ShoppingCart() {
                   {unavailable && (
                     <p
                       role="alert"
-                      className="mb-4 rounded-lg bg-error-container/30 p-3 text-sm text-error"
+                      className="mb-4 rounded-sm bg-error-container/30 p-3 text-sm text-error"
                     >
                       Some items are unavailable in the requested quantity.
                       Reduce their quantities or remove them. Their displayed
@@ -378,9 +393,9 @@ export default function ShoppingCart() {
                     </p>
                   )}
                   <button
-                    disabled={disabled || unavailable}
+                    disabled={unavailable}
                     onClick={() => navigate("/checkout")}
-                    className="min-h-12 w-full rounded-lg bg-primary-container px-5 py-3 text-sm font-semibold text-white disabled:opacity-50"
+                    className="min-h-12 w-full rounded-sm bg-primary-container px-5 py-3 text-sm font-semibold text-white disabled:opacity-50"
                   >
                     Proceed to checkout
                   </button>
@@ -392,8 +407,8 @@ export default function ShoppingCart() {
               </div>
             ) : (
               !loading && (
-                <section className="mx-auto max-w-md space-y-4 rounded-2xl border border-outline-variant bg-white p-8 text-center shadow-sm">
-                  <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-surface-container-low">
+                <section className="mx-auto max-w-md space-y-4 rounded-sm border border-outline-variant bg-white p-8 text-center shadow-sm">
+                  <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-md bg-surface-container-low">
                     <span
                       aria-hidden="true"
                       className="material-symbols-outlined text-[40px] text-outline"
@@ -409,7 +424,7 @@ export default function ShoppingCart() {
                   </p>
                   <Link
                     to="/"
-                    className="inline-block rounded-lg bg-primary-container px-6 py-3 font-semibold text-white"
+                    className="inline-block rounded-sm bg-primary-container px-6 py-3 font-semibold text-white"
                   >
                     Continue shopping
                   </Link>
@@ -436,22 +451,7 @@ export default function ShoppingCart() {
           </section>
         )}
       </main>
-      <footer className="mt-10 border-t border-outline-variant bg-white">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-8 sm:px-8">
-          <Link
-            to="/"
-            className="font-headline-md text-headline-md font-bold text-primary"
-          >
-            FastStore
-          </Link>
-          <Link to="/" className="text-sm text-primary">
-            Browse products
-          </Link>
-          <p className="text-caption text-outline">
-            © {new Date().getFullYear()} FastStore. All rights reserved.
-          </p>
-        </div>
-      </footer>
+      <Footer />
       {confirmClear && (
         <Modal title="Clear your cart?" onClose={() => setConfirmClear(false)}>
           <p className="mb-6 text-on-surface-variant">
@@ -459,22 +459,22 @@ export default function ShoppingCart() {
           </p>
           <div className="flex flex-wrap justify-end gap-3">
             <button
-              disabled={disabled}
-              onClick={() => setConfirmClear(false)}
-              className="rounded-lg border border-outline-variant px-4 py-2"
+                onClick={() => setConfirmClear(false)}
+              className="rounded-sm border border-outline-variant px-4 py-2"
             >
               Keep shopping
             </button>
             <button
-              disabled={disabled}
+              disabled={clearPending}
               onClick={() => {
-                setConfirmClear(false);
                 void mutate(
                   { method: "delete", url: "/cart/clear" },
                   "Cart cleared.",
-                );
+                  undefined,
+                  "cart:clear",
+                ).then(() => setConfirmClear(false));
               }}
-              className="rounded-lg bg-error px-4 py-2 font-semibold text-white disabled:opacity-50"
+              className="rounded-sm bg-error px-4 py-2 font-semibold text-white disabled:opacity-50"
             >
               Yes, clear cart
             </button>

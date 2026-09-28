@@ -13,7 +13,7 @@ export function OrderItems({ items, currency = "usd" }) {
           <ProductImage
             src={item.image}
             alt={item.name}
-            className="h-16 w-16 shrink-0 rounded-lg border border-outline-variant/40 object-contain"
+            className="h-16 w-16 shrink-0 rounded-sm border border-outline-variant/40 object-contain"
           />
           <div className="min-w-0 flex-1">
             <h3 className="break-words font-semibold">{item.name}</h3>

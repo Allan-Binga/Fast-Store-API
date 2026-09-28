@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import hero from '../assets/hero.png'
 import TopNavbar from '../components/TopNavbar'
+import Footer from '../components/Footer'
 import ProductCard from '../components/ProductCard'
 import ResourceState from '../components/ResourceState'
 import useResource from '../hooks/useResource'
@@ -90,6 +91,6 @@ export default function Home() {
       {!browse && <Collection title="New arrivals" url="/products/new-arrivals" onView={viewProduct} />}
       <RecentlyViewed ids={recent} onView={viewProduct} />
     </main>
-    <footer className="mt-12 border-t border-outline-variant bg-white"><div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-6 px-4 py-10 sm:px-8"><div><Link to="/" className="font-headline-md text-headline-md font-bold text-primary">FastStore</Link><p className="mt-2 text-sm text-outline">Everyday essentials, all in one place.</p></div><Link to="/#featured" className="text-primary">Browse all products</Link><p className="text-sm text-outline">© {new Date().getFullYear()} FastStore</p></div></footer>
+    <Footer />
   </div>
 }

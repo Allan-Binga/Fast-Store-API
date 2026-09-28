@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { api, errorMessage } from '../api'
+import Footer from '../components/Footer'
 
 function Verification({ token }) {
   const validToken = /^[a-f\d]{64}$/i.test(token)
@@ -88,7 +89,7 @@ function Verification({ token }) {
         </form>}
       </section>
     </main>
-    <footer className="border-t border-outline-variant bg-white px-4 py-6 text-center text-sm text-outline">© {new Date().getFullYear()} FastStore. All rights reserved.</footer>
+    <Footer />
   </div>
 }
 

@@ -98,7 +98,7 @@ function SavedAttemptNotice({ attempt }) {
   if (!attempt) return null;
 
   return (
-    <div className="mb-6 space-y-2 rounded-xl border border-primary/30 bg-surface-container-low p-4">
+    <div className="mb-6 space-y-2 rounded-md border border-primary/30 bg-surface-container-low p-4">
       <p>
         A checkout attempt is saved for this purchase. Continue it to reuse the
         same payment session.
@@ -120,7 +120,7 @@ function ErrorMessage({ message }) {
   if (!message) return null;
 
   return (
-    <p role="alert" className="mb-6 rounded-xl bg-error-container/40 p-4 text-error">
+    <p role="alert" className="mb-6 rounded-md bg-error-container/40 p-4 text-error">
       {message}
     </p>
   );
@@ -129,7 +129,7 @@ function ErrorMessage({ message }) {
 function AddressCard({ address, checked, onChange }) {
   return (
     <label
-      className={`min-w-0 cursor-pointer rounded-xl border-2 p-4 ${
+      className={`min-w-0 cursor-pointer rounded-md border-2 p-4 ${
         checked ? "border-primary bg-surface-container-low/40" : "border-outline-variant"
       }`}
     >
@@ -196,7 +196,7 @@ function ShippingSection({
         </div>
       )}
       {!addresses.loading && !addresses.error && savedAddresses.length === 0 && (
-        <div className="rounded-xl border-2 border-dashed border-outline-variant p-6 text-center">
+        <div className="rounded-md border-2 border-dashed border-outline-variant p-6 text-center">
           <h3 className="font-semibold">No shipping addresses found</h3>
           <p className="my-3">Add a shipping address to continue.</p>
           <Link to="/account/addresses?returnTo=checkout" className={primaryClass}>
@@ -230,7 +230,7 @@ function ShippingSection({
 function PaymentMethodCard({ method, selected, onSelect }) {
   return (
     <label
-      className={`flex items-start gap-3 rounded-xl border-2 p-5 ${
+      className={`flex items-start gap-3 rounded-md border-2 p-5 ${
         selected ? "border-primary bg-surface-container-low/30" : "border-outline-variant"
       }`}
     >
@@ -332,7 +332,7 @@ function MpesaPaymentForm({ phone, setPhone, blocked, phase, onSubmit }) {
         onChange={(event) => setPhone(event.target.value)}
         placeholder="0712345678"
         disabled={Boolean(blocked)}
-        className="w-full rounded-lg border border-outline-variant bg-surface px-4 py-3 outline-none focus:border-primary"
+        className="w-full rounded-sm border border-outline-variant bg-surface px-4 py-3 outline-none focus:border-primary"
       />
       <button
         disabled={Boolean(blocked) || !phone.trim()}
@@ -348,7 +348,7 @@ function MpesaPaymentForm({ phone, setPhone, blocked, phase, onSubmit }) {
 function PayPalButtons({ blocked, createOrder, captureOrder, onCancel, onError }) {
   if (!import.meta.env.VITE_PAYPAL_CLIENT_ID) {
     return (
-      <p role="alert" className="rounded-xl bg-error-container/40 p-3 text-error">
+      <p role="alert" className="rounded-md bg-error-container/40 p-3 text-error">
         PayPal is not configured for this storefront.
       </p>
     );

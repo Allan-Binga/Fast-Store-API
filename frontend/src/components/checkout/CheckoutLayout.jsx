@@ -1,13 +1,14 @@
 import { Link } from "react-router-dom";
 import TopNavbar from "../TopNavbar";
+import Footer from "../Footer";
 import { useStore } from "../../store/context";
 
 export const panelClass =
-  "rounded-xl border border-outline-variant/60 bg-surface-container-lowest p-5 shadow-sm sm:p-6";
+  "rounded-md border border-outline-variant/60 bg-surface-container-lowest p-5 sm:p-6";
 export const primaryClass =
-  "inline-flex items-center justify-center rounded-lg bg-primary px-5 py-3 text-center font-semibold text-white hover:bg-secondary disabled:opacity-50";
+  "inline-flex items-center justify-center rounded-sm bg-primary px-5 py-3 text-center font-semibold text-white hover:bg-secondary disabled:opacity-50";
 export const secondaryClass =
-  "inline-flex items-center justify-center rounded-lg border border-outline-variant px-5 py-3 text-center font-medium hover:bg-surface-container-low disabled:opacity-50";
+  "inline-flex items-center justify-center rounded-sm border border-outline-variant px-5 py-3 text-center font-medium hover:bg-surface-container-low disabled:opacity-50";
 
 export function AccountRequired({ children }) {
   const { session, checkSession } = useStore();
@@ -59,13 +60,7 @@ export default function CheckoutLayout({ title, children }) {
         </nav>
         {children}
       </main>
-      <footer className="mt-8 border-t border-outline-variant bg-white px-4 py-6 text-center text-sm">
-        <Link to="/" className="font-semibold text-primary">
-          FastStore
-        </Link>
-        <span className="mx-3 text-outline">·</span>
-        <Link to="/cart">Return to cart</Link>
-      </footer>
+      <Footer />
     </div>
   );
 }

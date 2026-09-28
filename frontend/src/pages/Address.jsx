@@ -3,6 +3,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { customerRequest, errorMessage } from "../api";
 import Modal from "../components/Modal";
 import TopNavbar from "../components/TopNavbar";
+import Footer from "../components/Footer";
 import { useStore } from "../store/context";
 
 const fields = [
@@ -461,12 +462,7 @@ export default function Address() {
           </section>
         )}
       </main>
-      <footer className="border-t border-outline-variant bg-surface-container-lowest px-4 py-6 text-center text-sm text-on-surface-variant">
-        <Link to="/" className="font-semibold text-primary">
-          FastStore
-        </Link>{" "}
-        · <Link to="/cart">Your cart</Link>
-      </footer>
+      <Footer />
     </div>
   );
 }
