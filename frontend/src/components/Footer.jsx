@@ -4,16 +4,16 @@ const shopLinks = ["Electronics", "Fashion", "Home Goods", "Accessories"];
 
 const customerCareLinks = [
   { label: "Order Status", to: "/orders" },
-  { label: "Shipping & Returns", to: "/#shipping-returns" },
-  { label: "Help Center", to: "/#help-center" },
-  { label: "Warranty Info", to: "/#warranty" },
+  { label: "Shipping & Returns", to: "/shipping-returns" },
+  { label: "Help Center", to: "/help" },
+  { label: "Warranty Info", to: "/warranty" },
 ];
 
 const legalLinks = [
-  { label: "Privacy Policy", to: "/#privacy-policy" },
-  { label: "Terms of Service", to: "/#terms-of-service" },
-  { label: "Security Overview", to: "/#security" },
-  { label: "Cookie Settings", to: "/#cookie-settings" },
+  { label: "Privacy Policy", to: "/privacy" },
+  { label: "Terms of Service", to: "/terms" },
+  { label: "Security Overview", to: "/security" },
+  { label: "Cookie Settings", to: "/cookies" },
 ];
 
 const linkClass =

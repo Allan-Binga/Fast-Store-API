@@ -14,6 +14,14 @@ import Login from "./pages/Login";
 import AccountVerification from "./pages/AccountVerification";
 import PasswordReset from "./pages/PasswordReset";
 import PasswordChange from "./pages/PasswordChange";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfService from "./pages/TermsOfService";
+import ShippingReturns from "./pages/ShippingReturns";
+import HelpCenter from "./pages/HelpCenter";
+import WarrantyInfo from "./pages/WarrantyInfo";
+import SecurityOverview from "./pages/SecurityOverview";
+import CookieSettings from "./pages/CookieSettings";
+import NotFound from "./pages/NotFound";
 
 function App() {
   return (
@@ -41,6 +49,19 @@ function App() {
           <Route path="/payment-result" element={<PaymentResult />} />
           <Route path="/orders" element={<Orders />} />
           <Route path="/account/addresses" element={<Address />} />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/terms" element={<TermsOfService />} />
+          <Route path="/terms-of-service" element={<TermsOfService />} />
+          <Route path="/shipping-returns" element={<ShippingReturns />} />
+          <Route path="/help" element={<HelpCenter />} />
+          <Route path="/help-center" element={<HelpCenter />} />
+          <Route path="/warranty" element={<WarrantyInfo />} />
+          <Route path="/security" element={<SecurityOverview />} />
+          <Route path="/security-overview" element={<SecurityOverview />} />
+          <Route path="/cookies" element={<CookieSettings />} />
+          <Route path="/cookie-settings" element={<CookieSettings />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </StoreProvider>
     </Router>
