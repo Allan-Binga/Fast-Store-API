@@ -1,7 +1,17 @@
 const mongoose = require("mongoose");
 
 // Secrets are excluded from ordinary queries and all serialized user documents.
-const secretFields = ["password", "refreshTokenHash", "sessionId", "verificationToken", "verificationTokenExpiry", "passwordResetToken", "passwordResetTokenExpiry"];
+const secretFields = [
+  "password",
+  "refreshTokenHash",
+  "sessionId",
+  "adminRefreshTokenHash",
+  "adminSessionId",
+  "verificationToken",
+  "verificationTokenExpiry",
+  "passwordResetToken",
+  "passwordResetTokenExpiry",
+];
 const userSchema = new mongoose.Schema({
   firstName: { type: String, required: true, trim: true },
   lastName: { type: String, required: true, trim: true },
@@ -14,6 +24,9 @@ const userSchema = new mongoose.Schema({
   isVerified: { type: Boolean, default: false },
   refreshTokenHash: { type: String, select: false },
   sessionId: { type: String, select: false },
+  // Administrator sessions use independent tokens and cannot replace customer sessions.
+  adminRefreshTokenHash: { type: String, select: false },
+  adminSessionId: { type: String, select: false },
   verificationToken: { type: String, select: false },
   verificationTokenExpiry: { type: Date, select: false },
   passwordResetToken: { type: String, select: false },

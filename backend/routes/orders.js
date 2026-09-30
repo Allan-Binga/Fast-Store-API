@@ -13,7 +13,7 @@ const {
 const router = express.Router();
 
 //ROUTES
-router.get("/", authUserMiddleware, authAdminMiddleware, getOrders);
+router.get("/", authAdminMiddleware, getOrders);
 router.get("/user", authUserMiddleware, getUserOrder);
 router.get("/payment-status", authUserMiddleware, getPaymentStatus);
 

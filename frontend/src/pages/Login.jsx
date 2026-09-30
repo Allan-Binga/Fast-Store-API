@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { api, errorMessage } from '../api'
 import Footer from '../components/Footer'
-import { safeReturnPath } from '../components/SignInLink'
+import { safeReturnPath } from '../utils/navigation'
 import { useStore } from '../store/context'
 
 const inputClass = 'h-11 w-full rounded-sm border bg-surface-container-lowest px-3.5 text-on-surface placeholder:text-outline focus:border-primary-container focus:ring-2 focus:ring-primary-container/20 disabled:opacity-60'

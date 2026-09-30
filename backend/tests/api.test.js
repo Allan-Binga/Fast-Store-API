@@ -25,10 +25,18 @@ test("untrusted browser origins are rejected", async () => {
 test.each([
   "/api/users",
   "/api/orders",
-  "/api/cart",
-  "/api/wishlist",
+  "/api/cart/carts",
+  "/api/wishlist/wishlists",
   "/api/address/user",
   "/api/orders/payment-status?session_id=cs_test",
+  "/api/refunds/user",
+  "/api/deliveries/user",
+  "/api/refunds",
+  "/api/deliveries",
+  "/api/payment-transactions",
+  "/api/payment-transactions/metrics",
+  "/api/stock/metrics",
+  "/api/stock/movements",
 ])("private endpoint %s rejects anonymous access", async (path) => {
   expect((await request(app).get(path)).status).toBe(401);
 });
@@ -39,6 +47,11 @@ test.each([
   "/api/promo/add",
   "/api/notifications",
   "/api/phone",
+  "/api/refunds/orders/507f1f77bcf86cd799439011/request",
+  "/api/refunds/507f1f77bcf86cd799439011/approve",
+  "/api/deliveries/orders/507f1f77bcf86cd799439011/initiate",
+  "/api/deliveries/507f1f77bcf86cd799439011/confirm",
+  "/api/stock/507f1f77bcf86cd799439011/adjust",
 ])("management endpoint %s rejects anonymous writes", async (path) => {
   expect((await request(app).post(path).send({})).status).toBe(401);
 });

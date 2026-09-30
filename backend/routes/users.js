@@ -9,7 +9,7 @@ const {
 
 const router = express.Router();
 
-router.get("/", authUserMiddleware, authAdminMiddleware, getUsers);
+router.get("/", authAdminMiddleware, getUsers);
 router.get("/logged-in-user", authUserMiddleware, getSingleUser);
 router.patch("/:id", authUserMiddleware, updatedUser);
 

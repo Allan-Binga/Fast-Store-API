@@ -56,11 +56,27 @@ function PaymentSummary({ order }) {
     <section className="flex flex-col justify-between rounded-xl border border-outline-variant/60 bg-surface-container-low p-4">
       <h2 className="font-semibold">Payment summary</h2>
       <div className="mt-4 flex flex-wrap justify-between gap-3 border-t border-outline-variant pt-4">
-        <span>{order.paymentStatus === "paid" ? "Total paid" : "Order total"}</span>
+        <span>Order total</span>
         <strong className="text-2xl text-primary">
           {paymentMoney(order.totalAmount, order.currency)}
         </strong>
       </div>
+      {(order.refundedAmount > 0 || order.refundPendingAmount > 0) && (
+        <dl className="mt-3 space-y-2 border-t border-outline-variant/60 pt-3 text-sm">
+          {order.refundedAmount > 0 && (
+            <div className="flex justify-between gap-3">
+              <dt>Refunded</dt>
+              <dd>{paymentMoney(order.refundedAmount, order.currency)}</dd>
+            </div>
+          )}
+          {order.refundPendingAmount > 0 && (
+            <div className="flex justify-between gap-3">
+              <dt>Refund under review</dt>
+              <dd>{paymentMoney(order.refundPendingAmount, order.currency)}</dd>
+            </div>
+          )}
+        </dl>
+      )}
     </section>
   );
 }

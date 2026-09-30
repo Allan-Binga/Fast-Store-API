@@ -3,6 +3,8 @@ const Order = require("../models/orders");
 const Product = require("../models/product");
 const FlashSale = require("../models/flashsale");
 const Cart = require("../models/cart");
+const PaymentTransaction = require("../models/paymentTransaction");
+const InventoryMovement = require("../models/inventoryMovement");
 const {
   reserveOrder,
   settleOrder,
@@ -13,15 +15,22 @@ const session = {};
 beforeEach(() => {
   jest.restoreAllMocks();
   jest.spyOn(mongoose.connection, "transaction").mockImplementation(callback => callback(session));
+  jest.spyOn(PaymentTransaction, "updateOne").mockResolvedValue({ upsertedCount: 1 });
+  jest.spyOn(InventoryMovement, "create").mockResolvedValue([]);
 });
 
 // Settlement must be retry-safe independently of webhook delivery timing.
-test("paid event replays do not touch stock or the current cart", async () => {
+test("paid event replays retain stock and backfill the payment ledger", async () => {
   const order = { _id: id, user: id, currency: "usd", totalAmount: 10, paymentStatus: "paid", save: jest.fn() };
   jest.spyOn(Order, "findOne").mockReturnValue({ session: async () => order });
   const update = jest.spyOn(Cart, "updateOne");
   await settleOrder({ id: "cs_test", metadata: { orderId: id, user: id }, amount_total: 1000, currency: "usd", payment_status: "paid" });
   expect(update).not.toHaveBeenCalled(); expect(order.save).not.toHaveBeenCalled();
+  expect(PaymentTransaction.updateOne).toHaveBeenCalledWith(
+    { provider: "stripe", type: "payment", providerTransactionId: "cs_test" },
+    expect.any(Object),
+    { upsert: true, session },
+  );
 });
 test("settlement refuses a mismatched payment amount", async () => {
   jest.spyOn(Order, "findOne").mockReturnValue({ session: async () => ({ user: id, currency: "usd", totalAmount: 10 }) });
@@ -38,16 +47,16 @@ test("paid settlement removes only the unchanged cart snapshot items", async () 
 test("expired checkout releases reserved product and sale quantities", async () => {
   const order = { user: id, currency: "usd", totalAmount: 10, stockReserved: true, paymentStatus: "pending", items: [{ productId: id, saleId: id, quantity: 2 }], save: jest.fn() };
   jest.spyOn(Order, "findOne").mockReturnValue({ session: async () => order });
-  const product = jest.spyOn(Product, "updateOne").mockResolvedValue({ modifiedCount: 1 });
+  const product = jest.spyOn(Product, "findOneAndUpdate").mockResolvedValue({ quantity: 3 });
   const sale = jest.spyOn(FlashSale, "updateOne").mockResolvedValue({ modifiedCount: 1 });
   await settleOrder({ id: "cs_test", metadata: { orderId: id, user: id }, amount_total: 1000, currency: "usd", status: "expired", payment_status: "unpaid" });
-  expect(product).toHaveBeenCalledWith({ _id: id }, { $inc: { quantity: 2 } }, { session });
+  expect(product).toHaveBeenCalledWith({ _id: id }, { $inc: { quantity: 2 } }, { new: false, session });
   expect(sale).toHaveBeenCalledWith({ _id: id }, { $inc: { quantityAvailable: 2 } }, { session });
   expect(order.stockReserved).toBe(false);
 });
 test("reservation checks stock atomically and stops before creating an order", async () => {
   jest.spyOn(Order, "findOne").mockReturnValue({ session: async () => null });
-  jest.spyOn(Product, "updateOne").mockResolvedValue({ modifiedCount: 0 });
+  jest.spyOn(Product, "findOneAndUpdate").mockReturnValue({ select: async () => null });
   const create = jest.spyOn(Order, "create");
   await expect(reserveOrder({ user: id, checkoutKey: "key", items: [{ productId: id, quantity: 2 }] })).rejects.toMatchObject({ status: 409 });
   expect(create).not.toHaveBeenCalled();
@@ -83,6 +92,11 @@ test("completed PayPal capture settles the reserved order", async () => {
   expect(order.paymentStatus).toBe("paid");
   expect(order.stockReserved).toBe(false);
   expect(order.paypalCaptureId).toBe("PAYPAL-CAPTURE");
+  expect(PaymentTransaction.updateOne).toHaveBeenCalledWith(
+    { provider: "paypal", type: "payment", providerTransactionId: "PAYPAL-CAPTURE" },
+    expect.any(Object),
+    { upsert: true, session },
+  );
 });
 
 test("PayPal settlement refuses a mismatched capture amount", async () => {

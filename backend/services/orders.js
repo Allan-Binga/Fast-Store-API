@@ -3,6 +3,8 @@ const Order = require("../models/orders");
 const Product = require("../models/product");
 const FlashSale = require("../models/flashsale");
 const Cart = require("../models/cart");
+const PaymentTransaction = require("../models/paymentTransaction");
+const InventoryMovement = require("../models/inventoryMovement");
 const { fail } = require("../utils/http");
 
 async function transaction(callback) {
@@ -28,13 +30,39 @@ async function reserveOrder(data) {
       return;
     }
 
+    const inventoryMovements = [];
+
     for (const item of data.items) {
-      const product = await Product.updateOne(
-        { _id: item.productId, quantity: { $gte: item.quantity } },
-        { $inc: { quantity: -item.quantity } },
-        { session },
-      );
-      if (product.modifiedCount !== 1) throw fail(409, "An item is no longer in stock.");
+      const product = await Product.findOneAndUpdate(
+        {
+          _id: item.productId,
+          quantity: { $gte: item.quantity },
+        },
+        {
+          $inc: {
+            quantity: -item.quantity,
+          },
+        },
+        {
+          new: false,
+          session,
+        },
+      ).select("+costPrice");
+
+      if (!product) {
+        throw fail(409, "An item is no longer in stock.");
+      }
+
+      item.costPrice = product.costPrice || 0;
+
+      inventoryMovements.push({
+        product: item.productId,
+        type: "reservation",
+        quantityChange: -item.quantity,
+        quantityBefore: product.quantity,
+        quantityAfter: product.quantity - item.quantity,
+        reason: "Checkout stock reservation",
+      });
 
       if (item.saleId) {
         const now = new Date();
@@ -52,7 +80,29 @@ async function reserveOrder(data) {
       }
     }
 
-    [order] = await Order.create([{ ...data, stockReserved: true }], { session });
+    [order] = await Order.create(
+      [
+        {
+          ...data,
+          stockReserved: true,
+        },
+      ],
+      {
+        session,
+      },
+    );
+
+    if (inventoryMovements.length) {
+      await InventoryMovement.create(
+        inventoryMovements.map((movement) => ({
+          ...movement,
+          order: order._id,
+        })),
+        {
+          session,
+        },
+      );
+    }
   });
   return order;
 }
@@ -77,11 +127,40 @@ async function clearPurchasedCartItems(order, session) {
 
 async function restoreStock(order, session) {
   for (const item of order.items) {
-    await Product.updateOne(
-      { _id: item.productId },
-      { $inc: { quantity: item.quantity } },
-      { session },
+    const product = await Product.findOneAndUpdate(
+      {
+        _id: item.productId,
+      },
+      {
+        $inc: {
+          quantity: item.quantity,
+        },
+      },
+      {
+        new: false,
+        session,
+      },
     );
+
+    if (product) {
+      await InventoryMovement.create(
+        [
+          {
+            product: item.productId,
+            order: order._id,
+            type: "reservation_release",
+            quantityChange: item.quantity,
+            quantityBefore: product.quantity,
+            quantityAfter: product.quantity + item.quantity,
+            reason: "Expired payment reservation released",
+          },
+        ],
+        {
+          session,
+        },
+      );
+    }
+
     if (item.saleId) {
       await FlashSale.updateOne(
         { _id: item.saleId },
@@ -92,14 +171,78 @@ async function restoreStock(order, session) {
   }
 }
 
-async function markPaid(order, session, updates = {}) {
-  if (order.paymentStatus === "paid") return;
-  if (!order.stockReserved) throw fail(409, "Order reservation has already been released.");
+async function recordPaymentTransaction(
+  order,
+  session,
+  transactionData,
+) {
+  if (!transactionData) {
+    return;
+  }
+
+  await PaymentTransaction.updateOne(
+    {
+      provider: transactionData.provider,
+      type: "payment",
+      providerTransactionId:
+        transactionData.providerTransactionId,
+    },
+    {
+      $setOnInsert: {
+        order: order._id,
+        user: order.user,
+        provider: transactionData.provider,
+        type: "payment",
+        providerTransactionId:
+          transactionData.providerTransactionId,
+        amount: order.totalAmount,
+        currency: order.currency,
+        status: "succeeded",
+        occurredAt: order.paidAt || new Date(),
+        metadata: transactionData.metadata,
+      },
+    },
+    {
+      upsert: true,
+      session,
+    },
+  );
+}
+
+async function markPaid(
+  order,
+  session,
+  updates = {},
+  transactionData,
+) {
+  if (order.paymentStatus === "paid") {
+    await recordPaymentTransaction(
+      order,
+      session,
+      transactionData,
+    );
+    return;
+  }
+
+  if (!order.stockReserved) {
+    throw fail(
+      409,
+      "Order reservation has already been released."
+    );
+  }
+
   Object.assign(order, updates);
   order.paymentStatus = "paid";
+  order.paidAt = order.paidAt || new Date();
   order.stockReserved = false;
+
   await clearPurchasedCartItems(order, session);
   await order.save({ session });
+  await recordPaymentTransaction(
+    order,
+    session,
+    transactionData,
+  );
 }
 
 async function markExpired(order, session) {
@@ -126,7 +269,27 @@ async function settleOrder(stripeSession) {
     if (!matches) throw fail(409, "Payment does not match the order.");
 
     if (["paid", "no_payment_required"].includes(stripeSession.payment_status)) {
-      await markPaid(order, session);
+      const paymentIntentId =
+        typeof stripeSession.payment_intent === "string"
+          ? stripeSession.payment_intent
+          : stripeSession.payment_intent?.id;
+
+      await markPaid(
+        order,
+        session,
+        {
+          stripePaymentIntentId:
+            paymentIntentId || order.stripePaymentIntentId,
+        },
+        {
+          provider: "stripe",
+          providerTransactionId:
+            paymentIntentId || stripeSession.id,
+          metadata: {
+            checkoutSessionId: stripeSession.id,
+          },
+        },
+      );
     } else if (stripeSession.status === "expired") {
       await markExpired(order, session);
     }
@@ -160,7 +323,20 @@ async function settlePayPalOrder(paypalOrder) {
       Math.round(Number(amount?.value) * 100) === Math.round(order.totalAmount * 100);
     if (!matches) throw fail(409, "Payment does not match the order.");
 
-    await markPaid(order, session, { paypalCaptureId: capture.id });
+    await markPaid(
+      order,
+      session,
+      {
+        paypalCaptureId: capture.id,
+      },
+      {
+        provider: "paypal",
+        providerTransactionId: capture.id,
+        metadata: {
+          paypalOrderId: paypalOrder.id,
+        },
+      },
+    );
     settled = order;
   });
   return settled;

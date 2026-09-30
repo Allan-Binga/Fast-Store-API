@@ -9,7 +9,7 @@ const {
 
 const router = express.Router();
 
-router.post("/", authUserMiddleware, authAdminMiddleware, createNotification);
+router.post("/", authAdminMiddleware, createNotification);
 router.get("/user", authUserMiddleware, getNotifications);
 
 // Customer-owned read receipts.

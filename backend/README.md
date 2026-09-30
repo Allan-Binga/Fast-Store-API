@@ -2,21 +2,29 @@
 
 ## Configuration and startup
 
-Copy `.env.example` to `.env` only for a new installation. Existing `.env` files should be updated rather than overwritten. Set separate, random `JWT_SECRET` and `JWT_REFRESH_SECRET` values (at least 32 random bytes each), `MONGO_URI`, and `CLIENT_URL`. `CORS_ORIGINS` is an optional comma-separated allowlist. Vite at localhost:5173 is supported.
+Copy `.env.example` to `.env` only for a new installation. Existing `.env` files should be updated rather than overwritten. Set distinct random values for `JWT_SECRET`, `JWT_REFRESH_SECRET`, `ADMIN_JWT_SECRET`, and `ADMIN_JWT_REFRESH_SECRET` (at least 32 characters each). Set a private `ADMIN_REGISTRATION_KEY` of at least 32 characters, plus `MONGO_URI` and `CLIENT_URL`. `CORS_ORIGINS` is an optional comma-separated allowlist. Vite at localhost:5173 is supported.
 
 `npm start` loads backend/.env exactly once, validates required variables, connects to MongoDB, then listens on PORT (default 5500). `npm run dev` uses nodemon. Optional Stripe, mail and SMS credentials are checked when their features are used. `/health/live` checks the process and `/health/ready` checks MongoDB connectivity.
 
 ## Session contract
 
-- POST `/api/auth/login`: `{ email, password }`. Accounts must be email-verified. Returns a safe user summary and sets accessToken (one hour) and refreshToken (seven days) HttpOnly, SameSite=Lax cookies. Cookies require HTTPS in production.
+- POST `/api/auth/login`: `{ email, password }`. Accounts must be email-verified. Returns a safe user summary and sets accessToken (one hour) and refreshToken (seven days) HttpOnly cookies. Local cookies use SameSite=Lax; production cookies use SameSite=None and Secure.
 - POST `/api/auth/refresh`: sends the refresh cookie, rotates it atomically, and issues a new access cookie. Clients should serialize refresh requests.
 - POST `/api/auth/logout`: revokes the database session and clears cookies.
 - GET `/api/auth/check-session`: validates the access JWT and stored session; expired access returns 401, allowing the client to refresh.
+
+Administrator authentication is completely separate:
+
+- POST `/api/admin/auth/register`: accepts the normal registration fields and requires the private `X-Admin-Registration-Key` header. It creates an unverified Admin and sends the usual verification email. Do not place this key in frontend code.
+- POST `/api/admin/auth/login`: accepts `{ email, password }` and sets `adminAccessToken` and `adminRefreshToken` cookies.
+- POST `/api/admin/auth/refresh`: rotates the administrator refresh token.
+- POST `/api/admin/auth/logout`: revokes only the administrator session.
+- GET `/api/admin/auth/check-session`: validates the administrator cookie and current database role.
 - PUT `/api/password/reset/password`: `{ currentPassword, newPassword, confirmPassword }`. Password changes and recovery revoke existing sessions.
 
-Use `credentials: "include"` or Axios `withCredentials: true`. The frontend and API should share a site in production because cookies use SameSite=Lax. There is one active session per account; a new login revokes the previous session. Legacy storeSession cookies no longer authenticate.
+Use `credentials: "include"` or Axios `withCredentials: true`. Production cookies require HTTPS. Keep the frontend origin in the API CORS allowlist. There is one active session per account; a new login revokes the previous session. Legacy storeSession cookies no longer authenticate.
 
-Customer is the default role. Administrative catalog operations, global customer/order/cart lists, notification creation and SMS require a database-assigned Admin role. Registration and profile editing cannot promote users. Assign the first administrator through an authenticated database administration session, not an HTTP request.
+Customer is the default role. Customer login accepts only Customer accounts, and management routes accept only the separate administrator session. Administrator registration requires the server-side registration key. Rotate or remove that key after controlled onboarding; never send it from a public browser application.
 
 ## Shopping API changes
 
@@ -24,16 +32,41 @@ Customer is the default role. Administrative catalog operations, global customer
 - POST `/api/wishlist/add-to-wishlist`: `{ productId }`; DELETE `/api/wishlist` takes the catalog productId too.
 - PUT/DELETE `/api/address/:id`: operate on the authenticated user's selected address. A single defaultAddressId on the user selects the default address. The older `/update` and `/delete` paths accept `addressId` in the body.
 - PATCH `/api/notifications/:id/read`: marks an owned notification read.
-- Product creation/update uses name, currentPrice, originalPrice, quantity, category, description, image, reviews, and newArrival. No title/price aliases.
+- Product creation and updates use multipart form-data. Upload 1–4 files under the repeated `images` key. Text fields are `name`, `currentPrice`, `originalPrice`, `costPrice`, `quantity`, `reorderPoint`, `reorderQuantity`, `category`, `description`, `reviews`, and `newArrival`. `costPrice` is private and is used for inventory value, cost of goods sold, and estimated gross profit.
+- Categories may be repeated `category` fields or one JSON array. Reviews may be one JSON value such as `{"rate":4.5,"count":12}`, or separate `reviews.rate` and `reviews.count` fields.
+- Product images are stored in S3. Configure `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`, and `AWS_S3_BUCKET`. JPEG, PNG, and WebP files up to 5 MB each are accepted.
+- Brand creation also uses multipart form-data: send `name` and `slogan` as text and one `logo` file. Logos are stored under the `brand-logos/` S3 prefix.
 - List endpoints accept page and limit (1–100). Empty customer lists return arrays or `{ products: [] }` as appropriate.
 
 ## Payments and MongoDB deployment
 
 Checkout requires a MongoDB replica set (a single-node replica set works locally) because stock reservation and settlement use transactions. A standalone mongod supports authentication and browsing but cannot execute checkout transactions. Configure the replica set before payment integration; no database configuration is changed by this code update.
 
-POST `/api/checkout/create-checkout-session` requires an Idempotency-Key header (16–100 letters/digits/underscores/hyphens) and `{ items: [{ productId, quantity }], addressId, source: "cart" | "buy-now" }`. Reuse a key for retries of exactly the same purchase. Prices are resolved from the database; stock is reserved transactionally. Orders include a shipping-address snapshot. Checkout currently supports card payments only.
+POST `/api/checkout/create-checkout-session` requires an Idempotency-Key header (16–100 letters/digits/underscores/hyphens) and `{ items: [{ productId, quantity }], addressId, source: "cart" | "buy-now" }`. Reuse a key for retries of exactly the same purchase. Prices are resolved from the database; stock is reserved transactionally. Orders include a shipping-address snapshot. Stripe and PayPal payments write idempotent `PaymentTransaction` ledger entries. Existing M-Pesa code remains available, but M-Pesa is intentionally excluded from the new ledger and refund workflows for now.
 
 Configure Stripe webhook events checkout.session.completed and checkout.session.expired to POST `/api/webhook`. The raw body is signature-verified. Paid settlement and expired reservation releases are idempotent. A minute-based reconciliation loop checks overdue reservations against Stripe before releasing stock, including lost session-creation responses. A canceled checkout holds its reservation until expiry (approximately one hour). SMTP is at-least-once: an ambiguous delivery failure can result in a duplicate email, but stock and cart mutations are not repeated.
+
+## Administrator commerce operations
+
+All management endpoints below require the separate administrator session. Money metrics are returned per currency so unlike currencies are never added together.
+
+- GET `/api/payment-transactions`: lists ledger entries; optional `provider` and `type` filters are supported.
+- GET `/api/payment-transactions/metrics`: returns gross paid revenue, refunds, net sales, transaction counts, and the gross-revenue change against the preceding equal-length period. Optional `from` and `to` ISO dates are supported.
+- GET `/api/stock/metrics`: returns inventory units and cost value, low/out-of-stock counts and percentages, units sold, sell-through rate, cost of goods sold, and estimated gross profit.
+- GET `/api/stock/movements`: lists the inventory audit trail; optional `productId` filtering is supported.
+- POST `/api/stock/:productId/adjust`: accepts `{ quantityChange, reason }` and atomically records the resulting inventory movement.
+- GET `/api/refunds`: lists refund requests. POST `/api/refunds/:id/approve` sends the refund to Stripe or PayPal with an idempotency key; POST `/api/refunds/:id/reject` accepts `{ reason }`.
+- Damaged-product and wrong-product refund requests may include up to two JPEG, PNG, or WebP files under the repeated multipart field `evidence`. Each file is limited to 5 MB and is stored under the `refund-evidence/` S3 prefix.
+- POST `/api/deliveries/orders/:orderId/initiate`: starts simulated delivery for a paid order. GET `/api/deliveries` lists delivery records.
+
+Customer endpoints require the customer session:
+
+- POST `/api/refunds/orders/:orderId/request`: accepts `{ reason, amount?, explanation? }`. Omitting `amount` requests the remaining refundable balance. GET `/api/refunds/user` lists the customer’s requests.
+- GET `/api/deliveries/user`: lists the customer’s deliveries. POST `/api/deliveries/:id/confirm` simulates successful delivery and marks the owned order delivered.
+
+Refund success is finalized from the immediate provider response or a later webhook, then recorded as a separate ledger transaction. Subscribe Stripe to `refund.created`, `refund.updated`, and `refund.failed` in addition to checkout events. Subscribe PayPal to `PAYMENT.CAPTURE.REFUNDED` in addition to capture events. A payment refund does not automatically return physical stock; an administrator should inspect the returned item and use the stock adjustment endpoint when it is sellable.
+
+Demo catalog photos can come from a license-compatible source such as Unsplash or Pexels. Download the chosen files and submit them through the existing multipart `images` fields so the application owns stable S3 copies under `products/`; no media-asset collection is required.
 
 The frontend still needs /success, /account-verification and /password/reset pages and integration with this API. Existing static Vite previews do not implement these flows.
 

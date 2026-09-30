@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { customerRequest, errorMessage } from "../api";
 import Modal from "../components/Modal";
+import CustomerAccountNav from "../components/CustomerAccountNav";
 import TopNavbar from "../components/TopNavbar";
 import Footer from "../components/Footer";
 import SignInLink from "../components/SignInLink";
@@ -432,7 +433,10 @@ export default function Address() {
           <span aria-current="page">Saved Addresses</span>
         </nav>
         {session.status === "authenticated" ? (
-          <AddressBook key={session.user._id || session.user.email} />
+          <>
+            <CustomerAccountNav />
+            <AddressBook key={session.user._id || session.user.email} />
+          </>
         ) : (
           <section className="rounded-md border border-outline-variant bg-surface-container-lowest p-8">
             <h1 className="mb-4 text-3xl font-semibold">Saved Addresses</h1>

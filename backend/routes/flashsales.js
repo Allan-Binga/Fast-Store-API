@@ -11,7 +11,7 @@ const router = express.Router();
 
 //ROUTES
 router.get("/", getFlashSaleProducts);
-router.post("/add", authUserMiddleware, authAdminMiddleware, addProductToFlashSale);
+router.post("/add", authAdminMiddleware, addProductToFlashSale);
 router.post("/add-to-cart", authUserMiddleware, addFlashsaleProductsToCart);
 
 module.exports = router;

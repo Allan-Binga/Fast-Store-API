@@ -5,6 +5,6 @@ const { createMessage } = require("../controllers/phoneService");
 
 const router = express.Router();
 
-router.post("/", authUserMiddleware, authAdminMiddleware, createMessage);
+router.post("/", authAdminMiddleware, createMessage);
 
 module.exports = router

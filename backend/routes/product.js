@@ -1,5 +1,5 @@
 // Protect customer data and reserve management actions for administrators.
-const { authUserMiddleware, authAdminMiddleware } = require("../middleware/jwt");
+const { authAdminMiddleware } = require("../middleware/jwt");
 const express = require("express");
 const {
   addNewProduct,
@@ -11,7 +11,7 @@ const {
   getNewArrivals,
   searchResults,
 } = require("../controllers/product.js");
-// const uploadPhoto = require("../middleware/imageUpload.js");
+const { uploadProductImages } = require("../middleware/imageUpload.js");
 
 const router = express.Router();
 
@@ -27,8 +27,8 @@ router.get("/", getAllProducts);
 router.get("/search", searchResults);
 router.get("/:id", getSingleProduct);
 
-router.post("/add-new", authUserMiddleware, authAdminMiddleware, addNewProduct);
-router.put("/:id", authUserMiddleware, authAdminMiddleware, updateProduct);
-router.delete("/:id", authUserMiddleware, authAdminMiddleware, deleteProduct);
+router.post("/add-new", authAdminMiddleware, uploadProductImages, addNewProduct);
+router.put("/update/:id", authAdminMiddleware, uploadProductImages, updateProduct);
+router.delete("/:id", authAdminMiddleware, deleteProduct);
 
 module.exports = router;

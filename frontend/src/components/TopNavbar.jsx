@@ -202,6 +202,12 @@ function SignedInAccountMenu({ session, logoutPending, openWishlist, navigate, l
       <AccountMenuItem to="/orders" icon="receipt_long">
         Your orders
       </AccountMenuItem>
+      <AccountMenuItem to="/deliveries" icon="local_shipping">
+        Your deliveries
+      </AccountMenuItem>
+      <AccountMenuItem to="/refunds" icon="currency_exchange">
+        Refunds
+      </AccountMenuItem>
       <AccountMenuItem
         icon="shopping_bag"
         onClick={(event) => {

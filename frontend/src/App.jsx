@@ -10,6 +10,8 @@ import Address from "./pages/Address";
 import Checkout from "./pages/Checkout";
 import PaymentResult from "./pages/PaymentResult";
 import Orders from "./pages/Orders";
+import Deliveries from "./pages/Deliveries";
+import Refunds from "./pages/Refunds";
 import Signup from "./pages/SignUp";
 import Login from "./pages/Login";
 import AccountVerification from "./pages/AccountVerification";
@@ -60,6 +62,8 @@ function App() {
           <Route path="/success" element={<PaymentResult />} />
           <Route path="/payment-result" element={<PaymentResult />} />
           <Route path="/orders" element={<Orders />} />
+          <Route path="/deliveries" element={<Deliveries />} />
+          <Route path="/refunds" element={<Refunds />} />
           <Route path="/account/addresses" element={<Address />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />

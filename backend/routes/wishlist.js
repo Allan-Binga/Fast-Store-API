@@ -12,7 +12,7 @@ const {
 const router = express.Router();
 
 //ROUTES
-router.get("/", authUserMiddleware, authAdminMiddleware, getWishlists);
+router.get("/wishlists", authAdminMiddleware, getWishlists);
 router.post("/add-to-wishlist", authUserMiddleware, addProductToWishlist);
 router.get("/user", authUserMiddleware, getUserWishlist);
 router.delete("/", authUserMiddleware, removeProductFromWishlist);

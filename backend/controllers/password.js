@@ -3,7 +3,7 @@ const bcrypt = require("bcrypt");
 const crypto = require("crypto");
 const { sendPasswordResetEmail } = require("./emailService");
 const { asyncHandler, fail, emailValue, passwordValid } = require("../utils/http");
-const { hashToken, clearCookies } = require("../utils/session");
+const { hashToken, clearCookies, clearAdminCookies } = require("../utils/session");
 
 // Recovery requests use the same response for known and unknown addresses.
 const resetPasswordEmail = asyncHandler(async (req, res) => {
@@ -24,7 +24,7 @@ const validatePassword = (body) => {
   if (!passwordValid(body.newPassword)) throw fail(400, "Use a strong password of at least 8 characters (maximum 72 bytes).");
   if (body.newPassword !== body.confirmPassword) throw fail(400, "Passwords do not match.");
 };
-const revoke = { sessionId: 1, refreshTokenHash: 1, passwordResetToken: 1, passwordResetTokenExpiry: 1 };
+const revoke = { sessionId: 1, refreshTokenHash: 1, adminSessionId: 1, adminRefreshTokenHash: 1, passwordResetToken: 1, passwordResetTokenExpiry: 1 };
 const resetPassword = asyncHandler(async (req, res) => {
   validatePassword(req.body);
   const user = await User.findById(req.userId).select("+password");
@@ -42,6 +42,7 @@ const resetPasswordToken = asyncHandler(async (req, res) => {
   const user = await User.findOneAndUpdate({ passwordResetToken: hashToken(req.body.token), passwordResetTokenExpiry: { $gt: new Date() } }, { $set: { password: await bcrypt.hash(req.body.newPassword, 12) }, $unset: revoke });
   if (!user) throw fail(400, "Invalid or expired token.");
   clearCookies(res);
+  clearAdminCookies(res);
   res.json({ message: "Password reset. Please sign in again." });
 });
 module.exports = { resetPasswordEmail, resetPassword, resetPasswordToken };

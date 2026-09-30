@@ -3,6 +3,9 @@ const { settleOrder, settlePayPalOrder } = require("../services/orders");
 const { confirmOrder } = require("../services/confirmation");
 const getStripe = require("../services/stripe");
 const getPayPal = require("../services/paypal");
+const {
+  syncProviderRefund,
+} = require("../services/refunds");
 
 function queueConfirmation(orderId) {
   setImmediate(async () => {
@@ -34,6 +37,31 @@ const handleWebhook = asyncHandler(async (req, res) => {
     );
   } catch {
     throw fail(400, "Invalid webhook signature.");
+  }
+
+  if (
+    [
+      "refund.created",
+      "refund.updated",
+      "refund.failed",
+    ].includes(event.type)
+  ) {
+    const refund = event.data.object;
+
+    await syncProviderRefund({
+      provider: "stripe",
+      providerRefundId: refund.id,
+      internalRefundId: refund.metadata?.refundId,
+      status:
+        event.type === "refund.failed"
+          ? "failed"
+          : refund.status,
+      failureReason: refund.failure_reason,
+    });
+
+    return res.json({
+      received: true,
+    });
   }
 
   if (
@@ -108,9 +136,23 @@ const handlePayPalWebhook = asyncHandler(async (req, res) => {
   const supported = [
     "CHECKOUT.ORDER.COMPLETED",
     "PAYMENT.CAPTURE.COMPLETED",
+    "PAYMENT.CAPTURE.REFUNDED",
   ];
   if (!supported.includes(event.event_type)) {
     return res.json({ received: true });
+  }
+
+  if (event.event_type === "PAYMENT.CAPTURE.REFUNDED") {
+    await syncProviderRefund({
+      provider: "paypal",
+      providerRefundId: event.resource?.id,
+      internalRefundId: event.resource?.custom_id,
+      status: event.resource?.status || "COMPLETED",
+    });
+
+    return res.json({
+      received: true,
+    });
   }
 
   const paypalOrderId =

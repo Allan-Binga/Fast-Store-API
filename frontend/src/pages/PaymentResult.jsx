@@ -30,6 +30,20 @@ const STATUS_COPY = {
     icon: "check_circle",
     color: "bg-emerald-100 text-emerald-700",
   },
+  partially_refunded: {
+    title: "Order partially refunded",
+    message:
+      "Part of this payment has been returned through the original payment provider.",
+    icon: "currency_exchange",
+    color: "bg-blue-100 text-blue-700",
+  },
+  refunded: {
+    title: "Order refunded",
+    message:
+      "This payment has been refunded through the original payment provider.",
+    icon: "assignment_return",
+    color: "bg-surface-container-high text-on-surface-variant",
+  },
   pending: {
     title: "Payment confirmation pending",
     message:
@@ -61,7 +75,9 @@ function providerName(provider) {
 
 function resultStatus(order, isCurrentResult) {
   if (!isCurrentResult) return "checking";
-  if (["paid", "pending", "expired"].includes(order?.paymentStatus)) {
+  if (["paid", "partially_refunded", "refunded", "pending", "expired"].includes(
+      order?.paymentStatus,
+    )) {
     return order.paymentStatus;
   }
   return "unavailable";
@@ -165,10 +181,15 @@ function StatusActions({ status, order, retrying, retryPayment, retryStatus }) {
           Return to cart
         </Link>
       )}
-      {status === "paid" && (
-        <Link to="/orders" className={primaryClass}>
-          View orders
-        </Link>
+      {["paid", "partially_refunded", "refunded"].includes(status) && (
+        <>
+          <Link to="/deliveries" className={primaryClass}>
+            Track delivery
+          </Link>
+          <Link to="/orders" className={secondaryClass}>
+            View orders
+          </Link>
+        </>
       )}
       <Link to="/" className={secondaryClass}>
         Continue shopping

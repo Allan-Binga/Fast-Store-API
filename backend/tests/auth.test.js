@@ -1,10 +1,12 @@
 process.env.JWT_SECRET = "access-test-secret-that-is-not-for-production";
 process.env.JWT_REFRESH_SECRET = "refresh-test-secret-that-is-not-for-production";
+process.env.ADMIN_JWT_SECRET = "admin-access-test-secret-that-is-not-production";
+process.env.ADMIN_JWT_REFRESH_SECRET = "admin-refresh-test-secret-that-is-not-production";
 jest.mock("../services/notifications", () => ({ notifyUser: jest.fn().mockResolvedValue(undefined) }));
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const User = require("../models/users");
-const { issueTokens, hashToken } = require("../utils/session");
+const { issueTokens, issueAdminTokens, hashToken } = require("../utils/session");
 const auth = require("../controllers/auth");
 const password = require("../controllers/password");
 const { authUserMiddleware, authAdminMiddleware } = require("../middleware/jwt");
@@ -95,10 +97,49 @@ test("middleware loads the database role and accepts the active session", async 
   expect(next).toHaveBeenCalledWith();
 });
 
-test("customers cannot access administrator actions", () => {
+test("customer sessions cannot access administrator actions", async () => {
   const next = jest.fn();
-  authAdminMiddleware({ user }, response(), next);
-  expect(next.mock.calls[0][0].status).toBe(403);
+
+  await authAdminMiddleware(
+    {
+      cookies: {
+        accessToken: issueTokens(user, user.sessionId).accessToken,
+      },
+    },
+    response(),
+    next,
+  );
+
+  expect(next.mock.calls[0][0].status).toBe(401);
+});
+
+test("administrator middleware accepts only an active admin session", async () => {
+  const administrator = {
+    ...user,
+    role: "Admin",
+    adminSessionId: "admin-session-a",
+  };
+  const tokens = issueAdminTokens(
+    administrator,
+    administrator.adminSessionId,
+  );
+
+  jest.spyOn(User, "findById").mockReturnValue({
+    select: () => Promise.resolve(administrator),
+  });
+
+  const req = {
+    cookies: {
+      adminAccessToken: tokens.accessToken,
+    },
+  };
+  const next = jest.fn();
+
+  await authAdminMiddleware(req, response(), next);
+
+  expect(req.userId).toBe(id);
+  expect(req.user.role).toBe("Admin");
+  expect(next).toHaveBeenCalledWith();
 });
 
 test("profile editing rejects another owner and privileged fields", async () => {
@@ -128,5 +169,5 @@ test("token password reset consumes the token and revokes sessions atomically", 
 test("user serialization strips all authentication secrets", () => {
   const document = new User({ ...user, refreshTokenHash: "hash", verificationToken: "token", passwordResetToken: "reset" });
   const serialized = document.toJSON();
-  for (const field of ["password", "sessionId", "refreshTokenHash", "verificationToken", "passwordResetToken"]) expect(serialized[field]).toBeUndefined();
+  for (const field of ["password", "sessionId", "refreshTokenHash", "adminSessionId", "adminRefreshTokenHash", "verificationToken", "passwordResetToken"]) expect(serialized[field]).toBeUndefined();
 });

@@ -6,6 +6,6 @@ const {getPromos, addProductToPromo }= require("../controllers/promo");
 const router = express.Router();
 
 router.get("/", getPromos);
-router.post("/add", authUserMiddleware, authAdminMiddleware, addProductToPromo)
+router.post("/add", authAdminMiddleware, addProductToPromo)
 
 module.exports = router;
