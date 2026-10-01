@@ -8,6 +8,14 @@ const getUsers = asyncHandler(async (req, res) => {
 });
 const getSingleUser = (req, res) => res.json(req.user);
 
+const getAdminUser = asyncHandler(async (req, res) => {
+  const user = await User.findById(requireId(req.params.id));
+
+  if (!user) throw fail(404, "User not found.");
+
+  res.json(user);
+});
+
 // Profile edits are restricted to the authenticated owner and safe fields.
 const updatedUser = asyncHandler(async (req, res) => {
   requireId(req.params.id);
@@ -19,4 +27,4 @@ const updatedUser = asyncHandler(async (req, res) => {
   if (!user) throw fail(404, "User not found.");
   res.json(user);
 });
-module.exports = { getUsers, getSingleUser, updatedUser };
+module.exports = { getUsers, getSingleUser, getAdminUser, updatedUser };

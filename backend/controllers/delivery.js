@@ -146,7 +146,13 @@ const getDeliveries = asyncHandler(async (req, res) => {
     skip,
   } = pagination(req);
 
-  const deliveries = await Delivery.find()
+  const query = {};
+
+  if (req.query.orderId !== undefined) {
+    query.order = requireId(req.query.orderId);
+  }
+
+  const deliveries = await Delivery.find(query)
     .sort({
       createdAt: -1,
     })
@@ -156,6 +162,17 @@ const getDeliveries = asyncHandler(async (req, res) => {
   res.json(deliveries);
 });
 
+
+
+const getDelivery = asyncHandler(async (req, res) => {
+  const delivery = await Delivery.findById(requireId(req.params.id));
+
+  if (!delivery) {
+    throw fail(404, "Delivery not found.");
+  }
+
+  res.json(delivery);
+});
 
 const getUserDeliveries = asyncHandler(async (req, res) => {
   const {
@@ -180,5 +197,6 @@ module.exports = {
   initiateDelivery,
   confirmDelivery,
   getDeliveries,
+  getDelivery,
   getUserDeliveries,
 };

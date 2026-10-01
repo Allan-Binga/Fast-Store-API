@@ -7,6 +7,7 @@ const {
 const {
   requestRefund,
   getRefunds,
+  getRefund,
   getUserRefunds,
   approveRefund,
   rejectRefund,
@@ -20,6 +21,7 @@ const router = express.Router();
 
 router.get("/", authAdminMiddleware, getRefunds);
 router.get("/user", authUserMiddleware, getUserRefunds);
+router.get("/:id", authAdminMiddleware, getRefund);
 router.post(
   "/orders/:orderId/request",
   authUserMiddleware,

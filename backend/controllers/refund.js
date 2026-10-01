@@ -179,6 +179,10 @@ const getRefunds = asyncHandler(async (req, res) => {
 
   const query = {};
 
+  if (req.query.orderId !== undefined) {
+    query.order = requireId(req.query.orderId);
+  }
+
   if (req.query.status !== undefined) {
     if (
       typeof req.query.status !== "string" ||
@@ -206,6 +210,17 @@ const getRefunds = asyncHandler(async (req, res) => {
   res.json(refunds);
 });
 
+
+
+const getRefund = asyncHandler(async (req, res) => {
+  const refund = await Refund.findById(requireId(req.params.id));
+
+  if (!refund) {
+    throw fail(404, "Refund not found.");
+  }
+
+  res.json(refund);
+});
 
 const getUserRefunds = asyncHandler(async (req, res) => {
   const {
@@ -303,6 +318,7 @@ const rejectRefund = asyncHandler(async (req, res) => {
 module.exports = {
   requestRefund,
   getRefunds,
+  getRefund,
   getUserRefunds,
   approveRefund,
   rejectRefund,

@@ -1,9 +1,13 @@
 const express = require("express");
 const {
+  getCheckouts,
   createCheckoutSession,
   resumeCheckoutSession,
 } = require("../controllers/checkout.js");
-const { authUserMiddleware } = require("../middleware/jwt");
+const {
+  authUserMiddleware,
+  authAdminMiddleware,
+} = require("../middleware/jwt");
 const {
   createPayPalOrder,
   capturePayPalOrder,
@@ -11,6 +15,8 @@ const {
 const { createMpesaStkPush } = require("../controllers/daraja");
 
 const router = express.Router();
+
+router.get("/", authAdminMiddleware, getCheckouts);
 
 router.post(
   "/create-checkout-session",

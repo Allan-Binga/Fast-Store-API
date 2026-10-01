@@ -3,6 +3,7 @@ const {
   asyncHandler,
   fail,
   pagination,
+  requireId,
 } = require("../utils/http");
 
 
@@ -194,6 +195,10 @@ const getPaymentTransactions = asyncHandler(
     } = pagination(req);
 
     const query = {};
+
+    if (req.query.orderId !== undefined) {
+      query.order = requireId(req.query.orderId);
+    }
 
     if (req.query.provider !== undefined) {
       if (

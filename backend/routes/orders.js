@@ -6,6 +6,7 @@ const {
 const express = require("express");
 const {
   getOrders,
+  getOrder,
   getUserOrder,
   getPaymentStatus,
 } = require("../controllers/orders");
@@ -16,5 +17,6 @@ const router = express.Router();
 router.get("/", authAdminMiddleware, getOrders);
 router.get("/user", authUserMiddleware, getUserOrder);
 router.get("/payment-status", authUserMiddleware, getPaymentStatus);
+router.get("/:id", authAdminMiddleware, getOrder);
 
 module.exports = router;

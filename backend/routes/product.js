@@ -6,6 +6,7 @@ const {
   deleteProduct,
   getAllProducts,
   getSingleProduct,
+  getAdminProduct,
   updateProduct,
   getLimitedProducts,
   getNewArrivals,
@@ -25,6 +26,7 @@ router.get("/", getAllProducts);
 
 //Search Engine route
 router.get("/search", searchResults);
+router.get("/admin/:id", authAdminMiddleware, getAdminProduct);
 router.get("/:id", getSingleProduct);
 
 router.post("/add-new", authAdminMiddleware, uploadProductImages, addNewProduct);

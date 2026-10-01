@@ -1,0 +1,62 @@
+@import "tailwindcss" source(none);
+@source "./";
+
+@theme {
+  --color-primary: #155eef;
+  --color-primary-dark: #0b4bd4;
+  --color-surface: #f6f8fc;
+  --color-panel: #ffffff;
+  --color-ink: #172033;
+  --color-muted: #667085;
+  --color-line: #e4e7ec;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --text-xs: 0.6875rem;
+  --text-sm: 0.8125rem;
+  --text-base: 0.9375rem;
+  --text-lg: 1.0625rem;
+  --text-xl: 1.1875rem;
+  --text-2xl: 1.4375rem;
+  --text-3xl: 1.8125rem;
+  --text-4xl: 2.1875rem;
+  --font-weight-medium: 400;
+  --font-weight-semibold: 500;
+  --font-weight-bold: 600;
+  --font-weight-extrabold: 700;
+}
+
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background: var(--color-surface);
+  color: var(--color-ink);
+}
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+.material-symbols-outlined {
+  font-variation-settings:
+    "FILL" 0,
+    "wght" 400,
+    "GRAD" 0,
+    "opsz" 24;
+}
+
+.themed-calendar-input {
+  color-scheme: light;
+}
+
+.themed-calendar-input::-webkit-calendar-picker-indicator {
+  opacity: 0;
+  pointer-events: none;
+}

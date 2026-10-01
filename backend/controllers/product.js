@@ -45,6 +45,19 @@ const getSingleProduct = asyncHandler(async (req, res) => {
 });
 
 
+
+const getAdminProduct = asyncHandler(async (req, res) => {
+  const product = await Product.findById(
+    requireId(req.params.id)
+  ).select("+costPrice");
+
+  if (!product) {
+    throw fail(404, "Product not found.");
+  }
+
+  res.json(product);
+});
+
 const searchResults = asyncHandler(async (req, res) => {
   if (
     typeof req.query.q !== "string" ||
@@ -511,6 +524,7 @@ module.exports = {
   getLimitedProducts,
   getNewArrivals,
   getSingleProduct,
+  getAdminProduct,
   searchResults,
   addNewProduct,
   updateProduct,

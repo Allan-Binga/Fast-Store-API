@@ -12,6 +12,17 @@ const getOrders = asyncHandler(async (req, res) => {
   res.json(orders);
 });
 
+// Administrators need a stable endpoint for direct links to an order.
+const getOrder = asyncHandler(async (req, res) => {
+  const order = await Order.findById(requireId(req.params.id));
+
+  if (!order) {
+    throw fail(404, "Order not found.");
+  }
+
+  res.json(order);
+});
+
 const getUserOrder = asyncHandler(async (req, res) => {
   const { limit, skip } = pagination(req);
   const orders = await Order.find({ user: req.userId })
@@ -83,4 +94,4 @@ const getPaymentStatus = asyncHandler(async (req, res) => {
   });
 });
 
-module.exports = { getOrders, getUserOrder, getPaymentStatus };
+module.exports = { getOrders, getOrder, getUserOrder, getPaymentStatus };

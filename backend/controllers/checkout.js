@@ -2,10 +2,48 @@ const crypto = require("crypto");
 const Order = require("../models/orders");
 const Cart = require("../models/cart");
 const Address = require("../models/address");
-const { asyncHandler, fail, requireId } = require("../utils/http");
+const { asyncHandler, fail, pagination, requireId } = require("../utils/http");
 const { resolveItem } = require("../services/cart");
 const { reserveOrder, settleOrder } = require("../services/orders");
 const getStripe = require("../services/stripe");
+
+
+const getCheckouts = asyncHandler(async (req, res) => {
+  const { limit, skip } = pagination(req);
+  const query = {};
+
+  if (req.query.status !== undefined) {
+    const statuses = [
+      "pending",
+      "paid",
+      "partially_refunded",
+      "refunded",
+      "failed",
+      "expired",
+    ];
+
+    if (!statuses.includes(req.query.status)) {
+      throw fail(400, "Invalid checkout status.");
+    }
+
+    query.paymentStatus = req.query.status;
+  }
+
+  if (req.query.provider !== undefined) {
+    if (!["stripe", "paypal", "mpesa"].includes(req.query.provider)) {
+      throw fail(400, "Invalid checkout provider.");
+    }
+
+    query.paymentProvider = req.query.provider;
+  }
+
+  res.json(
+    await Order.find(query)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit),
+  );
+});
 
 // The browser supplies product IDs and quantities, never trusted prices.
 const createCheckoutSession = asyncHandler(async (req, res) => {
@@ -223,4 +261,4 @@ const resumeCheckoutSession = asyncHandler(async (req, res) => {
   res.json({ url: session.url, expiresAt: order.expiresAt });
 });
 
-module.exports = { createCheckoutSession, resumeCheckoutSession };
+module.exports = { getCheckouts, createCheckoutSession, resumeCheckoutSession };
