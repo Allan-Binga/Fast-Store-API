@@ -2,6 +2,7 @@ process.env.JWT_SECRET = "access-test-secret-that-is-not-for-production";
 process.env.JWT_REFRESH_SECRET =
   "refresh-test-secret-that-is-not-for-production";
 process.env.CLIENT_URL = "http://localhost:5173";
+process.env.ADMIN_CLIENT_URL = "https://admin.fast-store.skirill.org";
 const request = require("supertest");
 const { app } = require("../index");
 
@@ -16,6 +17,18 @@ test("Vite receives credentialed CORS headers", async () => {
   );
   expect(result.headers["access-control-allow-credentials"]).toBe("true");
 });
+test("administrator deployment receives credentialed CORS headers", async () => {
+  const result = await request(app)
+    .get("/health/live")
+    .set("Origin", "https://admin.fast-store.skirill.org");
+
+  expect(result.status).toBe(200);
+  expect(result.headers["access-control-allow-origin"]).toBe(
+    "https://admin.fast-store.skirill.org",
+  );
+  expect(result.headers["access-control-allow-credentials"]).toBe("true");
+});
+
 test("untrusted browser origins are rejected", async () => {
   const result = await request(app)
     .post("/api/auth/logout")

@@ -18,6 +18,15 @@ export const adminApi = axios.create({
 });
 
 let refreshRequest = null;
+let adminSessionRejected = false;
+
+export function markAdminSessionActive() {
+  adminSessionRejected = false;
+}
+
+export function markAdminSessionInactive() {
+  adminSessionRejected = true;
+}
 
 adminApi.interceptors.response.use(
   (response) => response,
@@ -30,15 +39,32 @@ adminApi.interceptors.response.use(
     }
 
     request._retried = true;
-    refreshRequest ??= publicApi.post("/admin/auth/refresh").finally(() => {
-      refreshRequest = null;
-    });
+
+    if (adminSessionRejected) {
+      return Promise.reject(error);
+    }
+
+    if (!refreshRequest) {
+      refreshRequest = publicApi
+        .post("/admin/auth/refresh")
+        .then((response) => {
+          adminSessionRejected = false;
+          return response;
+        })
+        .catch((refreshError) => {
+          adminSessionRejected = true;
+          window.dispatchEvent(new Event("admin-session-expired"));
+          throw refreshError;
+        })
+        .finally(() => {
+          refreshRequest = null;
+        });
+    }
 
     try {
       await refreshRequest;
       return adminApi(request);
     } catch {
-      window.dispatchEvent(new Event("admin-session-expired"));
       return Promise.reject(error);
     }
   },

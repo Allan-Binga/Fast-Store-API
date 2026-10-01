@@ -20,6 +20,7 @@ const adminAuth = require("../controllers/adminAuth");
 const {
   hashToken,
   issueAdminTokens,
+  setAdminCookies,
 } = require("../utils/session");
 
 
@@ -240,4 +241,31 @@ test("administrator logout leaves customer cookie names untouched", async () => 
   );
   expect(clearedCookies).not.toContain("accessToken");
   expect(clearedCookies).not.toContain("refreshToken");
+});
+
+
+test("deployed administrator cookies are secure and partitioned", () => {
+  const previousRender = process.env.RENDER;
+  process.env.RENDER = "true";
+
+  try {
+    const tokens = issueAdminTokens(administrator);
+    const res = response();
+
+    setAdminCookies(res, tokens);
+
+    for (const [, , options] of res.cookie.mock.calls) {
+      expect(options).toMatchObject({
+        httpOnly: true,
+        secure: true,
+        sameSite: "none",
+        partitioned: true,
+        priority: "high",
+        path: "/",
+      });
+    }
+  } finally {
+    if (previousRender === undefined) delete process.env.RENDER;
+    else process.env.RENDER = previousRender;
+  }
 });

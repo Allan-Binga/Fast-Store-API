@@ -26,6 +26,7 @@ const allowedOrigins = new Set(
         "http://localhost:5173",
         ...(process.env.CORS_ORIGINS || "").split(","),
         process.env.CLIENT_URL,
+        process.env.ADMIN_CLIENT_URL,
     ]
         .filter(Boolean)
         .map((value) => value.trim())

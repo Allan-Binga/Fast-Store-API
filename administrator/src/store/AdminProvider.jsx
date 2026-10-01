@@ -1,5 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { adminApi, errorMessage, publicApi } from "../api";
+import {
+  adminApi,
+  errorMessage,
+  markAdminSessionActive,
+  markAdminSessionInactive,
+  publicApi,
+} from "../api";
 import { AdminContext } from "./AdminContext";
 
 export default function AdminProvider({ children }) {
@@ -14,7 +20,10 @@ export default function AdminProvider({ children }) {
   useEffect(() => {
     publicApi
       .get("/admin/auth/check-session")
-      .then(({ data }) => setAdmin(data.administrator || data.user || data))
+      .then(({ data }) => {
+        markAdminSessionActive();
+        setAdmin(data.administrator || data.user || data);
+      })
       .catch(() => setAdmin(null))
       .finally(() => setCheckingSession(false));
   }, []);
@@ -33,8 +42,18 @@ export default function AdminProvider({ children }) {
 
   const login = useCallback(async (credentials) => {
     const { data } = await publicApi.post("/admin/auth/login", credentials);
-    setAdmin(data.administrator || data.user || data);
-    return data;
+
+    try {
+      const session = await publicApi.get("/admin/auth/check-session");
+      markAdminSessionActive();
+      setAdmin(session.data.administrator);
+      return data;
+    } catch {
+      markAdminSessionInactive();
+      throw new Error(
+        "Sign-in succeeded, but the browser did not retain the administrator session cookie. Redeploy the updated API and verify its cookie settings.",
+      );
+    }
   }, []);
 
   const logout = useCallback(async () => {
@@ -43,6 +62,7 @@ export default function AdminProvider({ children }) {
     } catch (error) {
       notify(errorMessage(error, "The local session was cleared."), "warning");
     } finally {
+      markAdminSessionInactive();
       setAdmin(null);
     }
   }, [notify]);
