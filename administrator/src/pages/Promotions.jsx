@@ -71,7 +71,7 @@ export default function Promotions() {
             <button
               key={key}
               onClick={() => setTab(key)}
-              className={`whitespace-nowrap rounded-xl px-4 py-2 text-sm font-bold ${tab === key ? "bg-primary text-white" : "text-muted hover:bg-slate-100"}`}
+              className={`whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold ${tab === key ? "bg-primary text-white" : "text-muted hover:bg-slate-100"}`}
             >
               {label}
             </button>

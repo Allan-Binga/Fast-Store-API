@@ -73,7 +73,7 @@ export default function Categories() {
               <Link
                 key={category.name}
                 to={`/categories/${encodeURIComponent(category.name)}`}
-                className="group rounded-md border border-line p-5 transition hover:border-primary hover:shadow-md"
+                className="group rounded-md border-2 border-line p-5 transition hover:border-primary"
               >
                 <div className="flex items-center gap-4">
                   <CategoryMark />

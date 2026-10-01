@@ -57,7 +57,7 @@ export default function Brands() {
               <Link
                 key={brand._id}
                 to={`/brands/${brand._id}`}
-                className="group rounded-2xl border border-line p-5 transition hover:border-primary hover:shadow-md"
+                className="group rounded-2xl border-2 border-line p-5 transition hover:border-primary"
               >
                 <div className="flex items-center gap-4">
                   <img

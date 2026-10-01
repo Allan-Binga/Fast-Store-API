@@ -140,7 +140,7 @@ export function Select({
         <div
           id={listboxId}
           role="listbox"
-          className="absolute inset-x-0 top-[calc(100%+6px)] z-[80] max-h-64 min-w-max overflow-y-auto rounded-sm border border-line bg-white p-1.5 shadow-xl shadow-slate-900/10"
+          className="absolute inset-x-0 top-[calc(100%+6px)] z-[80] max-h-64 min-w-max overflow-y-auto rounded-sm border-2 border-line bg-white p-1.5"
         >
           {options.map((option, index) => (
             <button

@@ -57,7 +57,7 @@ export default function AdminProvider({ children }) {
       {children}
       {toast && (
         <div
-          className={`fixed bottom-5 right-5 z-[100] max-w-sm rounded-xl px-4 py-3 text-sm font-semibold text-white shadow-xl ${toast.tone === "error" ? "bg-red-600" : toast.tone === "warning" ? "bg-amber-600" : "bg-slate-900"}`}
+          className={`fixed bottom-5 right-5 z-[100] max-w-sm rounded-xl border-2 border-white/20 px-4 py-3 text-sm font-semibold text-white ${toast.tone === "error" ? "bg-red-600" : toast.tone === "warning" ? "bg-amber-600" : "bg-slate-900"}`}
         >
           <div className="flex items-start gap-3">
             <span className="material-symbols-outlined text-[20px]">

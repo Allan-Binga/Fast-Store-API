@@ -108,7 +108,7 @@ export default function AdminLayout() {
           <button
             type="button"
             onClick={logout}
-            className="flex w-full items-center gap-3 rounded-sm px-3 py-2 text-sm text-slate-300 hover:bg-slate-900"
+            className="flex w-full items-center gap-3 rounded-sm px-3 py-2 text-sm text-slate-300 hover:bg-slate-900 cursor-pointer"
           >
             <span className="material-symbols-outlined text-[20px]">
               logout

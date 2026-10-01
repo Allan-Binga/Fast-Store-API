@@ -21,7 +21,7 @@ export function PageHeader({ eyebrow, title, description, children }) {
 export function Card({ children, className = "" }) {
   return (
     <section
-      className={`rounded-md border border-line bg-white shadow-sm ${className}`}
+      className={`rounded-md border-2 border-line bg-white ${className}`}
     >
       {children}
     </section>

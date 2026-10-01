@@ -105,7 +105,7 @@ export default function Home() {
         description="Live revenue, order, refund, and stock signals from FastStore."
       >
         <Select
-          className={`${inputClass} w-auto`}
+          className={`${inputClass} w-auto text-[10px]`}
           value={days}
           onChange={(e) => {
             setLoading(true);
@@ -118,8 +118,8 @@ export default function Home() {
             </option>
           ))}
         </Select>
-        <Button onClick={() => setMessageOpen(true)}>
-          <span className="material-symbols-outlined text-[19px]">send</span>
+        <Button className="text-[10px]" onClick={() => setMessageOpen(true)}>
+          <span className="material-symbols-outlined text-[17px]">send</span>
           Message customer
         </Button>
       </PageHeader>

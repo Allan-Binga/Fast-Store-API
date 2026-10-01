@@ -68,7 +68,7 @@ export default function Login() {
 export function AuthFrame({ title, subtitle, children }) {
   return (
     <main className="grid min-h-screen place-items-center bg-slate-950 p-4">
-      <section className="w-full max-w-md rounded-md bg-white p-7 shadow-2xl sm:p-9">
+      <section className="w-full max-w-md rounded-md border-2 border-slate-300 bg-white p-7 sm:p-9">
         <div className="mb-7 flex items-center gap-3">
           <span className="grid size-11 place-items-center rounded-sm bg-primary text-white">
             <span className="material-symbols-outlined">storefront</span>
