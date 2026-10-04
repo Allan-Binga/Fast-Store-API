@@ -100,6 +100,7 @@ export default function Checkouts() {
             <option value="">All providers</option>
             <option value="stripe">Stripe</option>
             <option value="paypal">PayPal</option>
+            <option value="wallet">Wallet</option>
             {tab === "attempts" && <option value="mpesa">M-Pesa</option>}
           </Select>
           <Select

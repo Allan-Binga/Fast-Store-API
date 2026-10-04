@@ -3,12 +3,13 @@ const User = require("../models/users");
 const { sendOrderConfirmationEmail } = require("../controllers/emailService");
 
 // A short database lease prevents concurrent webhook deliveries from duplicating mail.
-// SMTP remains at-least-once if a process dies after delivery but before recording it.
+// Delivery remains at-least-once if a process dies after delivery but before recording it.
 async function confirmOrder(orderId) {
+  try { await require("./deliveryNotifications").notifyPendingDelivery(orderId); } catch { console.error("Administrator delivery notice deferred."); }
   const order = await Order.findOneAndUpdate(
     {
       _id: orderId,
-      paymentStatus: "paid",
+      paymentStatus: { $in: ["paid", "partially_refunded", "refunded"] },
       confirmationSent: false,
       $or: [
         { confirmationClaimUntil: { $exists: false } },
@@ -21,7 +22,8 @@ async function confirmOrder(orderId) {
   if (!order) return;
   try {
     const user = await User.findById(order.user);
-    if (user) await sendOrderConfirmationEmail(user.email, order);
+    if (!user) throw new Error("Receipt recipient not found.");
+    await sendOrderConfirmationEmail(user.email, order);
     await Order.updateOne(
       { _id: order._id },
       {

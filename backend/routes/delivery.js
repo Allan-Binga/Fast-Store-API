@@ -5,6 +5,7 @@ const {
   authAdminMiddleware,
 } = require("../middleware/jwt");
 const {
+  getPendingDeliveries,
   initiateDelivery,
   confirmDelivery,
   getDeliveries,
@@ -16,6 +17,7 @@ const router = express.Router();
 
 router.get("/", authAdminMiddleware, getDeliveries);
 router.get("/user", authUserMiddleware, getUserDeliveries);
+router.get("/pending", authAdminMiddleware, getPendingDeliveries);
 router.get("/:id", authAdminMiddleware, getDelivery);
 router.post(
   "/orders/:orderId/initiate",

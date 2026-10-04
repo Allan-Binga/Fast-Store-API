@@ -1,3 +1,4 @@
+import Skeleton from "./Skeleton"
 import { useEffect, useId, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { api, errorMessage } from '../api'
@@ -54,9 +55,9 @@ export default function LiveSearch({ query, onView }) {
       }} placeholder="Search products…" className="h-10 w-full min-w-0 rounded-sm border border-outline-variant bg-white pl-10 pr-14 text-sm placeholder:text-outline focus:border-primary focus:ring-2 focus:ring-primary/15" />
       <button type="submit" aria-label="Search" className="absolute right-2 flex h-7 w-9 items-center justify-center rounded border border-outline-variant/60 bg-surface-container-low text-outline hover:text-primary"><span aria-hidden="true" className="material-symbols-outlined text-[18px]">arrow_forward</span></button>
     </div>
-    {open && term && <div className="absolute left-0 right-0 top-full z-50 mt-2 max-h-[65dvh] overflow-y-auto rounded-xl border border-outline-variant bg-white p-2 shadow-xl">
+    {open && term && <div className="absolute left-0 right-0 top-full z-50 mt-2 max-h-[65dvh] overflow-y-auto rounded-xl border border-outline-variant bg-white p-2 ">
       <p className="px-2.5 py-2 text-[11px] font-semibold uppercase tracking-wider text-outline">Suggested products</p>
-      {loading && <p role="status" className="px-3 py-4 text-sm text-outline">Searching…</p>}
+      {loading && <Skeleton label="Searching products" count={1} />}
       {current?.error && <div role="alert" className="space-y-2 px-3 py-3 text-sm"><p className="text-error">{current.error}</p><button type="button" onClick={() => setAttempt(value => value + 1)} className="text-primary underline">Retry search</button></div>}
       {!loading && !current?.error && !products.length && <p role="status" className="px-3 py-4 text-sm text-outline">No matching products. Try another search.</p>}
       <ul id={listId} role="listbox" aria-label="Product suggestions" className="space-y-1">

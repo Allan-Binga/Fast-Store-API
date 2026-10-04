@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import Skeleton from "../components/Skeleton";
 import CustomerAccountNav from "../components/CustomerAccountNav";
 import OrderStatusBadge from "../components/OrderStatusBadge";
 import CheckoutLayout, {
@@ -13,6 +14,7 @@ import { paymentMoney } from "../store/checkout";
 import { useStore } from "../store/context";
 
 function providerName(provider) {
+  if (provider === "wallet") return "Wallet";
   if (provider === "paypal") return "PayPal";
   if (provider === "mpesa") return "M-Pesa";
   return "Stripe";
@@ -25,7 +27,7 @@ function canRequestRefund(order) {
     (order.refundPendingAmount || 0);
 
   return (
-    ["stripe", "paypal"].includes(order.paymentProvider) &&
+    ["stripe", "paypal", "wallet"].includes(order.paymentProvider) &&
     ["paid", "partially_refunded"].includes(order.paymentStatus) &&
     available > 0
   );
@@ -46,7 +48,7 @@ function OrderHistory() {
           </p>
         </header>
 
-        {orders.loading && <p role="status">Loading orders…</p>}
+        {orders.loading && <Skeleton count={3} label="Loading orders" />}
         {orders.error && (
           <div role="alert" className="space-y-4">
             <p className="text-error">{orders.error}</p>
@@ -68,7 +70,7 @@ function OrderHistory() {
           {orders.data?.map((order) => (
             <article
               key={order._id}
-              className="space-y-4 rounded-md border border-outline-variant bg-white p-5 shadow-sm sm:p-6"
+              className="space-y-4 rounded-md border border-outline-variant bg-white p-5  sm:p-6"
             >
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
@@ -89,7 +91,7 @@ function OrderHistory() {
               <div className="flex flex-wrap gap-2">
                 <OrderStatusBadge status={order.paymentStatus} label="Payment" />
                 <OrderStatusBadge
-                  status={order.fulfillmentStatus || "unfulfilled"}
+                  status={["paid", "partially_refunded"].includes(order.paymentStatus) && (!order.fulfillmentStatus || order.fulfillmentStatus === "unfulfilled") ? "requested" : order.fulfillmentStatus || "unfulfilled"}
                   label="Delivery"
                 />
               </div>
@@ -112,7 +114,7 @@ function OrderHistory() {
                 {["paid", "partially_refunded", "refunded"].includes(
                   order.paymentStatus,
                 ) && (
-                  <Link to="/deliveries" className={secondaryClass}>
+                  <Link to={`/deliveries?orderId=${encodeURIComponent(order._id)}`} className={secondaryClass}>
                     Track delivery
                   </Link>
                 )}

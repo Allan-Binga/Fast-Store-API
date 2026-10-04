@@ -17,7 +17,7 @@ const paymentTransactionSchema = new mongoose.Schema(
     },
     provider: {
       type: String,
-      enum: ["stripe", "paypal"],
+      enum: ["stripe", "paypal", "wallet"],
       required: true,
       index: true,
     },

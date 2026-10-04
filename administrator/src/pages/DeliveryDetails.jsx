@@ -62,7 +62,7 @@ export default function DeliveryDetails() {
       <PageHeader
         eyebrow="Delivery record"
         title={`Delivery #${delivery._id.slice(-8).toUpperCase()}`}
-        description={`Initiated ${shortDate(delivery.initiatedAt)}`}
+        description={delivery.status === "requested" ? "Payment confirmed · awaiting delivery initiation" : `Initiated ${shortDate(delivery.initiatedAt)}`}
       >
         <StatusBadge value={delivery.status} />
       </PageHeader>
@@ -71,10 +71,11 @@ export default function DeliveryDetails() {
           <Card className="p-5">
             <h2 className="font-bold">Delivery timeline</h2>
             <div className="mt-5 space-y-5">
+              <Timeline title="Delivery requested" date={order.paidAt || delivery.createdAt} complete />
               <Timeline
                 title="Delivery initiated"
                 date={delivery.initiatedAt}
-                complete
+                complete={delivery.status !== "requested"}
               />
               <Timeline
                 title="Estimated delivery"

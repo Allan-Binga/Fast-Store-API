@@ -11,6 +11,9 @@ const getStripe = require("./stripe");
 
 // Recover lost webhook deliveries and release abandoned checkout reservations.
 async function reconcileOrders() {
+  try { await require("./wallet").reconcileWallet(); } catch { console.error("Wallet reconciliation deferred."); }
+  try { await require("./refundEmails").reconcileRefundEmails(); } catch { console.error("Refund email reconciliation deferred."); }
+  try { await require("./deliveryNotifications").reconcileDeliveryNotifications(); } catch { console.error("Delivery notification reconciliation deferred."); }
   const stripe = process.env.STRIPE_SECRET_KEY ? getStripe() : null;
   const orders = await Order.find({
     paymentStatus: "pending",
@@ -79,7 +82,7 @@ async function reconcileOrders() {
   }
   // Retry confirmation mail independently from payment and inventory state.
   const awaitingMail = await Order.find({
-    paymentStatus: "paid",
+    paymentStatus: { $in: ["paid", "partially_refunded", "refunded"] },
     confirmationSent: false,
   })
     .sort({ createdAt: 1 })

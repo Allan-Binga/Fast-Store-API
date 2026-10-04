@@ -16,7 +16,7 @@ export default function NotFound() {
     <div className="flex min-h-screen flex-col bg-surface font-body-md text-on-surface">
       <TopNavbar />
       <main className="mx-auto flex w-full max-w-7xl flex-1 items-center justify-center px-4 py-16 sm:px-8">
-        <section className="w-full max-w-xl rounded-md border border-outline-variant bg-surface-container-lowest p-8 text-center shadow-sm sm:p-12">
+        <section className="w-full max-w-xl rounded-md border border-outline-variant bg-surface-container-lowest p-8 text-center  sm:p-12">
           <span aria-hidden="true" className="material-symbols-outlined text-[56px] text-primary">explore_off</span>
           <p className="mt-4 text-label-sm font-semibold uppercase tracking-widest text-primary">Error 404</p>
           <h1 className="mt-2 font-headline-lg text-headline-lg font-semibold">We could not find that page</h1>

@@ -173,3 +173,23 @@
   /* Keep form text readable without triggering mobile focus zoom. */
   input, select, textarea { font-size: 16px; }
 }
+
+/* Flat surfaces throughout the app; keyboard focus uses outlines. */
+*, *::before, *::after { box-shadow: none !important; text-shadow: none !important; }
+@media (prefers-reduced-motion: reduce) { .animate-pulse { animation: none; } }
+
+/* One gentle entrance for home collections; no motion in account screens. */
+.home-reveal { transition: opacity 420ms ease, transform 420ms ease; transition-delay: var(--reveal-delay, 0ms); }
+.home-reveal[data-visible="false"] { opacity: 0; transform: translateY(12px); }
+.home-reveal[data-visible="true"] { opacity: 1; transform: translateY(0); }
+.hero-photo { animation: hero-photo-in 650ms ease both; }
+.hero-caret { font-weight: 400; animation: caret-blink 1.2s step-end infinite; }
+.hero-caret-still { animation: none; }
+@keyframes hero-photo-in { from { opacity: .3; } to { opacity: 1; } }
+@keyframes caret-blink { 50% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .home-reveal, .hero-photo, .hero-caret { animation: none; transition: none; }
+  .home-reveal[data-visible="false"] { opacity: 1; transform: none; }
+  .hero-caret { display: none; }
+  .group-hover\:scale-105 { transform: none; }
+}

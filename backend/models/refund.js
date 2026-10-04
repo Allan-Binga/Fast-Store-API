@@ -15,9 +15,12 @@ const refundSchema = new mongoose.Schema(
       required: true,
       index: true,
     },
+    emailStatus: String,
+    emailClaimUntil: Date,
+    destination: { type: String, enum: ["original", "wallet"], default: "original" },
     provider: {
       type: String,
-      enum: ["stripe", "paypal"],
+      enum: ["stripe", "paypal", "wallet"],
       required: true,
       index: true,
     },

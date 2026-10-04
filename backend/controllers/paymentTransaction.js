@@ -202,7 +202,7 @@ const getPaymentTransactions = asyncHandler(
 
     if (req.query.provider !== undefined) {
       if (
-        !["stripe", "paypal"].includes(req.query.provider)
+        !["stripe", "paypal", "wallet"].includes(req.query.provider)
       ) {
         throw fail(400, "Invalid payment provider.");
       }

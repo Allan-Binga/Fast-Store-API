@@ -1,165 +1,45 @@
-import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useLocation, useSearchParams } from "react-router-dom";
 import { adminApi, errorMessage } from "../api";
 import { CalendarInput, Select } from "../components/FormControls";
 import Modal from "../components/Modal";
-import {
-  Button,
-  Card,
-  Empty,
-  Field,
-  PageHeader,
-  SkeletonRows,
-  StatusBadge,
-  inputClass,
-  shortDate,
-} from "../components/UI";
+import { Button, Card, Empty, Field, PageHeader, SkeletonRows, StatusBadge, inputClass, shortDate, money } from "../components/UI";
 import { useAdmin } from "../store/AdminContext";
 
 export default function Deliveries() {
-  const [deliveries, setDeliveries] = useState([]);
-  const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [creating, setCreating] = useState(false);
+  const { pathname } = useLocation();
+  const [params] = useSearchParams();
+  const pending = pathname.endsWith("/pending");
+  const orderId = params.get("orderId") || "";
+  const [page, setPage] = useState(1);
+  const [attempt, setAttempt] = useState(0);
   const [status, setStatus] = useState("");
+  const [creating, setCreating] = useState(null);
+  const [result, setResult] = useState(null);
   const { notify } = useAdmin();
-  const load = async () => {
-    try {
-      const [deliveryResult, orderResult] = await Promise.all([
-        adminApi.get("/deliveries", { params: { limit: 100 } }),
-        adminApi.get("/orders", { params: { limit: 100 } }),
-      ]);
-      setDeliveries(deliveryResult.data);
-      setOrders(orderResult.data);
-    } catch (error) {
-      notify(errorMessage(error, "Unable to load deliveries."), "error");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const key = `${pathname}:${orderId}:${page}:${attempt}:${status}`;
+  const current = result?.key === key;
   useEffect(() => {
-    const timer = window.setTimeout(load, 0);
-    return () => window.clearTimeout(timer);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-  const shown = useMemo(
-    () =>
-      deliveries.filter((delivery) => !status || delivery.status === status),
-    [deliveries, status],
-  );
-  const existingOrders = new Set(
-    deliveries.map((delivery) => String(delivery.order)),
-  );
-  const eligibleOrders = orders.filter(
-    (order) =>
-      ["paid", "partially_refunded"].includes(order.paymentStatus) &&
-      order.fulfillmentStatus === "unfulfilled" &&
-      !existingOrders.has(String(order._id)),
-  );
-  return (
-    <>
-      <PageHeader
-        eyebrow="Fulfillment operations"
-        title="Deliveries"
-        description="Initiate deliveries for paid orders and monitor customer-confirmed completion."
-      >
-        <Button
-          onClick={() => setCreating(true)}
-          disabled={!eligibleOrders.length}
-        >
-          <span className="material-symbols-outlined text-[19px]">
-            local_shipping
-          </span>
-          Initiate delivery
-        </Button>
-      </PageHeader>
-      <Card>
-        <div className="flex justify-end border-b border-line p-4">
-          <Select
-            className={`${inputClass} sm:w-52`}
-            value={status}
-            onChange={(event) => setStatus(event.target.value)}
-          >
-            <option value="">All statuses</option>
-            <option value="initiated">Initiated</option>
-            <option value="delivered">Delivered</option>
-          </Select>
-        </div>
-        {loading ? (
-          <SkeletonRows />
-        ) : !shown.length ? (
-          <Empty
-            icon="local_shipping"
-            title="No deliveries found"
-            text={
-              eligibleOrders.length
-                ? "Use Initiate delivery to begin fulfillment."
-                : "Paid, unfulfilled orders will become eligible here."
-            }
-          />
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-slate-50 text-xs uppercase text-muted">
-                <tr>
-                  <th className="px-5 py-3">Delivery</th>
-                  <th className="px-5 py-3">Order</th>
-                  <th className="px-5 py-3">Status</th>
-                  <th className="px-5 py-3">Initiated</th>
-                  <th className="px-5 py-3">Estimated</th>
-                  <th className="px-5 py-3">Confirmed</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-line">
-                {shown.map((delivery) => (
-                  <tr key={delivery._id} className="hover:bg-slate-50">
-                    <td className="px-5 py-4">
-                      <Link
-                        className="font-bold text-primary"
-                        to={`/deliveries/${delivery._id}`}
-                      >
-                        #{delivery._id.slice(-8).toUpperCase()}
-                      </Link>
-                    </td>
-                    <td className="px-5 py-4">
-                      <Link
-                        className="font-semibold hover:text-primary"
-                        to={`/orders/${delivery.order}`}
-                      >
-                        #{String(delivery.order).slice(-8).toUpperCase()}
-                      </Link>
-                    </td>
-                    <td className="px-5 py-4">
-                      <StatusBadge value={delivery.status} />
-                    </td>
-                    <td className="px-5 py-4 text-muted">
-                      {shortDate(delivery.initiatedAt)}
-                    </td>
-                    <td className="px-5 py-4 text-muted">
-                      {shortDate(delivery.estimatedDeliveryAt)}
-                    </td>
-                    <td className="px-5 py-4 text-muted">
-                      {shortDate(delivery.confirmedByCustomerAt)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </Card>
-      {creating && (
-        <InitiateDelivery
-          orders={eligibleOrders}
-          onClose={() => setCreating(false)}
-          onSaved={() => {
-            setCreating(false);
-            load();
-            notify("Delivery initiated.");
-          }}
-        />
-      )}
-    </>
-  );
+    let active = true;
+    const query = pending ? { limit: 20, page, ...(orderId ? { orderId } : {}) } : { limit: 20, page, ...(status ? { status } : {}) };
+    adminApi.get(pending ? "/deliveries/pending" : "/deliveries", { params: query }).then(({ data }) => { if (active) setResult({ key, data }); }).catch(error => { if (active) setResult({ key, error: errorMessage(error, "Unable to load deliveries.") }); });
+    return () => { active = false; };
+  }, [key, pending, orderId, page, status]);
+  const rows = current ? (pending ? result.data?.orders : result.data) || [] : [];
+  return <>
+    <PageHeader eyebrow="Fulfillment operations" title={pending ? "Pending deliveries" : "Deliveries"} description={pending ? "Paid orders awaiting fulfillment. Review and initiate each requested delivery here, even if its email alert was missed." : "Track initiated deliveries and customer-confirmed completion."}>
+      <Button variant="secondary" onClick={() => setAttempt(value => value + 1)}>Refresh</Button>
+      {!pending && <Link to="/deliveries/pending" className="inline-flex min-h-10 items-center rounded-sm bg-primary px-4 py-2 text-sm font-bold text-white">Pending deliveries</Link>}
+    </PageHeader>
+    <nav aria-label="Delivery views" className="mb-5 flex gap-3"><Link to="/deliveries/pending" className={`rounded-sm border px-4 py-2 font-semibold ${pending ? "border-primary bg-primary text-white" : "border-line bg-white"}`}>Requested</Link><Link to="/deliveries" className={`rounded-sm border px-4 py-2 font-semibold ${!pending ? "border-primary bg-primary text-white" : "border-line bg-white"}`}>Initiated & delivered</Link></nav>
+    {pending && orderId && <p className="mb-4 text-sm text-muted">Showing order #{orderId.slice(-8).toUpperCase()}. <Link to="/deliveries/pending" className="font-semibold text-primary underline">View all pending deliveries</Link></p>}
+    <Card>
+      {!pending && <div className="flex justify-end border-b border-line p-4"><Select aria-label="Delivery status" className={`${inputClass} sm:w-52`} value={status} onChange={event => { setStatus(event.target.value); setPage(1); }}><option value="">Initiated & delivered</option><option value="initiated">Initiated</option><option value="delivered">Delivered</option></Select></div>}
+      {!current ? <SkeletonRows /> : result.error ? <div role="alert" className="space-y-3 p-5 text-red-700"><p>{result.error}</p><Button onClick={() => setAttempt(value => value + 1)}>Try again</Button></div> : !rows.length ? <Empty icon="local_shipping" title={pending ? "No pending deliveries on this page" : "No deliveries found"} text={pending ? "Paid orders appear here automatically. An order may already have been initiated or refunded." : "Initiate a requested delivery to start fulfillment."} /> : <div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead className="bg-slate-50 text-xs uppercase text-muted"><tr><th className="px-5 py-3">Order</th><th className="px-5 py-3">{pending ? "Customer" : "Delivery"}</th><th className="px-5 py-3">Status</th><th className="px-5 py-3">{pending ? "Paid" : "Initiated"}</th><th className="px-5 py-3">{pending ? "Amount" : "Estimated"}</th><th className="px-5 py-3">{pending ? "Action" : "Confirmed"}</th></tr></thead><tbody className="divide-y divide-line">{rows.map(row => <tr key={row._id}><td className="px-5 py-4"><Link className="font-bold text-primary" to={`/orders/${pending ? row._id : row.order}`}>#{String(pending ? row._id : row.order).slice(-8).toUpperCase()}</Link></td><td className="px-5 py-4">{pending ? <><strong>{row.user?.firstName} {row.user?.lastName}</strong><p className="text-xs text-muted">{row.user?.email}</p></> : <Link className="font-bold text-primary" to={`/deliveries/${row._id}`}>#{row._id.slice(-8).toUpperCase()}</Link>}</td><td className="px-5 py-4"><StatusBadge value={pending ? "requested" : row.status} /></td><td className="px-5 py-4 text-muted">{shortDate(pending ? row.paidAt || row.createdAt : row.initiatedAt)}</td><td className="px-5 py-4">{pending ? money(row.totalAmount, row.currency) : shortDate(row.estimatedDeliveryAt)}</td><td className="px-5 py-4">{pending ? <Button onClick={() => setCreating(row)}>Initiate delivery</Button> : shortDate(row.confirmedByCustomerAt)}</td></tr>)}</tbody></table></div>}
+      <div className="flex items-center justify-between border-t border-line p-4"><Button variant="secondary" disabled={!current || page === 1} onClick={() => setPage(value => value - 1)}>Previous</Button><span className="text-sm text-muted">Page {page}{pending && result?.data?.total !== undefined && current ? ` · ${result.data.total} requested` : ""}</span><Button variant="secondary" disabled={!current || Boolean(result?.error) || (pending ? page * 20 >= (result?.data?.total || 0) : rows.length < 20)} onClick={() => setPage(value => value + 1)}>Next</Button></div>
+    </Card>
+    {creating && <InitiateDelivery orders={[creating]} initialOrderId={creating._id} onClose={() => setCreating(null)} onSaved={() => { setCreating(null); setAttempt(value => value + 1); notify("Delivery initiated. The customer will receive a confirmation email."); }} />}
+  </>;
 }
 export function InitiateDelivery({
   orders,

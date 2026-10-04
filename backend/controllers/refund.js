@@ -32,6 +32,8 @@ const money = (value) =>
 const requestRefund = asyncHandler(async (req, res) => {
   const orderId = requireId(req.params.orderId);
   const reason = req.body.reason;
+  const destination = req.body.destination || "original";
+  if (!["original", "wallet"].includes(destination)) throw fail(400, "Choose a refund destination.");
   const explanation = req.body.explanation;
   const evidenceImages = (req.files || []).map(
     (file) => file.location || file.path
@@ -89,7 +91,7 @@ const requestRefund = asyncHandler(async (req, res) => {
       _id: orderId,
       user: req.userId,
       paymentProvider: {
-        $in: ["stripe", "paypal"],
+        $in: ["stripe", "paypal", "wallet"],
       },
       paymentStatus: {
         $in: ["paid", "partially_refunded"],
@@ -106,7 +108,7 @@ const requestRefund = asyncHandler(async (req, res) => {
     const providerPaymentId =
       order.paymentProvider === "stripe"
         ? order.stripePaymentIntentId
-        : order.paypalCaptureId;
+        : order.paymentProvider === "wallet" ? String(order._id) : order.paypalCaptureId;
 
     if (!providerPaymentId) {
       throw fail(
@@ -155,6 +157,7 @@ const requestRefund = asyncHandler(async (req, res) => {
           amount,
           currency: order.currency,
           reason,
+          destination: order.paymentProvider === "wallet" ? "wallet" : destination,
           customerExplanation: explanation?.trim(),
           evidenceImages,
           requestedBy: req.userId,

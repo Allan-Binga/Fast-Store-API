@@ -6,6 +6,7 @@ import { StoreContext } from "./context";
 export default function StoreProvider({ children }) {
   const categories = useResource("/categories/all");
   const [session, setSession] = useState({ status: "checking", user: null });
+  const [wallet, setWallet] = useState({ balances: [], loading: true, loaded: false, error: "" });
   const [cart, setCart] = useState([]);
   const [wishlist, setWishlist] = useState([]);
   const [errors, setErrors] = useState({});
@@ -199,6 +200,7 @@ export default function StoreProvider({ children }) {
     setCart([]);
     setWishlist([]);
     setErrors({});
+    setWallet({ balances: [], loading: true, loaded: false, error: "" });
     shoppingLoaded.current = false;
     shoppingRequestVersion.current += 1;
     setLoading(false);
@@ -208,12 +210,39 @@ export default function StoreProvider({ children }) {
     setNotice("");
   }, []);
 
+  const refreshWallet = useCallback(async () => {
+    const version = sessionVersion.current;
+    try {
+      const { data } = await customerRequest({ url: "/wallet" });
+      if (version === sessionVersion.current) setWallet({ balances: data.balances || [], loading: false, loaded: true, error: "" });
+    } catch (error) {
+      if (version !== sessionVersion.current) return;
+      if ([401, 403].includes(error.response?.status)) invalidateSession();
+      else setWallet(previous => ({ ...previous, loading: false, error: errorMessage(error) }));
+    }
+  }, [invalidateSession]);
+
+  useEffect(() => {
+    if (session.status !== "authenticated") return;
+    void refreshWallet();
+    const refresh = () => { if (!document.hidden) void refreshWallet(); };
+    window.addEventListener("wallet-updated", refresh);
+    window.addEventListener("focus", refresh);
+    const timer = window.setInterval(refresh, 60000);
+    return () => {
+      window.removeEventListener("wallet-updated", refresh);
+      window.removeEventListener("focus", refresh);
+      window.clearInterval(timer);
+    };
+  }, [session.status, session.user?._id, refreshWallet]);
+
   async function login(credentials) {
     // Login must send/accept HttpOnly cookies without treating bad credentials as token expiry.
     const { data } = await api.post("/auth/login", credentials, {
       withCredentials: true,
     });
     setSession({ status: "authenticated", user: data.user });
+    setWallet({ balances: [], loading: true, loaded: false, error: "" });
     setPanel(null);
     setNotice("");
     setCart([]);
@@ -241,6 +270,8 @@ export default function StoreProvider({ children }) {
     <StoreContext.Provider
       value={{
         categories,
+        wallet,
+        refreshWallet,
         session,
         cart,
         wishlist,

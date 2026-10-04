@@ -1,0 +1,11 @@
+const router = require('express').Router();
+const { authUserMiddleware, authAdminMiddleware } = require('../middleware/jwt');
+const rateLimit = require('../middleware/rateLimit');
+const controller = require('../controllers/wallet');
+router.get("/admin", authAdminMiddleware, controller.listAdminWallets);
+router.get("/admin/users/:userId", authAdminMiddleware, controller.getAdminUserWallet);
+router.use(authUserMiddleware);
+router.get('/', controller.getWallet);
+router.post('/topups', rateLimit(20), controller.createTopup);
+router.post('/topups/:id/confirm', rateLimit(30), controller.confirmTopup);
+module.exports = router;

@@ -60,3 +60,9 @@ a {
   opacity: 0;
   pointer-events: none;
 }
+
+/* Flat surfaces throughout the app; keyboard focus uses outlines. */
+*, *::before, *::after { box-shadow: none !important; text-shadow: none !important; }
+@media (prefers-reduced-motion: reduce) { .animate-pulse { animation: none; } }
+
+:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }

@@ -9,10 +9,10 @@ export default function ProductCard({ product, onView }) {
   const inStock = available(product)
   const wishlistPending = isPending('wishlist:' + product._id)
   const cartPending = isPending('cart:add:' + product._id)
-  return <article className="group flex flex-col overflow-hidden rounded-sm border border-outline-variant bg-surface-container-lowest shadow-sm hover:shadow-md transition-shadow">
+  return <article className="group h-full flex flex-col overflow-hidden rounded-sm border border-outline-variant bg-surface-container-lowest   ">
     <div className="relative bg-surface-container-low">
       <button className="block w-full" onClick={() => onView(product._id)} aria-label={`View ${product.name}`}><ProductImage src={product.image} alt={product.name} className="w-full aspect-square object-contain p-5 group-hover:scale-105 transition-transform" /></button>
-      <button onClick={() => toggleWishlist(product)} disabled={wishlistPending || session.status === 'checking'} aria-pressed={saved} aria-label={`${saved ? 'Remove' : 'Save'} ${product.name} ${saved ? 'from' : 'to'} wishlist`} className="absolute right-3 top-3 rounded-full bg-white p-2 text-primary shadow-sm disabled:opacity-50"><span className={`material-symbols-outlined ${saved ? 'fill-icon' : ''}`} aria-hidden="true">favorite</span></button>
+      <button onClick={() => toggleWishlist(product)} disabled={wishlistPending || session.status === 'checking'} aria-pressed={saved} aria-label={`${saved ? 'Remove' : 'Save'} ${product.name} ${saved ? 'from' : 'to'} wishlist`} className="absolute right-3 top-3 rounded-full bg-white p-2 text-primary  disabled:opacity-50"><span className={`material-symbols-outlined ${saved ? 'fill-icon' : ''}`} aria-hidden="true">favorite</span></button>
       {product.discount > 0 && <span className="absolute left-3 top-3 rounded-lg bg-primary px-2 py-1 text-xs text-white">{product.discount}% off</span>}
     </div>
     <div className="flex flex-1 flex-col gap-3 p-4">

@@ -18,7 +18,7 @@ const deliverySchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["initiated", "delivered"],
+      enum: ["requested", "initiated", "delivered"],
       default: "initiated",
       required: true,
       index: true,
@@ -26,13 +26,14 @@ const deliverySchema = new mongoose.Schema(
     initiatedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true,
+      required: function () { return this.status !== "requested"; },
     },
     initiatedAt: {
       type: Date,
-      default: Date.now,
-      required: true,
+      required: function () { return this.status !== "requested"; },
     },
+    customerEmailSent: { type: Boolean, default: false },
+    customerEmailClaimUntil: Date,
     estimatedDeliveryAt: {
       type: Date,
     },

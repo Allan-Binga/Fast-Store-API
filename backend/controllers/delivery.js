@@ -54,7 +54,7 @@ const initiateDelivery = asyncHandler(async (req, res) => {
       paymentStatus: {
         $in: ["paid", "partially_refunded"],
       },
-      fulfillmentStatus: "unfulfilled",
+      fulfillmentStatus: { $in: ["unfulfilled", "requested"] },
     }).session(session);
 
     if (!order) {
@@ -64,19 +64,10 @@ const initiateDelivery = asyncHandler(async (req, res) => {
       );
     }
 
-    [delivery] = await Delivery.create(
-      [
-        {
-          order: order._id,
-          user: order.user,
-          initiatedBy: req.userId,
-          estimatedDeliveryAt,
-          note: note?.trim(),
-        },
-      ],
-      {
-        session,
-      },
+    delivery = await Delivery.findOneAndUpdate(
+      { order: order._id, status: "requested" },
+      { $set: { user: order.user, status: "initiated", initiatedBy: req.userId, initiatedAt: new Date(), estimatedDeliveryAt, note: note?.trim(), customerEmailSent: false } },
+      { upsert: true, new: true, session, runValidators: true },
     );
 
     order.fulfillmentStatus = "initiated";
@@ -87,6 +78,7 @@ const initiateDelivery = asyncHandler(async (req, res) => {
   });
 
   res.status(201).json(delivery);
+  require("../services/deliveryNotifications").notifyDeliveryStarted(delivery._id).catch(() => console.error("Customer delivery email deferred."));
 });
 
 
@@ -146,7 +138,11 @@ const getDeliveries = asyncHandler(async (req, res) => {
     skip,
   } = pagination(req);
 
-  const query = {};
+  const query = { status: { $ne: "requested" } };
+  if (req.query.status !== undefined) {
+    if (!["requested", "initiated", "delivered"].includes(req.query.status)) throw fail(400, "Invalid delivery status.");
+    query.status = req.query.status;
+  }
 
   if (req.query.orderId !== undefined) {
     query.order = requireId(req.query.orderId);
@@ -193,7 +189,19 @@ const getUserDeliveries = asyncHandler(async (req, res) => {
 });
 
 
+const getPendingDeliveries = asyncHandler(async (req, res) => {
+  const { limit, skip } = pagination(req);
+  const query = { paymentStatus: { $in: ["paid", "partially_refunded"] }, fulfillmentStatus: { $in: ["unfulfilled", "requested"] } };
+  if (req.query.orderId !== undefined) query._id = requireId(req.query.orderId);
+  const [orders, total] = await Promise.all([
+    Order.find(query).populate("user", "firstName lastName email").sort({ paidAt: 1, _id: 1 }).skip(skip).limit(limit),
+    Order.countDocuments(query),
+  ]);
+  res.json({ orders, total });
+});
+
 module.exports = {
+  getPendingDeliveries,
   initiateDelivery,
   confirmDelivery,
   getDeliveries,

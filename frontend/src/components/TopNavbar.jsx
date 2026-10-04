@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useStore } from "../store/context";
 import { available, money } from "../store/catalog";
+import Skeleton from "./Skeleton";
 import Modal from "./Modal";
 import ProductImage from "./ProductImage";
 import LiveSearch from "./LiveSearch";
@@ -63,9 +64,7 @@ function CategoryMenu({ categories, activeCategory }) {
       className="order-3 flex w-full min-w-0 items-center gap-3 xl:order-none xl:w-auto xl:max-w-[390px]"
     >
       {categories.loading && (
-        <span role="status" className="text-xs text-outline">
-          Loading categories...
-        </span>
+        <span role="status" aria-label="Loading categories" className="flex gap-2"><span className="sr-only">Loading categories…</span>{[0, 1, 2].map(item => <span key={item} aria-hidden="true" className="h-4 w-16 animate-pulse rounded-sm bg-surface-container-high" />)}</span>
       )}
       {categories.error && (
         <button className="text-xs text-error underline" onClick={categories.retry}>
@@ -87,7 +86,7 @@ function CategoryMenu({ categories, activeCategory }) {
           More
           <Icon className="text-[18px]">expand_more</Icon>
         </summary>
-        <div className="absolute right-0 top-full z-50 mt-2 w-64 max-w-[calc(100vw-2rem)] rounded-md border border-outline-variant bg-white p-2 shadow-xl">
+        <div className="absolute right-0 top-full z-50 mt-2 w-64 max-w-[calc(100vw-2rem)] rounded-md border border-outline-variant bg-white p-2 ">
           <p className="px-3 py-2 text-[11px] font-semibold uppercase tracking-wider text-outline">
             Shop by category
           </p>
@@ -199,6 +198,9 @@ function SignedInAccountMenu({ session, logoutPending, openWishlist, navigate, l
       >
         Your wishlist
       </AccountMenuItem>
+      <AccountMenuItem to="/wallet" icon="account_balance_wallet">
+        Wallet & add funds
+      </AccountMenuItem>
       <AccountMenuItem to="/orders" icon="receipt_long">
         Your orders
       </AccountMenuItem>
@@ -269,11 +271,9 @@ function AccountMenu({ session, logoutPending, openWishlist, navigate, logout })
           {signedIn ? "Account" : "Sign in"}
         </span>
       </summary>
-      <div className="absolute right-0 top-full z-50 mt-2 w-60 max-w-[calc(100vw-2rem)] space-y-1 rounded-md border border-outline-variant bg-white p-2 shadow-xl">
+      <div className="absolute right-0 top-full z-50 mt-2 w-60 max-w-[calc(100vw-2rem)] space-y-1 rounded-md border border-outline-variant bg-white p-2 ">
         {session.status === "checking" ? (
-          <p role="status" className="p-3 text-sm text-outline">
-            Checking session...
-          </p>
+          <div role="status" aria-label="Checking session" className="space-y-3 p-3"><span className="sr-only">Checking session…</span>{[0, 1, 2].map(item => <div key={item} aria-hidden="true" className="h-4 w-full animate-pulse rounded-sm bg-surface-container-high" />)}</div>
         ) : signedIn ? (
           <SignedInAccountMenu
             session={session}
@@ -290,6 +290,15 @@ function AccountMenu({ session, logoutPending, openWishlist, navigate, logout })
   );
 }
 
+function WalletBalance() {
+  const { wallet } = useStore();
+  const cents = wallet.balances.find(balance => balance.currency === "usd")?.balanceCents || 0;
+  return <Link to="/wallet" aria-label={wallet.error ? "Wallet balance unavailable" : wallet.loading ? "Loading wallet balance" : `Wallet balance ${money(cents / 100)}`} className="flex min-h-11 items-center gap-1.5 rounded-sm border border-outline-variant/60 px-2 py-2 text-primary sm:px-3">
+    <Icon className="text-[20px]">account_balance_wallet</Icon>
+    {wallet.loading ? <span aria-hidden="true" className="h-4 w-12 animate-pulse rounded-sm bg-surface-container-high" /> : <span className="text-xs font-bold sm:text-sm">{wallet.error ? "—" : money(cents / 100)}</span>}
+  </Link>;
+}
+
 function HeaderActions({
   session,
   logoutPending,
@@ -303,6 +312,7 @@ function HeaderActions({
 }) {
   return (
     <div className="ml-auto flex shrink-0 items-center gap-1">
+      {session.status === "authenticated" && <WalletBalance />}
       <WishlistButton
         wishlistReady={wishlistReady}
         wishlistCount={wishlistCount}
@@ -536,7 +546,7 @@ function WishlistPanelFooter({ isPending, mutate }) {
 function ShoppingPanel({ panel, items, store, isCart, closePanel }) {
   return (
     <div className="space-y-4">
-      {store.loading && items.length === 0 && <p role="status">Loading your {panel}...</p>}
+      {store.loading && items.length === 0 && <Skeleton label={`Loading your ${panel}`} count={2} />}
       {store.errors[panel] && (
         <div role="alert">
           <p className="text-error">{store.errors[panel]}</p>
@@ -585,7 +595,7 @@ function CustomerPanel() {
   return (
     <Modal title={title} onClose={closePanel}>
       {session.status === "checking" ? (
-        <p role="status">Checking your session...</p>
+        <Skeleton count={1} label="Checking your session" />
       ) : session.status !== "authenticated" ? (
         <GuestPanel session={session} checkSession={checkSession} closePanel={closePanel} />
       ) : panel === "account" ? (
@@ -608,7 +618,7 @@ function ToastNotice({ notice, dismiss }) {
   return (
     <div
       role="status"
-      className="fixed bottom-5 left-4 right-4 z-40 mx-auto flex max-w-lg items-center justify-between gap-4 rounded-md border border-outline-variant bg-white p-4 shadow-xl"
+      className="fixed bottom-5 left-4 right-4 z-40 mx-auto flex max-w-lg items-center justify-between gap-4 rounded-md border border-outline-variant bg-white p-4 "
     >
       <p>{notice}</p>
       <button aria-label="Dismiss message" onClick={dismiss} className="p-2">
@@ -674,7 +684,7 @@ export default function TopNavbar() {
     <>
       <header
         ref={header}
-        className="sticky top-0 z-30 border-b border-outline-variant bg-surface-container-lowest shadow-sm"
+        className="sticky top-0 z-30 border-b border-outline-variant bg-surface-container-lowest "
       >
         <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-4 gap-y-3 px-4 py-3 sm:px-8 xl:flex-nowrap">
           <BrandLink />

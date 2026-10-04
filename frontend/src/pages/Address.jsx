@@ -1,3 +1,4 @@
+import Skeleton from "../components/Skeleton";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { customerRequest, errorMessage } from "../api";
@@ -166,11 +167,7 @@ function AddressBook() {
           {error}
         </p>
       )}
-      {loading && (
-        <p role="status" className="py-8">
-          Loading saved addresses…
-        </p>
-      )}
+      {loading && <Skeleton count={2} label="Loading addresses" />}
       {loadError && (
         <div
           role="alert"
@@ -195,7 +192,7 @@ function AddressBook() {
           {addresses.map((address) => (
             <article
               key={address._id}
-              className={`flex min-w-0 flex-col justify-between rounded-md border-2 bg-surface-container-lowest p-6 shadow-sm ${address.isDefault ? "border-primary" : "border-outline-variant"}`}
+              className={`flex min-w-0 flex-col justify-between rounded-md border-2 bg-surface-container-lowest p-6  ${address.isDefault ? "border-primary" : "border-outline-variant"}`}
             >
               <div className="break-words">
                 <div className="mb-3 flex flex-wrap items-start justify-between gap-2">

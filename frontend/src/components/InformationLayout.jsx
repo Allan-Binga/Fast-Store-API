@@ -48,7 +48,7 @@ export default function InformationLayout({ title, intro, children }) {
           <span aria-current="page">{title}</span>
         </nav>
 
-        <header className="mb-8 rounded-md border border-outline-variant bg-surface-container-lowest p-6 shadow-sm sm:p-8">
+        <header className="mb-8 rounded-md border border-outline-variant bg-surface-container-lowest p-6  sm:p-8">
           <p className="mb-2 text-label-sm font-semibold uppercase tracking-wider text-primary">
             FastStore information
           </p>
@@ -61,7 +61,7 @@ export default function InformationLayout({ title, intro, children }) {
           <p className="mt-4 text-caption text-outline">Last updated: September 28, 2026</p>
         </header>
 
-        <article className="space-y-7 rounded-md border border-outline-variant bg-surface-container-lowest p-6 shadow-sm sm:p-8">
+        <article className="space-y-7 rounded-md border border-outline-variant bg-surface-container-lowest p-6  sm:p-8">
           {children}
         </article>
       </main>

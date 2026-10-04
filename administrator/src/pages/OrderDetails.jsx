@@ -56,7 +56,7 @@ export default function OrderDetails() {
   async function approve(item) {
     if (
       !window.confirm(
-        `Approve the ${money(item.amount, item.currency)} refund with ${item.provider}?`,
+        `Approve the ${money(item.amount, item.currency)} refund to ${item.destination === "wallet" || item.provider === "wallet" ? "the customer wallet" : item.provider}?`,
       )
     )
       return;
@@ -83,7 +83,7 @@ export default function OrderDetails() {
   const { order, delivery, refunds, transactions, customer } = data;
   const canDeliver =
     ["paid", "partially_refunded"].includes(order.paymentStatus) &&
-    order.fulfillmentStatus === "unfulfilled";
+    ["unfulfilled", "requested"].includes(order.fulfillmentStatus);
   const address = order.shippingAddress || {};
   return (
     <>
@@ -305,7 +305,7 @@ export default function OrderDetails() {
                 value={delivery?.status || order.fulfillmentStatus}
               />
             </div>
-            {delivery ? (
+            {delivery?.status === "requested" ? <p className="mt-3 text-sm text-muted">Payment confirmed. This delivery is requested and awaiting initiation.</p> : delivery ? (
               <div className="mt-4 space-y-2 text-sm text-muted">
                 <p>
                   Initiated:{" "}

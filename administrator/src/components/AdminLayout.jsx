@@ -9,6 +9,7 @@ const navigation = [
     links: [
       ["/checkouts", "shopping_cart_checkout", "Checkouts"],
       ["/orders", "receipt_long", "Orders"],
+      ["/wallets", "account_balance_wallet", "Wallets"],
     ],
   },
   {
@@ -23,6 +24,7 @@ const navigation = [
   {
     label: "Operations",
     links: [
+      ["/deliveries/pending", "pending_actions", "Pending deliveries"],
       ["/deliveries", "local_shipping", "Deliveries"],
       ["/refunds", "currency_exchange", "Refunds"],
     ],
@@ -75,7 +77,7 @@ export default function AdminLayout() {
                   <NavLink
                     key={to}
                     to={to}
-                    end={to === "/"}
+                    end={to === "/" || to === "/deliveries"}
                     onClick={() => setOpen(false)}
                     className={({ isActive }) =>
                       `flex items-center gap-3 rounded-sm px-3 py-2.5 text-sm font-semibold transition ${isActive ? "bg-primary text-white" : "text-slate-300 hover:bg-slate-900 hover:text-white"}`

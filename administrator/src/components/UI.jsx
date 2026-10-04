@@ -76,7 +76,8 @@ export function Empty({ icon = "inbox", title, text }) {
 }
 export function SkeletonRows({ rows = 5 }) {
   return (
-    <div className="space-y-3 p-5">
+    <div role="status" aria-label="Loading content" aria-busy="true" className="space-y-3 p-5">
+      <span className="sr-only">Loading content…</span>
       {Array.from({ length: rows }, (_, index) => (
         <div
           key={index}
@@ -94,7 +95,8 @@ export function StatusBadge({ value }) {
     key.includes("approved") ||
     key.includes("active")
       ? "bg-emerald-50 text-emerald-700"
-      : key.includes("pending") ||
+      : key.includes("requested") ||
+          key.includes("pending") ||
           key.includes("processing") ||
           key.includes("transit")
         ? "bg-amber-50 text-amber-700"

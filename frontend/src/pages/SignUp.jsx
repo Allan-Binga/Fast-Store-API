@@ -30,7 +30,7 @@ const inputClass =
   "w-full h-11 px-3.5 bg-surface-container-lowest border rounded-sm text-on-surface placeholder:text-sm placeholder:text-outline focus:border-primary-container focus:ring-2 focus:ring-primary-container/20 transition-all disabled:bg-surface-container-low disabled:cursor-not-allowed";
 
 const buttonClass =
-  "w-full min-h-11 px-5 py-2.5 rounded-sm bg-primary-container text-on-primary font-label-md text-label-md font-semibold hover:bg-secondary transition-all flex items-center justify-center gap-2 shadow-sm disabled:opacity-60 disabled:cursor-not-allowed";
+  "w-full min-h-11 px-5 py-2.5 rounded-sm bg-primary-container text-on-primary font-label-md text-label-md font-semibold hover:bg-secondary transition-all flex items-center justify-center gap-2  disabled:opacity-60 disabled:cursor-not-allowed";
 
 function Icon({ children, className = "" }) {
   return (
@@ -400,7 +400,7 @@ function CreatedMessage({ created, headingRef }) {
 
   return (
     <>
-      <div className={`mx-auto flex h-16 w-16 items-center justify-center rounded-sm border shadow-sm ${emailStatusClass}`}>
+      <div className={`mx-auto flex h-16 w-16 items-center justify-center rounded-sm border  ${emailStatusClass}`}>
         <Icon className="text-[32px]">
           {created.emailSent ? "mark_email_read" : "outgoing_mail"}
         </Icon>
@@ -573,7 +573,7 @@ export default function Signup() {
       <PageHeader />
       <main className="flex flex-1 flex-col items-center justify-center px-4 py-space-xl sm:px-6">
         <div className="mx-auto w-full max-w-xl space-y-6">
-          <div className="relative overflow-hidden rounded-sm border border-outline-variant bg-surface-container-lowest p-6 shadow-sm sm:p-10">
+          <div className="relative overflow-hidden rounded-sm border border-outline-variant bg-surface-container-lowest p-6  sm:p-10">
             {!created ? (
               <SignupForm
                 form={form}

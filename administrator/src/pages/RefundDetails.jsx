@@ -43,7 +43,7 @@ export default function RefundDetails() {
     return () => window.clearTimeout(timer);
   }, [refundId]); // eslint-disable-line react-hooks/exhaustive-deps
   async function approve() {
-    if (!window.confirm("Approve this refund with the payment provider?"))
+    if (!window.confirm(refund.destination === "wallet" || refund.provider === "wallet" ? "Approve this refund as wallet credit?" : "Approve this refund with the payment provider?"))
       return;
     try {
       await adminApi.post(`/refunds/${refundId}/approve`);
@@ -87,6 +87,7 @@ export default function RefundDetails() {
               />
               <Info label="Reason" value={refund.reason.replaceAll("_", " ")} />
               <Info label="Provider" value={refund.provider} />
+              <Info label="Refund destination" value={refund.destination === "wallet" || refund.provider === "wallet" ? "Customer wallet" : "Original payment method"} />
               <Info label="Requested by" value={refund.requestedByRole} />
             </dl>
             {refund.customerExplanation && (
@@ -157,7 +158,7 @@ export default function RefundDetails() {
             <Card className="p-5">
               <h2 className="font-bold">Decision</h2>
               <p className="mt-2 text-sm text-muted">
-                Approval sends the refund to {refund.provider}. Review the
+                Approval sends the refund to {refund.destination === "wallet" || refund.provider === "wallet" ? "the customer wallet" : refund.provider}. Review the
                 evidence and order before proceeding.
               </p>
               <div className="mt-4 flex gap-2">

@@ -5,6 +5,7 @@ import Footer from "../components/Footer";
 import SignInLink from "../components/SignInLink";
 import ProductImage from "../components/ProductImage";
 import ProductCard from "../components/ProductCard";
+import Skeleton from "../components/Skeleton";
 import Modal from "../components/Modal";
 import useResource from "../hooks/useResource";
 import { useStore } from "../store/context";
@@ -248,14 +249,9 @@ export default function ShoppingCart() {
           )}
         </div>
         {session.status === "checking" ? (
-          <p
-            role="status"
-            className="rounded-md border border-outline-variant bg-white p-6"
-          >
-            Loading your cart…
-          </p>
+          <Skeleton count={2} label="Loading your cart" />
         ) : !authenticated ? (
-          <section className="mx-auto max-w-md space-y-4 rounded-sm border border-outline-variant bg-white p-8 text-center shadow-sm">
+          <section className="mx-auto max-w-md space-y-4 rounded-sm border border-outline-variant bg-white p-8 text-center ">
             <span
               aria-hidden="true"
               className="material-symbols-outlined text-[40px] text-primary"
@@ -286,12 +282,7 @@ export default function ShoppingCart() {
         ) : (
           <>
             {loading && !cart.length ? (
-              <p
-                role="status"
-                className="rounded-md border border-outline-variant bg-white p-6"
-              >
-                Loading your cart...
-              </p>
+              <Skeleton count={2} label="Loading your cart" />
             ) : errors.cart ? (
               <div
                 role="alert"
@@ -313,7 +304,7 @@ export default function ShoppingCart() {
               <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
                 <div className="space-y-4 lg:col-span-8">
                   <div
-                    className="overflow-hidden rounded-md border border-outline-variant bg-white shadow-sm"
+                    className="overflow-hidden rounded-md border border-outline-variant bg-white "
                   >
                     <div className="hidden grid-cols-12 gap-4 border-b border-outline-variant bg-surface-container-low px-6 py-3.5 text-label-sm font-semibold uppercase tracking-wider text-outline md:grid">
                       <div className="col-span-5">Product</div>
@@ -356,7 +347,7 @@ export default function ShoppingCart() {
                 </div>
                 <aside
                   aria-labelledby="summary-title"
-                  className="rounded-md border border-outline-variant bg-white p-6 shadow-sm lg:sticky lg:top-28 lg:col-span-4"
+                  className="rounded-md border border-outline-variant bg-white p-6  lg:sticky lg:top-28 lg:col-span-4"
                 >
                   <h2
                     id="summary-title"
@@ -405,7 +396,7 @@ export default function ShoppingCart() {
               </div>
             ) : (
               !loading && (
-                <section className="mx-auto max-w-md space-y-4 rounded-sm border border-outline-variant bg-white p-8 text-center shadow-sm">
+                <section className="mx-auto max-w-md space-y-4 rounded-sm border border-outline-variant bg-white p-8 text-center ">
                   <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-md bg-surface-container-low">
                     <span
                       aria-hidden="true"

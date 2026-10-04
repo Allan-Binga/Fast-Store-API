@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { customerRequest, errorMessage } from "../api";
 import CustomerAccountNav from "../components/CustomerAccountNav";
 import Modal from "../components/Modal";
@@ -15,6 +15,7 @@ import { paymentMoney } from "../store/checkout";
 import { useStore } from "../store/context";
 
 function deliveryDate(delivery) {
+  if (delivery.status === "requested") return "Awaiting delivery initiation by the store.";
   if (delivery.status === "delivered" && delivery.deliveredAt) {
     return `Delivered ${new Date(delivery.deliveredAt).toLocaleString()}`;
   }
@@ -29,6 +30,7 @@ function deliveryDate(delivery) {
 }
 
 function DeliveryTimeline({ delivery }) {
+  if (delivery.status === "requested") return <div className="rounded-sm border border-outline-variant/60 bg-surface-container-low p-4 text-sm"><strong className="block text-primary">Delivery requested</strong><p className="mt-1 text-on-surface-variant">Your payment is confirmed. The store is preparing your order. We will email you when delivery is initiated.</p></div>;
   const delivered = delivery.status === "delivered";
 
   return (
@@ -101,6 +103,8 @@ function DeliverySkeleton() {
 
 function DeliveryList() {
   const { invalidateSession } = useStore();
+  const [params] = useSearchParams();
+  const selectedOrderId = params.get("orderId");
   const deliveries = useCustomerResource("/deliveries/user?limit=50&page=1");
   const orders = useCustomerResource("/orders/user?limit=100&page=1");
   const [confirming, setConfirming] = useState(null);
@@ -114,6 +118,16 @@ function DeliveryList() {
       ),
     [orders.data],
   );
+
+  const existingOrderIds = new Set((deliveries.data || []).map(delivery => String(delivery.order)));
+  const requested = (orders.data || []).filter(order => ["paid", "partially_refunded"].includes(order.paymentStatus) && ["unfulfilled", "requested"].includes(order.fulfillmentStatus) && !existingOrderIds.has(String(order._id))).map(order => ({ _id: `request-${order._id}`, order: order._id, status: "requested", createdAt: order.paidAt || order.createdAt }));
+  const visibleDeliveries = [...requested, ...(deliveries.data || []).filter(delivery => delivery.status !== "requested" || ordersById.get(String(delivery.order))?.paymentStatus !== "refunded")].sort((a, b) => {
+    if (String(a.order) === selectedOrderId) return -1;
+    if (String(b.order) === selectedOrderId) return 1;
+    if (a.status === "requested" && b.status !== "requested") return -1;
+    if (b.status === "requested" && a.status !== "requested") return 1;
+    return new Date(b.createdAt) - new Date(a.createdAt);
+  });
 
   async function confirmDelivery() {
     if (!confirming || pendingId) return;
@@ -148,7 +162,7 @@ function DeliveryList() {
         <header className="mb-6 border-b border-outline-variant/60 pb-5">
           <h1 className="text-3xl font-bold">Your deliveries</h1>
           <p className="mt-2 text-on-surface-variant">
-            Follow deliveries started by the store and confirm when your order arrives.
+            Track your order from delivery request to arrival. We will email you when delivery starts.
           </p>
         </header>
 
@@ -165,7 +179,8 @@ function DeliveryList() {
           </p>
         )}
 
-        {deliveries.loading && <DeliverySkeleton />}
+        {(deliveries.loading || orders.loading) && <DeliverySkeleton />}
+        {orders.error && <div role="alert" className="mb-4 text-error"><p>{orders.error}</p><button onClick={orders.retry} className={secondaryClass}>Reload orders</button></div>}
         {deliveries.error && (
           <div role="alert" className="space-y-3 text-error">
             <p>{deliveries.error}</p>
@@ -175,7 +190,7 @@ function DeliveryList() {
           </div>
         )}
 
-        {!deliveries.loading && !deliveries.error && !deliveries.data?.length && (
+        {!deliveries.loading && !orders.loading && !deliveries.error && !orders.error && !visibleDeliveries.length && (
           <div className="rounded-md border border-dashed border-outline-variant p-8 text-center">
             <span
               aria-hidden="true"
@@ -185,7 +200,7 @@ function DeliveryList() {
             </span>
             <h2 className="text-xl font-semibold">No active deliveries yet</h2>
             <p className="mx-auto mt-2 max-w-xl text-on-surface-variant">
-              Paid orders appear here after an administrator initiates delivery.
+              Confirmed orders appear here with a requested status while the store prepares delivery.
             </p>
             <Link to="/orders" className={`${primaryClass} mt-5`}>
               View your orders
@@ -194,13 +209,13 @@ function DeliveryList() {
         )}
 
         <div className="space-y-5">
-          {deliveries.data?.map((delivery) => {
+          {!deliveries.loading && !orders.loading && visibleDeliveries.map((delivery) => {
             const order = ordersById.get(String(delivery.order));
 
             return (
               <article
                 key={delivery._id}
-                className="space-y-4 rounded-md border border-outline-variant bg-white p-5 shadow-sm sm:p-6"
+                className={`space-y-4 rounded-md border bg-white p-5 sm:p-6 ${String(delivery.order) === selectedOrderId ? "border-primary" : "border-outline-variant"}`}
               >
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>

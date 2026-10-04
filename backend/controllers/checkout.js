@@ -30,7 +30,7 @@ const getCheckouts = asyncHandler(async (req, res) => {
   }
 
   if (req.query.provider !== undefined) {
-    if (!["stripe", "paypal", "mpesa"].includes(req.query.provider)) {
+    if (!["stripe", "paypal", "mpesa", "wallet"].includes(req.query.provider)) {
       throw fail(400, "Invalid checkout provider.");
     }
 

@@ -14,6 +14,7 @@ const id = "507f1f77bcf86cd799439011";
 const session = {};
 beforeEach(() => {
   jest.restoreAllMocks();
+  jest.spyOn(require("../models/delivery"), "updateOne").mockResolvedValue({});
   jest.spyOn(mongoose.connection, "transaction").mockImplementation(callback => callback(session));
   jest.spyOn(PaymentTransaction, "updateOne").mockResolvedValue({ upsertedCount: 1 });
   jest.spyOn(InventoryMovement, "create").mockResolvedValue([]);

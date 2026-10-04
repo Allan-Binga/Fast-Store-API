@@ -43,6 +43,10 @@ test.each([
   "/api/address/user",
   "/api/orders/payment-status?session_id=cs_test",
   "/api/refunds/user",
+  "/api/wallet",
+  "/api/wallet/admin",
+  "/api/wallet/admin/users/507f1f77bcf86cd799439011",
+  "/api/deliveries/pending",
   "/api/deliveries/user",
   "/api/refunds",
   "/api/deliveries",
@@ -60,6 +64,9 @@ test.each([
   "/api/promo/add",
   "/api/notifications",
   "/api/phone",
+  "/api/wallet/topups",
+  "/api/checkout/wallet",
+  "/api/wallet/topups/507f1f77bcf86cd799439011/confirm",
   "/api/refunds/orders/507f1f77bcf86cd799439011/request",
   "/api/refunds/507f1f77bcf86cd799439011/approve",
   "/api/deliveries/orders/507f1f77bcf86cd799439011/initiate",
@@ -70,4 +77,9 @@ test.each([
 });
 test("readiness remains unavailable without a database connection", async () => {
   expect((await request(app).get("/health/ready")).status).toBe(503);
+});
+
+test.each(["/api/wallet/admin", "/api/wallet/admin/users/507f1f77bcf86cd799439011", "/api/deliveries/pending"])("customer session cannot access %s", async path => {
+  const token = require("jsonwebtoken").sign({ id: "507f1f77bcf86cd799439011", sid: "customer-session" }, process.env.JWT_SECRET);
+  expect((await request(app).get(path).set("Cookie", `accessToken=${token}`)).status).toBe(401);
 });

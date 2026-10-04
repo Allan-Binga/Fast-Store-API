@@ -1,6 +1,7 @@
 import { NavLink } from "react-router-dom";
 
 const accountLinks = [
+  { to: "/wallet", label: "Wallet", icon: "account_balance_wallet" },
   { to: "/orders", label: "Orders", icon: "receipt_long" },
   { to: "/deliveries", label: "Deliveries", icon: "local_shipping" },
   { to: "/refunds", label: "Refunds", icon: "currency_exchange" },

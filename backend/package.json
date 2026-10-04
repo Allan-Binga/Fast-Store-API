@@ -28,7 +28,6 @@
     "multer-s3": "^3.0.1",
     "node-fetch": "^2.7.0",
     "node-mocks-http": "^1.16.2",
-    "nodemailer": "^6.10.0",
     "nodemon": "^3.1.9",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",

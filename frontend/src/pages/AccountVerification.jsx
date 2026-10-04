@@ -66,7 +66,7 @@ function Verification({ token }) {
   return <div className="flex min-h-screen flex-col bg-surface font-body-md text-on-surface">
     <header className="border-b border-outline-variant bg-surface-container-lowest"><div className="mx-auto flex min-h-16 max-w-7xl items-center justify-between gap-3 px-4 py-2 sm:px-8"><Link to="/" className="font-headline-md text-headline-md font-extrabold text-primary">FastStore</Link><Link to="/" className="text-sm text-primary hover:underline">Continue browsing</Link></div></header>
     <main className="flex flex-1 items-center justify-center px-4 py-12">
-      <section aria-labelledby="verification-title" aria-busy={status === 'checking'} className="w-full max-w-lg space-y-6 rounded-md border border-outline-variant bg-surface-container-lowest p-6 shadow-sm sm:p-10">
+      <section aria-labelledby="verification-title" aria-busy={status === 'checking'} className="w-full max-w-lg space-y-6 rounded-md border border-outline-variant bg-surface-container-lowest p-6  sm:p-10">
         <div className={`mx-auto flex h-16 w-16 items-center justify-center rounded-md ${status === 'success' ? 'bg-emerald-50 text-emerald-700' : 'bg-surface-container-low text-primary'}`}><span aria-hidden="true" className={`material-symbols-outlined text-[32px] ${status === 'checking' ? 'animate-spin' : ''}`}>{status === 'checking' ? 'progress_activity' : status === 'success' ? 'mark_email_read' : 'mail_lock'}</span></div>
         <h1 id="verification-title" ref={heading} tabIndex={-1} className="text-center font-headline-md text-headline-md font-semibold">{titles[status]}</h1>
         <div role="status" className="space-y-3 text-center text-on-surface-variant">

@@ -18,9 +18,9 @@ async function transaction(callback) {
   }
 }
 
-async function reserveOrder(data) {
+async function reserveOrder(data, suppliedSession) {
   let order;
-  await transaction(async (session) => {
+  const reserve = async (session) => {
     const existing = await Order.findOne({
       user: data.user,
       checkoutKey: data.checkoutKey,
@@ -103,7 +103,9 @@ async function reserveOrder(data) {
         },
       );
     }
-  });
+  };
+  if (suppliedSession) await reserve(suppliedSession);
+  else await transaction(reserve);
   return order;
 }
 
@@ -234,6 +236,12 @@ async function markPaid(
   Object.assign(order, updates);
   order.paymentStatus = "paid";
   order.paidAt = order.paidAt || new Date();
+  order.fulfillmentStatus = "requested";
+  await require("../models/delivery").updateOne(
+    { order: order._id },
+    { $setOnInsert: { order: order._id, user: order.user, status: "requested" } },
+    { upsert: true, session },
+  );
   order.stockReserved = false;
 
   await clearPurchasedCartItems(order, session);
@@ -401,6 +409,7 @@ async function releaseAbandoned(orderId) {
 }
 
 module.exports = {
+  markPaid,
   reserveOrder,
   settleOrder,
   settlePayPalOrder,

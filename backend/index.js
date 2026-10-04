@@ -110,6 +110,7 @@ const routes = {
     password: "password",
     notifications: "notification",
     refunds: "refund",
+    wallet: "wallet",
     deliveries: "delivery",
     "payment-transactions": "paymentTransaction",
     stock: "stock",

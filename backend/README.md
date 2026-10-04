@@ -44,7 +44,7 @@ Checkout requires a MongoDB replica set (a single-node replica set works locally
 
 POST `/api/checkout/create-checkout-session` requires an Idempotency-Key header (16–100 letters/digits/underscores/hyphens) and `{ items: [{ productId, quantity }], addressId, source: "cart" | "buy-now" }`. Reuse a key for retries of exactly the same purchase. Prices are resolved from the database; stock is reserved transactionally. Orders include a shipping-address snapshot. Stripe and PayPal payments write idempotent `PaymentTransaction` ledger entries. Existing M-Pesa code remains available, but M-Pesa is intentionally excluded from the new ledger and refund workflows for now.
 
-Configure Stripe webhook events checkout.session.completed and checkout.session.expired to POST `/api/webhook`. The raw body is signature-verified. Paid settlement and expired reservation releases are idempotent. A minute-based reconciliation loop checks overdue reservations against Stripe before releasing stock, including lost session-creation responses. A canceled checkout holds its reservation until expiry (approximately one hour). SMTP is at-least-once: an ambiguous delivery failure can result in a duplicate email, but stock and cart mutations are not repeated.
+Configure Stripe webhook events checkout.session.completed and checkout.session.expired to POST `/api/webhook`. The raw body is signature-verified. Paid settlement and expired reservation releases are idempotent. A minute-based reconciliation loop checks overdue reservations against Stripe before releasing stock, including lost session-creation responses. A canceled checkout holds its reservation until expiry (approximately one hour). Email delivery is at-least-once: an ambiguous delivery failure can result in a duplicate email, but stock and cart mutations are not repeated.
 
 ## Administrator commerce operations
 
@@ -68,7 +68,7 @@ Refund success is finalized from the immediate provider response or a later webh
 
 Demo catalog photos can come from a license-compatible source such as Unsplash or Pexels. Download the chosen files and submit them through the existing multipart `images` fields so the application owns stable S3 copies under `products/`; no media-asset collection is required.
 
-The frontend still needs /success, /account-verification and /password/reset pages and integration with this API. Existing static Vite previews do not implement these flows.
+The customer frontend includes payment-result, account verification, password reset, and wallet pages integrated with this API.
 
 ## Existing data and indexes
 
@@ -85,3 +85,74 @@ The application does not run syncIndexes or delete existing data. Database migra
 ## Tests and operational limits
 
 Run `npm test`. Tests mock external services and database operations; no emails, SMS messages or payments are sent. Rate limits are in-process; configure shared throttling at the gateway for multi-instance deployment. Configure proxy trust only for your actual reverse-proxy topology before relying on client IPs behind it.
+
+### Brevo emails, receipts, and wallet
+
+Customer emails use the Brevo transactional HTTPS API, with `BREVO_API_KEY`,
+`CLIENT_URL`, and optionally `BREVO_SENDER_EMAIL` (defaults to
+`info@fast-store.skirill.org`; the sender must belong to `fast-store.skirill.org`).
+Verify/authorize that sender in Brevo. Gmail SMTP credentials are no longer used.
+Templates share the storefront colors and include plain text alternatives.
+Paid orders receive an itemized email receipt with a stable receipt number,
+provider payment reference, paid date, currency, quantities, prices, and total.
+The existing reconciliation worker retries unsent receipts, including orders
+that have since been refunded. Email delivery remains at least once after a
+process crash between sending and recording success.
+
+The customer `/wallet` page stores balances per currency and displays the latest
+100 activity entries. USD top-ups accept $1–$1,000 through Stripe Checkout or
+PayPal. Wallet checkout pays the full USD order from the available balance; withdrawals
+are not supported. Existing Stripe/PayPal credentials and
+frontend PayPal configuration are reused. Stripe webhook subscriptions should
+include `checkout.session.completed`, `checkout.session.async_payment_succeeded`,
+and `checkout.session.expired`; PayPal uses the existing completed order/capture
+webhooks. Server retrieval also recovers missed webhooks. The server validates
+amount, currency, identity, and confirmed payment before crediting the wallet.
+Top-up creation requires an `Idempotency-Key`; reuse it for retries of the same
+amount/provider. MongoDB transactions and unique indexes prevent duplicate
+credits. MongoDB must run as a replica set, as for existing order/refund flows.
+
+Customers can choose original-payment refunds (the default) or wallet credit.
+Both require administrator approval and reserve the refundable order balance.
+Wallet approval credits funds and finalizes the refund atomically without
+requesting a provider refund. Wallet refunds appear in financial refund metrics;
+top-ups are wallet liabilities and do not count as product sales.
+The reconciliation worker sends wallet credit and refund status emails with
+leases and retries. Do not directly edit wallet balances; use the ledger flows.
+
+API: `GET /api/wallet`, `POST /api/wallet/topups` with `{amount, provider}`,
+and `POST /api/wallet/topups/:id/confirm`, all customer authenticated.
+`POST /api/checkout/wallet` accepts items, addressId, source, and
+expectedTotalCents with an Idempotency-Key. Price changes require review before
+payment. The debit, ledger entry, stock reservation, and paid order commit in one
+transaction. Wallet purchase refunds always return to the wallet.
+Refund requests additionally accept `destination: "original" | "wallet"`.
+
+### Webhook subscriptions
+
+Reuse the existing webhook endpoints; wallet checkout itself is an internal
+transaction and requires no provider webhook. For top-ups and order/refund
+updates, check these subscriptions on the same Stripe/PayPal apps used by the
+server (sandbox and live have separate webhook configuration):
+
+| Provider | Backend path | Events |
+| --- | --- | --- |
+| Stripe | `/api/webhook` | `checkout.session.completed`, `checkout.session.expired`, `checkout.session.async_payment_succeeded`, `refund.created`, `refund.updated`, `refund.failed` |
+| PayPal | `/api/webhook/paypal` | `PAYMENT.CAPTURE.COMPLETED`, `PAYMENT.CAPTURE.REFUNDED` |
+
+`checkout.session.async_payment_succeeded` supports delayed payment methods;
+current Stripe card top-ups primarily use `checkout.session.completed`.
+The PayPal handler also accepts `CHECKOUT.ORDER.COMPLETED` if already configured;
+standard capture completion is sufficient for these top-ups. Set `WEBHOOK_SECRET`
+to the Stripe endpoint signing secret and `PAYPAL_WEBHOOK_ID` to the PayPal
+webhook registration ID. Existing values stay valid when adding event types to
+the same registration.
+
+### Wallet administration and delivery requests
+
+- GET `/api/wallet/admin?limit=20&page=1` lists wallet balances with customer names and emails; optional `userId` filters one customer.
+- GET `/api/wallet/admin/users/:userId?limit=20&page=1` returns that customer's balances and paginated wallet ledger. Both endpoints require an administrator session.
+- Confirmed payment creates a `requested` delivery in the same database transaction. Customers see it immediately before delivery initiation. Legacy paid, unfulfilled orders also appear in the pending queue.
+- GET `/api/deliveries/pending?limit=20&page=1` returns `{orders,total}` for paid or partially refunded orders awaiting initiation. Optional `orderId` supports email deep links. Administrator sessions only.
+- Set `ADMIN_CLIENT_URL` to the deployed admin frontend origin. Paid-order alerts go to verified `Admin` accounts and link to `/deliveries/pending?orderId=…`. Initiation sends the customer a delivery confirmation with a tracking link. Failed emails are retried by the reconciliation worker; emails remain at least once if the provider response is ambiguous. Email failure never hides orders from the pending queue.
+- These notifications and wallet administration use existing confirmed-payment handling; no additional Stripe or PayPal webhook subscriptions are required.

@@ -1,3 +1,4 @@
+import Skeleton from "../Skeleton";
 import { Link } from "react-router-dom";
 import TopNavbar from "../TopNavbar";
 import Footer from "../Footer";
@@ -21,7 +22,7 @@ export function AccountRequired({ children }) {
   return (
     <section className={`${panelClass} mx-auto max-w-lg space-y-4 text-center`}>
       {session.status === "checking" ? (
-        <p role="status">Checking your account…</p>
+        <Skeleton count={1} label="Checking your account" />
       ) : session.status === "error" ? (
         <>
           <h1 className="text-2xl font-semibold">
@@ -44,7 +45,7 @@ export function AccountRequired({ children }) {
   );
 }
 
-export default function CheckoutLayout({ title, children }) {
+export default function CheckoutLayout({ title, children, showCartBreadcrumb = true }) {
   return (
     <div className="flex min-h-screen flex-col bg-surface text-on-surface">
       <TopNavbar />
@@ -54,8 +55,10 @@ export default function CheckoutLayout({ title, children }) {
           className="mb-6 flex flex-wrap items-center gap-2 text-sm text-on-surface-variant"
         >
           <Link to="/">Home</Link>
-          <span aria-hidden="true">/</span>
-          <Link to="/cart">Cart</Link>
+          {showCartBreadcrumb && <>
+            <span aria-hidden="true">/</span>
+            <Link to="/cart">Cart</Link>
+          </>}
           <span aria-hidden="true">/</span>
           <span aria-current="page">{title}</span>
         </nav>

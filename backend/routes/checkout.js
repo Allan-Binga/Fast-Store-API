@@ -35,6 +35,7 @@ router.post(
   authUserMiddleware,
   capturePayPalOrder,
 );
+router.post("/wallet", authUserMiddleware, require("../controllers/walletCheckout").createWalletCheckout);
 router.post("/mpesa/stk-push", authUserMiddleware, createMpesaStkPush);
 
 module.exports = router;

@@ -7,6 +7,7 @@ import CheckoutLayout, {
   primaryClass,
   secondaryClass,
 } from "../components/checkout/CheckoutLayout";
+import Skeleton from "../components/Skeleton";
 import OrderDetails from "../components/checkout/OrderDetails";
 import { clearCheckoutAttempt } from "../store/checkout";
 import { useStore } from "../store/context";
@@ -26,21 +27,21 @@ const STATUS_COPY = {
   },
   paid: {
     title: "Payment confirmed & order placed!",
-    message: "Your payment has been confirmed. Your order details are below.",
+    message: "Your payment is confirmed and delivery is requested. We will email you when the store initiates delivery. Your order details are below.",
     icon: "check_circle",
     color: "bg-emerald-100 text-emerald-700",
   },
   partially_refunded: {
     title: "Order partially refunded",
     message:
-      "Part of this payment has been returned through the original payment provider.",
+      "Part of this payment has been refunded. View your refund history for details.",
     icon: "currency_exchange",
     color: "bg-blue-100 text-blue-700",
   },
   refunded: {
     title: "Order refunded",
     message:
-      "This payment has been refunded through the original payment provider.",
+      "This payment has been refunded. View your refund history for details.",
     icon: "assignment_return",
     color: "bg-surface-container-high text-on-surface-variant",
   },
@@ -68,6 +69,7 @@ const STATUS_COPY = {
 };
 
 function providerName(provider) {
+  if (provider === "wallet") return "Wallet";
   if (provider === "paypal") return "PayPal";
   if (provider === "mpesa") return "M-Pesa";
   return "Stripe";
@@ -119,7 +121,7 @@ function StatusHeader({ status, cancelled, copy, order, result, retryError }) {
         {cancelled && status === "pending" ? "You returned from checkout" : copy.title}
       </h1>
       <p role="status" className="mx-auto max-w-xl text-on-surface-variant">
-        {copy.message}
+        {status === "paid" && order?.fulfillmentStatus === "initiated" ? "Your payment is confirmed and delivery has started. Track its progress in your account." : status === "paid" && order?.fulfillmentStatus === "delivered" ? "Your payment is confirmed and this order has been delivered." : copy.message}
       </p>
       {result?.error && (
         <p role="alert" className="mt-3 text-error">
@@ -183,7 +185,7 @@ function StatusActions({ status, order, retrying, retryPayment, retryStatus }) {
       )}
       {["paid", "partially_refunded", "refunded"].includes(status) && (
         <>
-          <Link to="/deliveries" className={primaryClass}>
+          <Link to={order?._id ? `/deliveries?orderId=${encodeURIComponent(order._id)}` : "/deliveries"} className={primaryClass}>
             Track delivery
           </Link>
           <Link to="/orders" className={secondaryClass}>
@@ -278,7 +280,7 @@ function PaymentStatus({ query, cancelled }) {
     setRetrying(true);
     setRetryError("");
 
-    if (["paypal", "mpesa"].includes(order.provider)) {
+    if (["paypal", "mpesa", "wallet"].includes(order.provider)) {
       navigate("/checkout");
       return;
     }
@@ -324,6 +326,7 @@ function PaymentStatus({ query, cancelled }) {
         result={isCurrentResult ? result : null}
         retryError={retryError}
       />
+      {status === "checking" && <div className="py-6"><Skeleton count={1} label="Loading payment and order details" /></div>}
       {order && (
         <div className="py-6">
           <OrderDetails order={order} />

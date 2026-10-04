@@ -4,18 +4,17 @@ const User = require("../models/users");
 const { asyncHandler, fail, emailValue } = require("../utils/http");
 const { hashToken } = require("../utils/session");
 
-// Initialize integrations only when used; importing the API needs no mail credentials.
-const escapeHtml = value => String(value).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-const sendMail = async (to, subject, html) => {
-  if (!process.env.MAIL_USER || !process.env.MAIL_PASS || !process.env.CLIENT_URL) throw fail(503, "Email service is not configured.");
-  const transporter = nodemailer.createTransport({ service: "Gmail", auth: { user: process.env.MAIL_USER, pass: process.env.MAIL_PASS } });
-  return transporter.sendMail({ from: `"FastStore" <${process.env.MAIL_USER}>`, to, subject, html });
-};
-const linkMail = (email, token, path, subject) => sendMail(email, subject, `<p>${subject}</p><a href="${escapeHtml(process.env.CLIENT_URL + path + '?token=' + encodeURIComponent(token))}">Continue</a><p>This link expires in 30 minutes.</p>`);
+const { sendMail, escapeHtml, template, money } = require("../services/email");
+const linkMail = (email, token, path, subject) => sendMail(email, subject, template(subject, "Use the button below to continue. This secure link expires in 30 minutes. If you did not request this, you can ignore this email.", "", { label: "Continue securely", path: path + '?token=' + encodeURIComponent(token) }));
 const sendVerificationEmail = (email, token) => linkMail(email, token, "/account-verification", "Verify your FastStore account");
 const sendPasswordResetEmail = (email, token) => linkMail(email, token, "/password/reset", "Reset your FastStore password");
-const sendAccountConfirmationEmail = email => sendMail(email, "Account verified", `<p>Your account is verified.</p><a href="${escapeHtml(process.env.CLIENT_URL)}">Start shopping</a>`);
-const sendOrderConfirmationEmail = (email, order) => sendMail(email, "Order confirmation", `<p>Order ${escapeHtml(order._id)}</p><ul>${order.items.map(item => `<li>${escapeHtml(item.name)} — ${item.quantity} × $${item.price.toFixed(2)}</li>`).join("")}</ul><p>Total: $${order.totalAmount.toFixed(2)}</p>`);
+const sendAccountConfirmationEmail = email => sendMail(email, "Welcome to FastStore", template("You're ready to shop", "Your email is verified. Discover your next favorite find.", "", { label: "Explore the store", path: "/" }));
+const sendOrderConfirmationEmail = (email, order) => {
+  const reference = `FS-${String(order._id).toUpperCase()}`;
+  const rows = order.items.map(item => `<tr><td style="padding:12px 8px;border-bottom:1px solid #eaedff">${escapeHtml(item.name)}</td><td style="padding:12px 8px">${item.quantity}</td><td style="padding:12px 8px">${money(item.price, order.currency)}</td><td style="padding:12px 8px">${money(item.price * item.quantity, order.currency)}</td></tr>`).join("");
+  const details = `<p><strong>Receipt ${escapeHtml(reference)}</strong><br>Paid: ${escapeHtml(new Date(order.paidAt || order.createdAt).toISOString())}<br>Payment: ${escapeHtml(order.paymentProvider)}<br>Reference: ${escapeHtml(order.stripePaymentIntentId || order.paypalCaptureId || order.mpesaReceiptNumber || order._id)}</p><table role="table" style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr style="background:#f2f3ff;text-align:left"><th>Item</th><th>Qty</th><th>Price</th><th>Total</th></tr></thead><tbody>${rows}</tbody></table><p style="text-align:right;font-size:22px;color:#004ac6"><strong>Total paid ${money(order.totalAmount, order.currency)}</strong></p><p style="font-size:12px;color:#737686">Keep this receipt for your records. Refunds, if any, are confirmed separately.</p>`;
+  return sendMail(email, `Your FastStore receipt · ${reference}`, template("Thank you for your purchase", "Your payment is confirmed and your delivery is requested. We will email you when delivery starts. Here is your itemized receipt.", details, { label: "View your order", path: `/payment-result?order_id=${order._id}` }));
+};
 
 // Verification tokens are single-use and consumed before sending optional confirmation.
 const verifyUser = asyncHandler(async (req, res) => {

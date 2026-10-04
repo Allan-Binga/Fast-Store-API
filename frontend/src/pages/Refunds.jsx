@@ -105,6 +105,7 @@ function RefundRequestForm({ orders, ordersLoading, reloadOrders, reloadRefunds 
   const [params] = useSearchParams();
   const requestedOrderId = params.get("orderId") || "";
   const [orderId, setOrderId] = useState("");
+  const [destination, setDestination] = useState("original");
   const [reason, setReason] = useState("customer_request");
   const [amount, setAmount] = useState("");
   const [explanation, setExplanation] = useState("");
@@ -117,7 +118,7 @@ function RefundRequestForm({ orders, ordersLoading, reloadOrders, reloadRefunds 
     () =>
       (orders || []).filter(
         (order) =>
-          ["stripe", "paypal"].includes(order.paymentProvider) &&
+          ["stripe", "paypal", "wallet"].includes(order.paymentProvider) &&
           ["paid", "partially_refunded"].includes(order.paymentStatus) &&
           refundableBalance(order) > 0,
       ),
@@ -164,6 +165,7 @@ function RefundRequestForm({ orders, ordersLoading, reloadOrders, reloadRefunds 
 
     const refundData = {
       reason,
+      destination: selectedOrder.paymentProvider === "wallet" ? "wallet" : destination,
       ...(numericAmount === undefined ? {} : { amount: numericAmount }),
       ...(trimmedExplanation ? { explanation: trimmedExplanation } : {}),
     };
@@ -345,6 +347,7 @@ function RefundRequestForm({ orders, ordersLoading, reloadOrders, reloadRefunds 
               </label>
             </div>
 
+            <label className="block"><span className="mb-1.5 block text-sm font-semibold">Refund destination</span><select value={selectedOrder?.paymentProvider === "wallet" ? "wallet" : destination} onChange={event => setDestination(event.target.value)} className="min-h-11 w-full rounded-sm border border-outline-variant bg-white p-3">{selectedOrder?.paymentProvider !== "wallet" && <option value="original">Original payment method</option>}<option value="wallet">FastStore wallet</option></select><p className="mt-2 text-xs text-outline">Wallet refunds are stored as account credit after approval. Use wallet credit at checkout. Withdrawals are not available.</p></label>
             <label className="block">
               <span className="mb-1.5 block text-sm font-semibold">
                 Explanation <span className="font-normal text-outline">(optional)</span>
@@ -511,7 +514,7 @@ function RefundHistory({ resource }) {
               <OrderStatusBadge status={refund.status} />
             </div>
             <p className="text-sm text-on-surface-variant">
-              {refundStatusCopy[refund.status] || "Refund status is available above."}
+              {(refund.destination === "wallet" && refund.status === "succeeded" ? "This refund was credited to your FastStore wallet." : refundStatusCopy[refund.status]) || "Refund status is available above."}
             </p>
             <dl className="grid gap-2 text-sm sm:grid-cols-2">
               <div>

@@ -1,3 +1,4 @@
+jest.mock("../services/deliveryNotifications", () => ({ notifyDeliveryStarted: jest.fn().mockResolvedValue(undefined) }));
 jest.mock("../services/stripe", () => jest.fn());
 jest.mock("../services/paypal", () => jest.fn());
 
@@ -231,7 +232,7 @@ test("an administrator starts delivery and the owning customer confirms it", asy
   const order = {
     _id: id,
     user: secondId,
-    fulfillmentStatus: "unfulfilled",
+    fulfillmentStatus: "requested",
     save: jest.fn(),
   };
   const delivery = {
@@ -245,8 +246,8 @@ test("an administrator starts delivery and the owning customer confirms it", asy
     session: async () => order,
   });
   jest
-    .spyOn(Delivery, "create")
-    .mockResolvedValue([delivery]);
+    .spyOn(Delivery, "findOneAndUpdate")
+    .mockResolvedValue(delivery);
   const initiatedResponse = response();
 
   await deliveryController.initiateDelivery(

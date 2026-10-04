@@ -65,7 +65,7 @@ const handleWebhook = asyncHandler(async (req, res) => {
   }
 
   if (
-    !["checkout.session.completed", "checkout.session.expired"].includes(
+    !["checkout.session.completed", "checkout.session.async_payment_succeeded", "checkout.session.expired"].includes(
       event.type,
     )
   ) {
@@ -73,6 +73,10 @@ const handleWebhook = asyncHandler(async (req, res) => {
   }
 
   const data = event.data.object;
+  if (data.metadata?.walletEntryId) {
+    await require("../services/wallet").settleStripe(data);
+    return res.json({ received: true });
+  }
   if (!data.metadata?.orderId || !data.metadata?.user) {
     return res.json({ received: true });
   }
@@ -162,6 +166,7 @@ const handlePayPalWebhook = asyncHandler(async (req, res) => {
   if (!paypalOrderId) return res.json({ received: true });
 
   const response = await getPayPal().orders.getOrder({ id: paypalOrderId });
+  if (await require("../services/wallet").settlePayPal(response.result)) return res.json({ received: true });
   const order = await settlePayPalOrder(response.result);
   res.json({ received: true });
 

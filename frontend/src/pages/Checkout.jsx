@@ -11,6 +11,7 @@ import CheckoutLayout, {
   primaryClass,
   secondaryClass,
 } from "../components/checkout/CheckoutLayout";
+import Skeleton from "../components/Skeleton";
 import { OrderItems } from "../components/checkout/OrderDetails";
 import useCustomerResource from "../hooks/useCustomerResource";
 import { useStore } from "../store/context";
@@ -34,9 +35,9 @@ const PAYMENT_METHODS = [
     description: "Approve the payment securely in the PayPal window.",
   },
   {
-    id: "mpesa",
-    title: "M-Pesa",
-    description: "Receive a Safaricom prompt on your phone and enter your PIN.",
+    id: "wallet",
+    title: "Wallet funds",
+    description: "Pay instantly with your FastStore wallet balance.",
   },
 ];
 
@@ -187,7 +188,7 @@ function ShippingSection({
         )}
       </div>
 
-      {addresses.loading && <p role="status">Loading addresses...</p>}
+      {addresses.loading && <Skeleton label="Loading shipping addresses" count={1} />}
       {addresses.error && (
         <div role="alert">
           <p className="mb-3 text-error">{addresses.error}</p>
@@ -228,10 +229,10 @@ function ShippingSection({
   );
 }
 
-function PaymentMethodCard({ method, selected, onSelect }) {
+function PaymentMethodCard({ method, selected, onSelect, disabled }) {
   return (
     <label
-      className={`flex items-start gap-3 rounded-md border-2 p-5 ${
+      className={`flex items-start gap-3 rounded-md border-2 p-5 ${disabled ? "opacity-60" : ""} ${
         selected ? "border-primary bg-surface-container-low/30" : "border-outline-variant"
       }`}
     >
@@ -240,6 +241,7 @@ function PaymentMethodCard({ method, selected, onSelect }) {
         name="provider"
         value={method.id}
         checked={selected}
+        disabled={disabled}
         onChange={() => onSelect(method.id)}
         className="mt-1 accent-primary"
       />
@@ -258,7 +260,7 @@ function PaymentMethodCard({ method, selected, onSelect }) {
   );
 }
 
-function PaymentMethodSection({ provider, setProvider, busy }) {
+function PaymentMethodSection({ provider, setProvider, busy, wallet, walletCents, totalCents }) {
   return (
     <section className={panelClass} aria-labelledby="payment-title">
       <h2
@@ -269,15 +271,20 @@ function PaymentMethodSection({ provider, setProvider, busy }) {
       </h2>
       <fieldset className="space-y-4" disabled={busy}>
         <legend className="sr-only">Choose a payment method</legend>
-        {PAYMENT_METHODS.map((method) => (
+        {PAYMENT_METHODS.filter(method => method.id !== "wallet" || (!wallet.loading && !wallet.error && walletCents > 0)).map((method) => (
           <PaymentMethodCard
             key={method.id}
-            method={method}
+            method={method.id === "wallet" ? { ...method, description: `${paymentMoney(walletCents / 100)} available${walletCents < totalCents ? " — add funds to cover this order." : " — pay the full order from your wallet."}` } : method}
+            disabled={method.id === "wallet" && walletCents < totalCents}
             selected={provider === method.id}
             onSelect={setProvider}
           />
         ))}
       </fieldset>
+      <div className="mt-4 text-sm text-on-surface-variant">
+        {wallet.loading ? <div role="status" aria-label="Checking wallet balance" className="h-5 w-36 animate-pulse rounded-sm bg-surface-container-high"><span className="sr-only">Checking wallet balance…</span></div> : wallet.error ? <p>Wallet balance could not be loaded. <button onClick={wallet.retry} className="text-primary underline">Try again</button></p> : walletCents <= 0 ? <p>Your wallet has no USD funds yet.</p> : null}
+        <Link to="/wallet" className="mt-2 inline-block font-semibold text-primary underline">Add funds to your wallet</Link>
+      </div>
     </section>
   );
 }
@@ -294,11 +301,7 @@ function ReviewSection({ attempt, cart, items, loading, unavailable }) {
         </Link>
       </div>
 
-      {!attempt && cart.loading && (
-        <p role="status" className="py-4">
-          Checking prices and availability...
-        </p>
-      )}
+      {!attempt && cart.loading && <Skeleton label="Loading order items" count={2} />}
       {!attempt && cart.error && (
         <div role="alert" className="py-4">
           <p className="mb-3 text-error">{cart.error}</p>
@@ -317,32 +320,6 @@ function ReviewSection({ attempt, cart, items, loading, unavailable }) {
         </p>
       )}
     </section>
-  );
-}
-
-function MpesaPaymentForm({ phone, setPhone, blocked, phase, onSubmit }) {
-  return (
-    <div className="space-y-3">
-      <label className="block text-sm font-semibold" htmlFor="mpesa-phone">
-        Safaricom phone number
-      </label>
-      <input
-        id="mpesa-phone"
-        type="tel"
-        value={phone}
-        onChange={(event) => setPhone(event.target.value)}
-        placeholder="0712345678"
-        disabled={Boolean(blocked)}
-        className="w-full rounded-sm border border-outline-variant bg-surface px-4 py-3 outline-none focus:border-primary"
-      />
-      <button
-        disabled={Boolean(blocked) || !phone.trim()}
-        onClick={onSubmit}
-        className={`${primaryClass} w-full`}
-      >
-        {phase === "submitting" ? "Sending M-Pesa prompt..." : "Pay with M-Pesa"}
-      </button>
-    </div>
   );
 }
 
@@ -392,10 +369,9 @@ function PaymentAction({
   provider,
   blocked,
   phase,
-  mpesaPhone,
-  setMpesaPhone,
   startStripe,
-  startMpesa,
+  startWallet,
+  total,
   createPayPalOrder,
   capturePayPalOrder,
   cancelPayPal,
@@ -413,16 +389,10 @@ function PaymentAction({
     );
   }
 
-  if (provider === "mpesa") {
-    return (
-      <MpesaPaymentForm
-        phone={mpesaPhone}
-        setPhone={setMpesaPhone}
-        blocked={blocked}
-        phase={phase}
-        onSubmit={startMpesa}
-      />
-    );
+  if (provider === "wallet") {
+    return <button disabled={Boolean(blocked)} onClick={startWallet} className={`${primaryClass} w-full`}>
+      {phase === "submitting" ? "Paying with wallet…" : `Pay ${paymentMoney(total)} with Wallet`}
+    </button>;
   }
 
   return (
@@ -452,16 +422,16 @@ function PurchaseSummary({ items, subtotal, busy, children }) {
       </div>
       <p className="mb-5 text-sm text-outline">
         Prices and stock are checked again when checkout starts. Review the final
-        amount with your selected payment provider before paying.
+        amount shown on the payment button or payment provider before paying.
       </p>
       {children}
       {busy && (
         <p role="status" className="mt-3 text-sm">
-          Please wait while we open your payment session.
+          Please wait while we process your payment.
         </p>
       )}
       <p className="mt-4 text-sm text-outline">
-        You'll return to FastStore after completing payment.
+        Your order is placed once payment is confirmed.
       </p>
     </aside>
   );
@@ -472,13 +442,14 @@ function CheckoutForm() {
   const navigate = useNavigate();
   const addresses = useCustomerResource("/address/user");
   const cart = useCustomerResource("/cart/user");
-  const savedAttempt = readCheckoutAttempt(session.user);
+  const wallet = useCustomerResource("/wallet");
+  const storedAttempt = readCheckoutAttempt(session.user);
+  const savedAttempt = storedAttempt?.provider === "mpesa" ? null : storedAttempt;
 
   const [selectedAddress, setSelectedAddress] = useState("");
   const [attempt, setAttempt] = useState(() => savedAttempt);
   const [provider, setProvider] = useState(() => savedAttempt?.provider || "stripe");
   const [error, setError] = useState("");
-  const [mpesaPhone, setMpesaPhone] = useState("");
   const [phase, setPhase] = useState("idle");
 
   const locked = useRef(false);
@@ -507,13 +478,23 @@ function CheckoutForm() {
     0,
   ) / 100;
 
+  const walletCents = wallet.data?.balances?.find(balance => balance.currency === "usd")?.balanceCents || 0;
+  const walletUnavailable = wallet.loading || wallet.error || walletCents <= 0 || walletCents < Math.round(subtotal * 100);
   const loading = addresses.loading || cart.loading;
   const busy = phase !== "idle";
   const unavailable = items.some((item) => item.available === false);
   const blocked =
     busy ||
+    (provider === "wallet" && walletUnavailable) ||
     (!attempt &&
       (loading || addresses.error || cart.error || !items.length || !addressId || unavailable));
+
+  const { retry: retryWallet } = wallet;
+  useEffect(() => {
+    const refreshWallet = () => retryWallet();
+    window.addEventListener("focus", refreshWallet);
+    return () => window.removeEventListener("focus", refreshWallet);
+  }, [retryWallet]);
 
   function resetPaymentLock() {
     locked.current = false;
@@ -532,6 +513,7 @@ function CheckoutForm() {
       setAttempt(null);
       cart.retry();
       addresses.retry();
+      wallet.retry();
     }
 
     setError(failure.response || failure.isAxiosError ? errorMessage(failure) : failure.message);
@@ -640,7 +622,7 @@ function CheckoutForm() {
     }
   }
 
-  async function startMpesaPayment() {
+  async function startWalletPayment() {
     if (locked.current || blocked) return;
     locked.current = true;
     setError("");
@@ -648,13 +630,14 @@ function CheckoutForm() {
 
     let purchase;
     try {
-      purchase = getOrCreateAttempt("mpesa");
+      purchase = getOrCreateAttempt("wallet");
       const { data } = await customerRequest({
         method: "post",
-        url: "/checkout/mpesa/stk-push",
+        url: "/checkout/wallet",
         headers: { "Idempotency-Key": purchase.key },
-        data: { ...purchase.body, phoneNumber: mpesaPhone },
+        data: { ...purchase.body, expectedTotalCents: Math.round(subtotal * 100) },
       });
+      clearCheckoutAttempt(session.user, purchase.key);
       await refreshShopping();
       navigate(`/payment-result?order_id=${encodeURIComponent(data.orderId)}`);
     } catch (failure) {
@@ -688,6 +671,9 @@ function CheckoutForm() {
             provider={provider}
             setProvider={selectProvider}
             busy={busy}
+            wallet={wallet}
+            walletCents={walletCents}
+            totalCents={Math.round(subtotal * 100)}
           />
           <ReviewSection
             attempt={attempt}
@@ -703,10 +689,9 @@ function CheckoutForm() {
             provider={provider}
             blocked={blocked}
             phase={phase}
-            mpesaPhone={mpesaPhone}
-            setMpesaPhone={setMpesaPhone}
             startStripe={startStripeCheckout}
-            startMpesa={startMpesaPayment}
+            startWallet={startWalletPayment}
+            total={subtotal}
             createPayPalOrder={createPayPalOrder}
             capturePayPalOrder={capturePayPalOrder}
             cancelPayPal={cancelPayPal}

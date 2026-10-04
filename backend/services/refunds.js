@@ -169,9 +169,14 @@ const finalizeRefund = async ({
       refund.processedAt = new Date();
       refund.failureReason = undefined;
 
+      if (refund.destination === "wallet" || refund.provider === "wallet") {
+        const Entry = require("../models/walletEntry");
+        const [entry] = await Entry.create([{ user: refund.user, key: `refund:${refund._id}`, type: "refund", provider: "wallet", amountCents: Math.round(amount * 100), currency: refund.currency }], { session });
+        await require("./wallet").creditEntry(entry, session);
+      }
       await PaymentTransaction.updateOne(
         {
-          provider: refund.provider,
+          provider: refund.destination === "wallet" ? "wallet" : refund.provider,
           type: "refund",
           providerTransactionId:
             providerRefundId || String(refund._id),
@@ -180,7 +185,7 @@ const finalizeRefund = async ({
           $setOnInsert: {
             order: order._id,
             user: order.user,
-            provider: refund.provider,
+            provider: refund.destination === "wallet" ? "wallet" : refund.provider,
             type: "refund",
             providerTransactionId:
               providerRefundId || String(refund._id),
@@ -263,6 +268,8 @@ const processRefund = async (refundId, administratorId) => {
       "This refund can no longer be approved."
     );
   }
+
+  if (refund.destination === "wallet" || refund.provider === "wallet") return finalizeRefund({ refundId: refund._id, status: "succeeded", rawStatus: "wallet_credit" });
 
   let result;
 
