@@ -9,6 +9,9 @@ jobs:
   deploy:
     name: Deployment Pipeline
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
 
     steps:
       - name: Checkout code
@@ -19,9 +22,7 @@ jobs:
         with:
           node-version: "24"
           cache: "npm"
-
-      - name: Route to backend folder
-        run: cd backend
+          cache-dependency-path: backend/package-lock.json
 
       - name: Install backend dependencies
         run: npm ci --legacy-peer-deps
